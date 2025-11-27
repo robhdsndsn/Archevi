@@ -60,5 +60,5 @@ site/
 # VitePress
 *.local
 
-# pnpm
-pnpm-lock.yaml
+# pnpm store
+.pnpm-store/
