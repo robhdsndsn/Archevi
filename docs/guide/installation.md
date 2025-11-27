@@ -19,8 +19,8 @@ Before you begin, ensure you have:
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/robhdsndsn/FamilySecondBrain.git
-cd FamilySecondBrain
+git clone https://github.com/robhdsndsn/Archevi.git
+cd Archevi
 ```
 
 ## Step 2: Configure Environment Variables
@@ -49,7 +49,7 @@ cp .env.local.example .env.local
 Edit `.env.local`:
 
 ```env
-VITE_WINDMILL_API_URL=http://localhost/api/w/family-brain
+VITE_WINDMILL_API_URL=http://localhost/api/w/archevi
 ```
 
 ## Step 3: Start Backend Services
@@ -69,8 +69,8 @@ Wait 2-3 minutes for services to start.
 ## Step 4: Initialize Database
 
 Access Windmill at `http://localhost` and login:
-- Email: `admin@familybrain.com`
-- Password: `FamilyBrain2025!Admin`
+- Email: `admin@archevi.com`
+- Password: `ChangeThisPassword!`
 
 Run the database schema initialization script (found in `/Infrastructure/schema.sql`).
 
@@ -146,7 +146,7 @@ pnpm install
 **Important:** Back up your PostgreSQL database regularly:
 
 ```bash
-docker exec family-brain-db pg_dump -U familyuser family_brain > backup.sql
+docker exec archevi-db pg_dump -U archevi archevi > backup.sql
 ```
 
 ## Next Steps

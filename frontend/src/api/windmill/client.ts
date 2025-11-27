@@ -18,7 +18,7 @@ import type {
 
 const WINDMILL_URL = import.meta.env.VITE_WINDMILL_URL || 'http://localhost';
 const WINDMILL_TOKEN = import.meta.env.VITE_WINDMILL_TOKEN || '';
-const WORKSPACE = import.meta.env.VITE_WINDMILL_WORKSPACE || 'family-brain';
+const WORKSPACE = import.meta.env.VITE_WINDMILL_WORKSPACE || 'archevi';
 
 export class WindmillClient {
   private baseUrl: string;

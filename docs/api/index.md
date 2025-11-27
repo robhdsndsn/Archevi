@@ -9,7 +9,7 @@ The API is built on [Windmill](https://windmill.dev), an open-source workflow en
 ## Base URL
 
 ```
-http://localhost/api/w/family-brain
+http://localhost/api/w/archevi
 ```
 
 For managed hosting, replace `localhost` with your instance URL.
@@ -20,7 +20,7 @@ API requests require a Bearer token:
 
 ```bash
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-     http://localhost/api/w/family-brain/...
+     http://localhost/api/w/archevi/...
 ```
 
 Get your token from Windmill's UI under Settings > Tokens.
@@ -48,7 +48,7 @@ curl -X POST \
     "category": "personal",
     "family_id": "family-001"
   }' \
-  http://localhost/api/w/family-brain/jobs/run/p/u/admin/embed_document
+  http://localhost/api/w/archevi/jobs/run/p/u/admin/embed_document
 ```
 
 ### Query Documents
@@ -62,7 +62,7 @@ curl -X POST \
     "family_id": "family-001",
     "conversation_id": "conv-123"
   }' \
-  http://localhost/api/w/family-brain/jobs/run/p/u/admin/rag_query
+  http://localhost/api/w/archevi/jobs/run/p/u/admin/rag_query
 ```
 
 ## Detailed Documentation

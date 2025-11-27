@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Archevi Documentation',
   description: 'Your family\'s AI-powered memory - privately stored, instantly accessible, and 90% cheaper than alternatives',
-  base: '/FamilySecondBrain/',
+  base: '/Archevi/',
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
@@ -102,7 +102,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/robhdsndsn/FamilySecondBrain' }
+      { icon: 'github', link: 'https://github.com/robhdsndsn/Archevi' }
     ],
 
     search: {
@@ -110,7 +110,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/robhdsndsn/FamilySecondBrain/edit/main/docs/:path',
+      pattern: 'https://github.com/robhdsndsn/Archevi/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     },
 

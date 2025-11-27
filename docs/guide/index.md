@@ -52,4 +52,4 @@ Watch this 2-minute video to see Archevi in action:
 ## Need Help?
 
 - [Read the FAQ](/guide/faq)
-- [GitHub Issues](https://github.com/robhdsndsn/FamilySecondBrain/issues)
+- [GitHub Issues](https://github.com/robhdsndsn/Archevi/issues)

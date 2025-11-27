@@ -1,6 +1,6 @@
 # Infrastructure Setup
 
-This folder contains all infrastructure configuration files for the Family Second Brain project.
+This folder contains all infrastructure configuration files for the Archevi project.
 
 ## Files
 
@@ -27,7 +27,7 @@ docker compose up -d
 
 ```bash
 # Connect to database
-docker exec -it family-brain-db psql -U familyuser -d family_brain
+docker exec -it archevi-db psql -U archevi -d archevi
 
 # Verify pgvector extension
 SELECT * FROM pg_extension WHERE extname = 'vector';
@@ -40,8 +40,8 @@ SELECT * FROM pg_extension WHERE extname = 'vector';
 
 Follow the official Windmill setup guide:
 ```bash
-mkdir ~/windmill-family-brain
-cd ~/windmill-family-brain
+mkdir ~/windmill-archevi
+cd ~/windmill-archevi
 curl -o docker-compose.yml https://raw.githubusercontent.com/windmill-labs/windmill/main/docker-compose.yml
 curl -o .env https://raw.githubusercontent.com/windmill-labs/windmill/main/.env
 docker compose up -d
@@ -54,10 +54,10 @@ Default credentials: admin@windmill.dev / changeme (change immediately!)
 
 ```bash
 # Create backup
-docker exec family-brain-db pg_dump -U familyuser family_brain | gzip > ../backups/family_brain_$(date +%Y%m%d).sql.gz
+docker exec archevi-db pg_dump -U archevi archevi | gzip > ../backups/archevi_$(date +%Y%m%d).sql.gz
 
 # Restore backup
-gunzip -c ../backups/family_brain_YYYYMMDD.sql.gz | docker exec -i family-brain-db psql -U familyuser -d family_brain
+gunzip -c ../backups/archevi_YYYYMMDD.sql.gz | docker exec -i archevi-db psql -U archevi -d archevi
 ```
 
 ## Troubleshooting
@@ -65,19 +65,19 @@ gunzip -c ../backups/family_brain_YYYYMMDD.sql.gz | docker exec -i family-brain-
 ### Cannot connect to database
 ```bash
 # Check if container is running
-docker ps | grep family-brain-db
+docker ps | grep archevi-db
 
 # Check logs
-docker logs family-brain-db
+docker logs archevi-db
 
 # Restart container
-docker restart family-brain-db
+docker restart archevi-db
 ```
 
 ### Schema not applied
 ```bash
 # Manually apply schema
-docker exec -i family-brain-db psql -U familyuser -d family_brain < schema.sql
+docker exec -i archevi-db psql -U archevi -d archevi < schema.sql
 ```
 
 ## Security Notes

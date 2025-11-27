@@ -1,25 +1,25 @@
-# Family Second Brain - Docker Compose Configuration
+# Archevi - Docker Compose Configuration
 # This file sets up the complete infrastructure for the project
 
 version: '3.8'
 
 services:
   # PostgreSQL with pgvector extension for vector embeddings
-  family-brain-db:
+  archevi-db:
     image: pgvector/pgvector:pg16
-    container_name: family-brain-db
+    container_name: archevi-db
     restart: always
     environment:
-      POSTGRES_DB: family_brain
-      POSTGRES_USER: familyuser
+      POSTGRES_DB: archevi
+      POSTGRES_USER: archevi
       POSTGRES_PASSWORD: ${DB_PASSWORD:-CHANGE_THIS_PASSWORD}
     volumes:
-      - family_brain_data:/var/lib/postgresql/data
+      - archevi_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
     ports:
       - "127.0.0.1:5433:5432"  # Only localhost access for security
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U familyuser -d family_brain"]
+      test: ["CMD-SHELL", "pg_isready -U archevi -d archevi"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,9 +30,9 @@ services:
   # This is a placeholder - use official setup for production
 
 volumes:
-  family_brain_data:
+  archevi_data:
     driver: local
 
 networks:
   default:
-    name: family-brain-network
+    name: archevi-network

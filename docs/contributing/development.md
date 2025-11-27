@@ -13,8 +13,8 @@ Set up your local development environment.
 
 ```bash
 # Clone repository
-git clone https://github.com/robhdsndsn/FamilySecondBrain
-cd FamilySecondBrain
+git clone https://github.com/robhdsndsn/Archevi
+cd Archevi
 
 # Start backend
 cd Infrastructure

@@ -147,7 +147,7 @@ try {
 The API client is configured via environment variables:
 
 ```env
-VITE_WINDMILL_API_URL=http://localhost/api/w/family-brain
+VITE_WINDMILL_API_URL=http://localhost/api/w/archevi
 VITE_WINDMILL_TOKEN=your_token_here
 ```
 
@@ -157,7 +157,7 @@ Or configure programmatically:
 import { configureWindmill } from '@/api/windmill';
 
 configureWindmill({
-  baseUrl: 'https://your-instance.com/api/w/family-brain',
+  baseUrl: 'https://your-instance.com/api/w/archevi',
   token: 'your-token'
 });
 ```

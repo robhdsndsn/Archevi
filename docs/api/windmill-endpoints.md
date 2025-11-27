@@ -9,7 +9,7 @@ Upload and embed a new document into the knowledge base.
 ### Request
 
 ```http
-POST /api/w/family-brain/jobs/run/p/u/admin/embed_document
+POST /api/w/archevi/jobs/run/p/u/admin/embed_document
 Content-Type: application/json
 Authorization: Bearer {token}
 ```
@@ -61,7 +61,7 @@ Query documents using RAG (Retrieval-Augmented Generation).
 ### Request
 
 ```http
-POST /api/w/family-brain/jobs/run/p/u/admin/rag_query
+POST /api/w/archevi/jobs/run/p/u/admin/rag_query
 Content-Type: application/json
 Authorization: Bearer {token}
 ```
@@ -112,7 +112,7 @@ Search documents by keyword or filter.
 ### Request
 
 ```http
-POST /api/w/family-brain/jobs/run/p/u/admin/search_documents
+POST /api/w/archevi/jobs/run/p/u/admin/search_documents
 Content-Type: application/json
 Authorization: Bearer {token}
 ```
@@ -165,7 +165,7 @@ Get usage analytics (admin only).
 ### Request
 
 ```http
-POST /api/w/family-brain/jobs/run/p/u/admin/get_analytics
+POST /api/w/archevi/jobs/run/p/u/admin/get_analytics
 Content-Type: application/json
 Authorization: Bearer {token}
 ```

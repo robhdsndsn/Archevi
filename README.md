@@ -4,7 +4,7 @@ A self-hosted family knowledge base chatbot using RAG (Retrieval-Augmented Gener
 
 **Version:** 2.1.0 (Phase 3 Frontend Complete)
 **Status:** Documents View Complete - Upload and Search working
-**Brand Name:** Archevi (formerly Family Second Brain)
+**Brand Name:** Archevi
 
 ## What Is This?
 
@@ -98,7 +98,7 @@ pnpm run dev
 ## Project Structure
 
 ```
-FamilySecondBrain/
+Archevi/
 ├── frontend/                   # React frontend (NEW)
 │   ├── src/
 │   │   ├── components/
@@ -199,7 +199,7 @@ The frontend connects to Windmill backend via REST API:
 
 ```typescript
 // api/windmill.ts
-const WINDMILL_BASE_URL = 'http://localhost/api/w/family-brain';
+const WINDMILL_BASE_URL = 'http://localhost/api/w/archevi';
 
 windmill.ragQuery({ query, session_id })  // Main RAG endpoint
 ```
@@ -234,6 +234,6 @@ windmill.ragQuery({ query, session_id })  // Main RAG endpoint
 **Created:** 2025-11-26
 **Frontend Added:** 2025-11-27
 **Phase 3 Complete:** 2025-11-27
-**Location:** C:/Users/RHudson/Desktop/Claudius/Projects/FamilySecondBrain
+**Repository:** https://github.com/robhdsndsn/Archevi
 
 *This project follows Claudius workspace standards and uses Claude Code for development automation.*

@@ -14,7 +14,7 @@ hero:
       link: /guide/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/robhdsndsn/FamilySecondBrain
+      link: https://github.com/robhdsndsn/Archevi
 
 features:
   - icon: "\U0001F512"
@@ -58,8 +58,8 @@ Archevi is your family's centralized knowledge base powered by AI:
 ### Self-Hosted (DIY)
 
 ```bash
-git clone https://github.com/robhdsndsn/FamilySecondBrain
-cd FamilySecondBrain
+git clone https://github.com/robhdsndsn/Archevi
+cd Archevi
 docker-compose up -d
 ```
 
@@ -83,4 +83,4 @@ Sign up for hassle-free hosting at $14.99 CAD/month.
 
 Archevi is open source under Apache 2.0 License. Contributions welcome!
 
-[View on GitHub](https://github.com/robhdsndsn/FamilySecondBrain)
+[View on GitHub](https://github.com/robhdsndsn/Archevi)

@@ -114,7 +114,7 @@ The base plan includes 5 family members at no extra cost!
 
 1. Check this FAQ
 2. Read the [documentation](/guide/)
-3. [GitHub Issues](https://github.com/robhdsndsn/FamilySecondBrain/issues)
+3. [GitHub Issues](https://github.com/robhdsndsn/Archevi/issues)
 4. Email support (managed customers)
 
 ### Is there a community?
@@ -135,4 +135,4 @@ Yes! Join our [Discord server](https://discord.gg/archevi) (coming soon) to conn
 
 ### Can I request features?
 
-Absolutely! Open an issue on [GitHub](https://github.com/robhdsndsn/FamilySecondBrain/issues) or vote on existing feature requests.
+Absolutely! Open an issue on [GitHub](https://github.com/robhdsndsn/Archevi/issues) or vote on existing feature requests.
