@@ -1,4 +1,36 @@
+# ===========================================
+# FamilySecondBrain / Archevi - .gitignore
+# ===========================================
+
+# -------------------------------------------
+# SENSITIVE FILES - NEVER COMMIT
+# -------------------------------------------
+
+# Environment files (contain API keys, passwords)
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.env
+Infrastructure/.env
+windmill-setup/.env
+frontend/.env.local
+
+# MCP configuration (may contain tokens)
+.mcp.json
+
+# API keys and credentials
+*.key
+*.pem
+*_key.json
+credentials.json
+token.json
+secrets.json
+*.secret
+
+# -------------------------------------------
 # Python
+# -------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
@@ -8,57 +40,104 @@ venv/
 env/
 ENV/
 .venv
+.pytest_cache/
+.tox/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
 
-# Node
+# -------------------------------------------
+# Node.js
+# -------------------------------------------
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.npm/
+.pnpm-store/
 
-# IDE
+# -------------------------------------------
+# IDE and Editors
+# -------------------------------------------
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 
-# OS
+# -------------------------------------------
+# OS Files
+# -------------------------------------------
 .DS_Store
 Thumbs.db
 desktop.ini
+*.lnk
 
-# Project specific
+# -------------------------------------------
+# Logs and Temp Files
+# -------------------------------------------
 *.log
 *.tmp
 *.temp
-.env
-.env.local
-credentials.json
-token.json
-*_key.json
+*.bak
+*.cache
 
-# Build outputs
+# -------------------------------------------
+# Build Outputs
+# -------------------------------------------
 dist/
 build/
 *.exe
 *.dll
 *.so
 *.dylib
+out/
 
-# Testing
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
-# Documentation build
+# -------------------------------------------
+# Documentation Build
+# -------------------------------------------
 docs/_build/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 site/
 
-# VitePress
-*.local
+# -------------------------------------------
+# Test Files (local testing data)
+# -------------------------------------------
+01_Planning/test-*.txt
+01_Planning/test_*.txt
+scripts/job_id.txt
 
-# pnpm store
-.pnpm-store/
+# -------------------------------------------
+# Temporary/Working Files
+# -------------------------------------------
+*.local
+app_updated.json
+*_backup.*
+*_old.*
+
+# -------------------------------------------
+# Docker
+# -------------------------------------------
+docker-compose.override.yml
+
+# -------------------------------------------
+# Database
+# -------------------------------------------
+*.sql.bak
+*.db
+*.sqlite
+*.sqlite3
+
+# -------------------------------------------
+# Coverage and Testing
+# -------------------------------------------
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+

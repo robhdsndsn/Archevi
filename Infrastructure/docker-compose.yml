@@ -1,0 +1,38 @@
+# Family Second Brain - Docker Compose Configuration
+# This file sets up the complete infrastructure for the project
+
+version: '3.8'
+
+services:
+  # PostgreSQL with pgvector extension for vector embeddings
+  family-brain-db:
+    image: pgvector/pgvector:pg16
+    container_name: family-brain-db
+    restart: always
+    environment:
+      POSTGRES_DB: family_brain
+      POSTGRES_USER: familyuser
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-CHANGE_THIS_PASSWORD}
+    volumes:
+      - family_brain_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "127.0.0.1:5433:5432"  # Only localhost access for security
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U familyuser -d family_brain"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Windmill server (workflow platform)
+  # Note: Download official docker-compose from:
+  # https://raw.githubusercontent.com/windmill-labs/windmill/main/docker-compose.yml
+  # This is a placeholder - use official setup for production
+
+volumes:
+  family_brain_data:
+    driver: local
+
+networks:
+  default:
+    name: family-brain-network
