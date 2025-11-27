@@ -53,4 +53,12 @@ htmlcov/
 
 # Documentation build
 docs/_build/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
 site/
+
+# VitePress
+*.local
+
+# pnpm
+pnpm-lock.yaml
