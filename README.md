@@ -1,239 +1,228 @@
-# Archevi - RAG-Powered Family Knowledge Base
+# Archevi
 
-A self-hosted family knowledge base chatbot using RAG (Retrieval-Augmented Generation) that enables family members to query documentation through natural language.
+**Your Family's AI-Powered Memory** — Privately stored, instantly accessible, 90% cheaper than alternatives.
 
-**Version:** 2.1.0 (Phase 3 Frontend Complete)
-**Status:** Documents View Complete - Upload and Search working
-**Brand Name:** Archevi
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://robhdsndsn.github.io/Archevi/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
+[![Status](https://img.shields.io/badge/status-beta-orange)]()
 
-## What Is This?
+---
 
-Archevi is an AI-powered chatbot that helps families centralize and access their collective knowledge:
-- **Recipes:** "What's grandma's cookie recipe?"
-- **Medical:** "What are dad's allergies?"
-- **Financial:** "Where's the home insurance policy?"
-- **Family History:** "Tell me about our vacation preferences"
-- **General:** "What's the WiFi password?"
+## What is Archevi?
 
-## Technology Stack
+Archevi is an open-source, self-hosted family knowledge base powered by AI. It uses RAG (Retrieval-Augmented Generation) to let you ask natural language questions about your family's documents and get instant, accurate answers.
 
-### Backend
-- **Windmill:** Workflow platform with built-in UI editor
-- **Cohere:** AI embeddings, reranking, and text generation
-- **PostgreSQL + pgvector:** Vector database for semantic search
-- **Docker:** Containerized infrastructure
-- **Python 3.11+:** Backend scripts
+**Stop losing important information. Stop paying $240/year for Notion. Stop digging through folders.**
 
-### Frontend (NEW - v2.0)
-- **Vite + React 19:** Fast modern React setup
-- **TypeScript:** Type-safe development
-- **Tailwind CSS v3.4:** Utility-first styling with CSS variables
-- **ShadCN/ui:** Beautiful accessible components
-- **Zustand:** Lightweight state management
-- **cmdk:** Command palette (Cmd+K)
+### Ask Questions Like:
+- 🍪 *"What's grandma's cookie recipe?"*
+- 💊 *"What medications is dad taking?"*
+- 📄 *"Where's the home insurance policy?"*
+- 🔐 *"What's the WiFi password?"*
+- 📅 *"When does the car registration expire?"*
+
+## Why Archevi?
+
+| Feature | Archevi (Self-Hosted) | Notion | Google Drive |
+|---------|----------------------|--------|--------------|
+| **AI Search** | ✅ Natural language | ❌ Keywords only | ❌ Keywords only |
+| **Privacy** | ✅ Your servers | ❌ Cloud storage | ❌ Google servers |
+| **Monthly Cost** | ~$2 CAD | $20-40 | Free (no AI) |
+| **Data Ownership** | ✅ 100% yours | ❌ Vendor lock-in | ❌ Google's terms |
+
+## Features
+
+### ✅ Implemented
+
+| Feature | Description |
+|---------|-------------|
+| **RAG-Powered Chat** | Ask questions in natural language, get answers with sources |
+| **Document Management** | Upload, categorize, and search documents |
+| **7 Categories** | Financial, Medical, Legal, Insurance, Education, Personal, General |
+| **Semantic Search** | Find documents by meaning, not just keywords |
+| **Multi-Session Chat** | Maintain conversation history across sessions |
+| **Dark Mode** | System preference detection + manual toggle |
+| **Command Palette** | Quick actions with `Cmd+K` / `Ctrl+K` |
+| **Admin View Toggle** | Switch between admin and user perspectives |
+| **VitePress Documentation** | Complete docs at [robhdsndsn.github.io/Archevi](https://robhdsndsn.github.io/Archevi/) |
+
+### 🚧 In Development
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Multi-User Auth** | Planned | Family member accounts with roles |
+| **File Upload** | Planned | PDF, images with OCR |
+| **Mobile App** | Planned | iOS/Android native apps |
+| **Voice Queries** | Planned | Ask questions by voice |
 
 ## Quick Start
 
 ### Prerequisites
 
-- Docker Desktop installed
+- Docker Desktop
 - Node.js 18+ and pnpm
-- Cohere account with production API key (https://dashboard.cohere.com/)
+- [Cohere API Key](https://dashboard.cohere.com/) (free tier available)
 - 4GB RAM minimum
-- Windows 11 / Linux / macOS
 
-### 1. Start Backend Infrastructure
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/robhdsndsn/Archevi.git
+cd Archevi
+
+# Start database (PostgreSQL + pgvector)
 cd Infrastructure
 cp .env.example .env
 # Edit .env and add your Cohere API key
 docker compose up -d
-```
 
-### 2. Start Windmill
-
-```bash
-cd windmill-setup
+# Start Windmill (workflow engine)
+cd ../windmill-setup
 docker compose up -d
-# Access at: http://localhost
-```
 
-### 3. Start Frontend
-
-```bash
-cd frontend
+# Start frontend
+cd ../frontend
 pnpm install
 pnpm run dev
-# Access at: http://localhost:5173
 ```
 
-## Frontend Features (v2.0)
+**Access Points:**
+- Frontend: http://localhost:5173
+- Windmill Admin: http://localhost
+- API: http://localhost/api/w/archevi
 
-### Implemented (Phase 1 + Phase 3)
+📖 **[Full Installation Guide](https://robhdsndsn.github.io/Archevi/guide/installation)**
 
-| Feature | Description | Shortcut |
-|---------|-------------|----------|
-| **Command Palette** | Quick actions and navigation | `Cmd+K` / `Ctrl+K` |
-| **Dark Mode** | System preference detection + toggle | Via Command Palette |
-| **Sidebar Navigation** | Collapsible sidebar with all sections | `Cmd+B` / `Ctrl+B` |
-| **Chat History** | Multi-session support with persistence | Sidebar → Chat History |
-| **Session Management** | Create, switch, delete conversations | Via Chat History |
-| **Document Upload** | Upload documents with category selection | Sidebar → Documents |
-| **Document Search** | Semantic search with relevance scores | Sidebar → Documents |
+## Technology Stack
 
-### Navigation Sections
+### Backend
+- **[Windmill](https://windmill.dev)** — Workflow orchestration platform
+- **[Cohere](https://cohere.com)** — AI embeddings, reranking, and generation
+- **[PostgreSQL](https://postgresql.org) + [pgvector](https://github.com/pgvector/pgvector)** — Vector database
+- **[Docker](https://docker.com)** — Containerized deployment
+- **Python 3.11+** — Backend scripts
 
-- **Quick Actions:** Upload Document, Search Documents
-- **Navigation:** Chat, Documents, Chat History, Family Members
-- **Categories:** Financial, Medical, Legal, Insurance, Education, Personal
-- **Settings:** Theme toggle, Settings, Help
-
-### Coming Soon (Phase 2 + Phase 4)
-
-- Multi-user family accounts with roles (Admin/Member/Guest)
-- ELK monitoring dashboard
-- Usage analytics and cost tracking
+### Frontend
+- **[React 19](https://react.dev) + [Vite](https://vitejs.dev)** — Fast modern React
+- **[TypeScript](https://typescriptlang.org)** — Type-safe development
+- **[Tailwind CSS](https://tailwindcss.com)** — Utility-first styling
+- **[shadcn/ui](https://ui.shadcn.com)** — Beautiful accessible components
+- **[Zustand](https://zustand-demo.pmnd.rs)** — Lightweight state management
 
 ## Project Structure
 
 ```
 Archevi/
-├── frontend/                   # React frontend (NEW)
+├── frontend/                 # React + TypeScript frontend
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/            # ShadCN components
-│   │   │   ├── chat/          # Chat components
-│   │   │   ├── AppSidebar.tsx # Main navigation
-│   │   │   ├── CommandPalette.tsx
-│   │   │   └── ChatHistory.tsx
-│   │   ├── store/
-│   │   │   └── chat-store.ts  # Zustand state
-│   │   ├── api/
-│   │   │   └── windmill.ts    # Backend integration
-│   │   └── App.tsx
-│   ├── package.json
-│   └── vite.config.ts
-├── Infrastructure/             # Docker, database setup
+│   │   ├── components/      # UI components
+│   │   ├── api/             # Windmill API client
+│   │   └── store/           # Zustand state
+│   └── package.json
+├── scripts/                  # Windmill Python scripts
+│   ├── rag_query.py         # Main RAG endpoint
+│   ├── embed_document.py    # Document embedding
+│   ├── search_documents.py  # Semantic search
+│   └── auth_*.py            # Authentication scripts
+├── Infrastructure/           # Database setup
 │   ├── docker-compose.yml
 │   ├── schema.sql
 │   └── .env.example
-├── windmill-setup/             # Windmill Docker setup
-├── scripts/                    # Windmill Python scripts
-├── 02_Documentation/           # Implementation guides
+├── windmill-setup/           # Windmill Docker config
+├── docs/                     # VitePress documentation
 └── README.md
 ```
 
-## Implementation Phases
+## Cost Breakdown
 
-### Phase 1: Frontend Foundation (Completed ✓)
-- [x] Vite + React + TypeScript setup
-- [x] ShadCN/ui component library
-- [x] Zustand state management
-- [x] Command Palette (Cmd+K)
-- [x] Dark mode with system preference
-- [x] Collapsible sidebar navigation
-- [x] Chat History with multi-session support
-- [x] Rebranded to "Archevi"
+### Self-Hosted (~$2 CAD/month)
 
-### Phase 2: Multi-user Family Accounts (Deferred - Requires Backend)
-- [ ] User authentication system
-- [ ] Family roles (Admin/Member/Guest)
-- [ ] User preferences storage
-- [ ] Session-per-user isolation
+| Component | Cost |
+|-----------|------|
+| Cohere API (embeddings + queries) | ~$2/month |
+| Docker (on your hardware) | Free |
+| PostgreSQL | Free |
+| **Total** | **~$2/month** |
 
-### Phase 3: Categories & Document Browser (Completed)
-- [x] Document upload interface with form validation
-- [x] Category-based filtering (7 categories)
-- [x] Semantic document search
-- [x] Document browser with relevance scores
-- [x] File upload support (.txt, .md)
+### Managed Service (Coming Soon)
 
-### Phase 4: Monitoring & Analytics (Next)
-- [ ] ELK stack integration
-- [ ] Usage analytics dashboard
-- [ ] Cost tracking
-- [ ] Performance monitoring
+We're planning a managed hosting option at **$14.99 CAD/month** for families who want zero setup.
 
-### Backend Phases (Previously Completed)
-- [x] Infrastructure Setup (Docker, PostgreSQL)
-- [x] Database Schema (pgvector, tables)
-- [x] Backend Scripts (5 Python scripts in Windmill)
+## Roadmap
 
-## Development
+### Phase 1: Foundation ✅
+- [x] RAG backend with Cohere + pgvector
+- [x] React frontend with chat interface
+- [x] Document upload and categorization
+- [x] Semantic search
+- [x] VitePress documentation site
 
-### Frontend Development
+### Phase 2: Multi-User (Next)
+- [ ] User authentication (JWT)
+- [ ] Family member management
+- [ ] Role-based permissions (Admin/Member/Guest)
+- [ ] Per-user conversation history
+
+### Phase 3: Enhanced Documents
+- [ ] PDF upload with text extraction
+- [ ] Image upload with OCR
+- [ ] Bulk document import
+- [ ] Document versioning
+
+### Phase 4: Mobile & Voice
+- [ ] Progressive Web App (PWA)
+- [ ] iOS native app
+- [ ] Android native app
+- [ ] Voice query support
+
+### Phase 5: Advanced Features
+- [ ] Automated document categorization
+- [ ] Smart reminders (expiring documents)
+- [ ] Family calendar integration
+- [ ] Multi-language support (French first)
+
+## Use Cases
+
+- **Medical Records** — Track medications, allergies, doctor visits
+- **Recipes** — Store and search family recipes
+- **Financial Documents** — Insurance policies, tax records, warranties
+- **Estate Planning** — Wills, important contacts, account information
+- **Family History** — Stories, genealogy, traditions
+
+📖 **[Explore All Use Cases](https://robhdsndsn.github.io/Archevi/use-cases/)**
+
+## Contributing
+
+We welcome contributions! See our [Contributing Guide](https://robhdsndsn.github.io/Archevi/contributing/) for details.
 
 ```bash
-cd frontend
-pnpm run dev      # Start dev server (http://localhost:5173)
-pnpm run build    # Production build
-pnpm run preview  # Preview production build
+# Development setup
+git clone https://github.com/robhdsndsn/Archevi.git
+cd Archevi/frontend
+pnpm install
+pnpm run dev
 ```
 
-### Adding ShadCN Components
+## Documentation
 
-```bash
-cd frontend
-npx shadcn@latest add [component-name]
-```
+- 📖 **[Full Documentation](https://robhdsndsn.github.io/Archevi/)**
+- 🚀 **[Getting Started](https://robhdsndsn.github.io/Archevi/guide/)**
+- 🔧 **[API Reference](https://robhdsndsn.github.io/Archevi/api/)**
+- ❓ **[FAQ](https://robhdsndsn.github.io/Archevi/guide/faq)**
 
-### State Management
+## License
 
-The app uses Zustand for state management with localStorage persistence:
-
-```typescript
-// Chat store features
-- currentSessionId: string | null
-- sessions: ChatSession[]
-- isLoading: boolean
-- addMessage()
-- createNewSession()
-- switchSession()
-- deleteSession()
-```
-
-## API Integration
-
-The frontend connects to Windmill backend via REST API:
-
-```typescript
-// api/windmill.ts
-const WINDMILL_BASE_URL = 'http://localhost/api/w/archevi';
-
-windmill.ragQuery({ query, session_id })  // Main RAG endpoint
-```
-
-## Cost Estimate
-
-### Backend (Cohere API)
-- Embeddings: ~$0.005/month
-- Queries: ~$0.05/month
-- **Total: ~$0.10/month**
-
-### Infrastructure
-- VPS: $10-20/month (or free on home server)
-
-## Security & Privacy
-
-- Self-hosted (data stays local)
-- PostgreSQL bound to localhost
-- Optional Cohere ZDR (Zero Data Retention)
-- Family member authentication (Phase 2)
-- Daily automated backups
-
-## Resources
-
-- Windmill: https://www.windmill.dev/docs
-- Cohere: https://docs.cohere.com/
-- ShadCN/ui: https://ui.shadcn.com/
-- pgvector: https://github.com/pgvector/pgvector
+Apache 2.0 — See [LICENSE](LICENSE) for details.
 
 ---
 
-**Created:** 2025-11-26
-**Frontend Added:** 2025-11-27
-**Phase 3 Complete:** 2025-11-27
-**Repository:** https://github.com/robhdsndsn/Archevi
+<p align="center">
+  <strong>Built with ❤️ for families who value privacy and simplicity.</strong>
+</p>
 
-*This project follows Claudius workspace standards and uses Claude Code for development automation.*
+<p align="center">
+  <a href="https://robhdsndsn.github.io/Archevi/">Documentation</a> •
+  <a href="https://github.com/robhdsndsn/Archevi/issues">Report Bug</a> •
+  <a href="https://github.com/robhdsndsn/Archevi/issues">Request Feature</a>
+</p>

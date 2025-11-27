@@ -1,285 +1,290 @@
 # Archevi - Project Overview
 
-## Created
-2025-11-26
+## Quick Links
 
-## Description
-RAG-powered family knowledge base chatbot using Windmill, Cohere, and pgvector. Enables family members to query documentation through natural language, with semantic search and AI-generated responses.
+| Resource | URL |
+|----------|-----|
+| **GitHub Repository** | https://github.com/robhdsndsn/Archevi |
+| **Documentation Site** | https://robhdsndsn.github.io/Archevi/ |
+| **Local Frontend** | http://localhost:5173 |
+| **Windmill Admin** | http://localhost |
 
-**Brand Name:** Archevi (formerly FamilySecondBrain)
+---
 
-## Project Goal
-Build a centralized family knowledge base that can answer questions about:
-- Recipes and cooking instructions
-- Medical history and health information
-- Financial documents and procedures
-- Family history and stories
-- General household information
-- WiFi passwords, emergency contacts, etc.
+## Project Summary
 
-## Project Path
-```
-C:/Users/RHudson/Desktop/Claudius/Projects/FamilySecondBrain
-```
+**Archevi** is an open-source, self-hosted family knowledge base powered by RAG (Retrieval-Augmented Generation). It enables family members to ask natural language questions about their documents and get instant, accurate answers with source citations.
 
-## Current Phase
-**Phase 4: Monitoring & Analytics** (Next)
+**Created:** 2025-11-26
+**Current Version:** 2.2.0
+**Status:** Beta - Core features complete, expanding functionality
 
-**Implementation Timeline:**
-- Phase 1: Infrastructure Setup ✓ Complete
-- Phase 2: Database Schema Setup ✓ Complete
-- Phase 3: Backend Scripts ✓ Complete (5 scripts deployed)
-- Phase 4: Windmill UI Construction ✓ Complete
-- **Phase 1 Frontend:** React App ✓ Complete (v2.0)
-- **Phase 2 Frontend:** Multi-user Accounts (Requires backend auth - deferred)
-- **Phase 3 Frontend:** Categories & Documents ✓ Complete (v2.1)
-- **Phase 4 Frontend:** Monitoring & Analytics (Next)
+---
 
-## Project Structure
-```
-FamilySecondBrain/
-├── frontend/                     # React frontend (v2.1)
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/              # ShadCN components (25+ components)
-│   │   │   ├── chat/            # Chat UI components
-│   │   │   ├── documents/       # Document management (NEW)
-│   │   │   │   ├── DocumentUpload.tsx
-│   │   │   │   ├── DocumentBrowser.tsx
-│   │   │   │   └── DocumentsView.tsx
-│   │   │   ├── AppSidebar.tsx   # Navigation sidebar
-│   │   │   ├── CommandPalette.tsx # Cmd+K palette
-│   │   │   └── ChatHistory.tsx  # Session history
-│   │   ├── store/
-│   │   │   └── chat-store.ts    # Zustand state management
-│   │   ├── api/
-│   │   │   └── windmill/        # Backend API client
-│   │   │       ├── client.ts    # API methods
-│   │   │       ├── types.ts     # TypeScript types
-│   │   │       └── index.ts     # Exports
-│   │   ├── lib/
-│   │   │   └── utils.ts         # Utility functions
-│   │   └── App.tsx              # Main application
-│   ├── components.json          # ShadCN configuration
-│   ├── tailwind.config.js       # Tailwind + sidebar colors
-│   ├── package.json
-│   └── vite.config.ts
-├── Infrastructure/               # Docker, database, setup files
-│   ├── docker-compose.yml
-│   ├── .env.example
-│   ├── .env                      # (Not in git)
-│   ├── schema.sql
-│   └── README.md
-├── windmill-setup/               # Windmill Docker setup
-│   ├── docker-compose.yml
-│   ├── .env
-│   └── Caddyfile
-├── scripts/                      # Windmill Python scripts
-│   ├── embed_document.py
-│   ├── rag_query.py
-│   ├── get_conversation_history.py
-│   ├── bulk_upload_documents.py
-│   └── search_documents.py
-├── backups/                      # Database backups
-├── 01_Planning/
-│   └── Requirements.md
-├── 02_Development/
-│   └── Code_Notes.md
-├── 02_Documentation/             # Implementation guides
-│   └── Implementation_Guide.md
-├── 03_Learning/
-│   └── Key_Insights.md
-├── 04_Output/
-│   └── Deliverables.md
-├── .gitignore
-├── 00_PROJECT_OVERVIEW.md        # This file
-├── CLAUDE.md                     # Claude Code instructions
-├── Claude_Session_Archive.md
-├── Claude_Session_Log.md
-└── README.md
-```
+## What's Been Accomplished
 
-## Technical Stack
+### Infrastructure (Complete)
+- [x] PostgreSQL 16 with pgvector extension for vector search
+- [x] Docker Compose setup for easy deployment
+- [x] Windmill workflow platform integration
+- [x] Database schema with 4 tables (documents, chunks, conversations, messages)
 
-### Frontend (v2.0 - NEW)
+### Backend Scripts (Complete)
+- [x] `rag_query.py` - Main RAG endpoint with Cohere Command
+- [x] `embed_document.py` - Document embedding with Cohere Embed v3
+- [x] `search_documents.py` - Semantic search with relevance scoring
+- [x] `get_conversation_history.py` - Chat history retrieval
+- [x] `bulk_upload_documents.py` - Batch document import
+- [x] `auth_*.py` - Authentication endpoints (login, verify, refresh, logout)
+- [x] `manage_family_members.py` - Family member CRUD
+- [x] `get_analytics.py` - Usage analytics
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Build Tool** | Vite 7.2 | Fast dev server with HMR |
-| **Framework** | React 19 | UI framework |
-| **Language** | TypeScript | Type safety |
-| **Styling** | Tailwind CSS 3.4 | Utility-first CSS |
-| **Components** | ShadCN/ui | Accessible, customizable components |
-| **State** | Zustand | Lightweight state management |
-| **Command Palette** | cmdk | Keyboard-first navigation |
-| **Icons** | Lucide React | Modern icon library |
+### Frontend Application (Complete)
+- [x] React 19 + Vite + TypeScript setup
+- [x] shadcn/ui component library (25+ components)
+- [x] Zustand state management with persistence
+- [x] Command palette (Cmd+K / Ctrl+K)
+- [x] Dark mode with system preference detection
+- [x] Collapsible sidebar navigation
+- [x] Multi-session chat with history
+- [x] Document upload with category selection
+- [x] Semantic document search with relevance scores
+- [x] Admin/User view toggle
+- [x] Windmill API client with TypeScript types
+
+### Documentation (Complete)
+- [x] VitePress documentation site
+- [x] GitHub Pages deployment with CI/CD
+- [x] Installation guide
+- [x] API reference
+- [x] Use case documentation
+- [x] Comparison pages (vs Notion, Obsidian, Google Drive)
+
+### DevOps (Complete)
+- [x] GitHub repository (public)
+- [x] GitHub Actions for docs deployment
+- [x] Comprehensive .gitignore (protects secrets)
+- [x] Environment variable templates
+
+---
+
+## What's Next (Roadmap)
+
+### Phase 2: Multi-User Authentication (Priority: High)
+| Task | Description | Complexity |
+|------|-------------|------------|
+| JWT Authentication | Implement proper JWT flow with refresh tokens | Medium |
+| Login/Register UI | Frontend forms with validation | Low |
+| Family Member Roles | Admin, Member, Guest permissions | Medium |
+| Per-User Sessions | Isolate chat history by user | Low |
+| Password Reset | Email-based password recovery | Medium |
+
+### Phase 3: Enhanced Document Handling (Priority: High)
+| Task | Description | Complexity |
+|------|-------------|------------|
+| PDF Upload | Extract text from PDF files | Medium |
+| Image OCR | Extract text from images (Tesseract/Cloud OCR) | High |
+| Bulk Import | Drag-and-drop multiple files | Low |
+| Document Preview | View documents inline | Low |
+| Document Editing | Edit uploaded documents | Medium |
+| Version History | Track document changes | Medium |
+
+### Phase 4: Mobile & Accessibility (Priority: Medium)
+| Task | Description | Complexity |
+|------|-------------|------------|
+| PWA Support | Offline access, install prompt | Medium |
+| Mobile Optimization | Touch-friendly UI improvements | Low |
+| Voice Input | Speech-to-text for queries | Medium |
+| iOS App | React Native or native Swift | High |
+| Android App | React Native or native Kotlin | High |
+
+### Phase 5: Advanced Features (Priority: Low)
+| Task | Description | Complexity |
+|------|-------------|------------|
+| Auto-Categorization | AI-powered document classification | Medium |
+| Smart Reminders | Expiring documents, renewals | Medium |
+| Calendar Integration | Google/Apple calendar sync | Medium |
+| Multi-Language | French, Spanish support | High |
+| Ollama Support | Local LLM alternative to Cohere | Medium |
+| Family Sharing | Share documents between families | High |
+
+### Phase 6: Monetization (Future)
+| Task | Description | Complexity |
+|------|-------------|------------|
+| Managed Hosting | $14.99/month hosted option | High |
+| Stripe Integration | Payment processing | Medium |
+| User Dashboard | Account management, billing | Medium |
+| Usage Limits | Tiered plans with quotas | Low |
+
+---
+
+## Technology Stack
 
 ### Backend
-
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| **Workflow Platform** | Windmill (self-hosted) | Free unlimited executions, MCP integration |
-| **Embeddings** | Cohere Embed English v3.0 (1024d) | Semantic search |
-| **Reranking** | Cohere Rerank English v3.0 | Improves retrieval accuracy |
-| **Generation** | Cohere Command-R7B | Cost-effective chat |
-| **Vector Database** | PostgreSQL + pgvector | Proven reliability |
-| **Backend** | Python 3.11+ | Native Windmill support |
-
-### Development Environment
-- Platform: Windows 11
-- Node.js: 18+
-- Package Manager: pnpm
-- Shell: Git Bash / CMD
-- Database: PostgreSQL 16 with pgvector
-- Container Runtime: Docker Desktop
-
-## Frontend Architecture (v2.0)
-
-### Component Hierarchy
-```
-App
-├── SidebarProvider
-│   ├── CommandPalette (global, Cmd+K)
-│   ├── AppSidebar
-│   │   ├── SidebarHeader (Archevi branding)
-│   │   ├── SidebarContent
-│   │   │   ├── Quick Actions (Upload, Search -> Documents)
-│   │   │   ├── Navigation (Chat, Documents, History, Family)
-│   │   │   └── Categories (Financial, Medical, Legal, etc.)
-│   │   └── SidebarFooter (Settings, Help)
-│   └── SidebarInset
-│       ├── Header (with SidebarTrigger)
-│       └── Main Content
-│           ├── ChatContainer (when view='chat')
-│           ├── ChatHistory (when view='history')
-│           └── DocumentsView (when view='documents')
-│               ├── Tabs (Search / Upload)
-│               ├── DocumentBrowser (semantic search)
-│               └── DocumentUpload (form with category select)
-```
-
-### State Management (Zustand)
-```typescript
-interface ChatStore {
-  // Current session
-  currentSessionId: string | null;
-  sessions: ChatSession[];
-  isLoading: boolean;
-
-  // Actions
-  addMessage(): void;
-  createNewSession(): string;
-  switchSession(id: string): void;
-  deleteSession(id: string): void;
-  clearChat(): void;
-}
-```
-
-### Key Features Implemented
-1. **Command Palette** - Cmd+K for quick access to all features
-2. **Dark Mode** - System preference detection + localStorage persistence
-3. **Sidebar Navigation** - Collapsible with categories
-4. **Chat History** - Multi-session with titles, timestamps, delete
-5. **Session Persistence** - localStorage via Zustand persist
-6. **Document Upload** - Form with title, category, content (text or file)
-7. **Document Search** - Semantic search with category filtering
-8. **Document Browser** - Grid display with relevance scores and metadata
-
-## Key Resources
-
-- **Session Log:** [[Claude_Session_Log.md]] - Current status and recent work
-- **Session Archive:** [[Claude_Session_Archive.md]] - Complete historical context
-- **CLAUDE.md:** [[CLAUDE.md]] - Claude Code project instructions
-- **Implementation Guide:** [[02_Documentation/Implementation_Guide.md]] - Complete setup guide
-- **Infrastructure README:** [[Infrastructure/README.md]] - Setup and troubleshooting
-
-## Access & Credentials
+| Workflow Engine | Windmill | Script execution, API endpoints |
+| Embeddings | Cohere Embed v3.0 | Document vectorization |
+| Reranking | Cohere Rerank v3.0 | Improve search accuracy |
+| Generation | Cohere Command-R7B | AI responses |
+| Database | PostgreSQL 16 + pgvector | Vector storage & search |
+| Runtime | Python 3.11+ | Backend scripts |
+| Containers | Docker | Deployment |
 
 ### Frontend
-- **Dev Server:** http://localhost:5173
-- **Build Output:** frontend/dist/
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Framework | React 19 | UI library |
+| Build Tool | Vite | Fast dev server, bundling |
+| Language | TypeScript | Type safety |
+| Styling | Tailwind CSS 3.4 | Utility-first CSS |
+| Components | shadcn/ui | Accessible UI components |
+| State | Zustand | State management |
+| Commands | cmdk | Command palette |
+| Icons | Lucide React | Icon library |
 
-### Windmill
-- **Self-hosted URL:** http://localhost
-- **Admin Login:** admin@familybrain.com / FamilyBrain2025!Admin
-- **Workspace:** family-brain
-- **Workspace URL:** http://localhost/w/family-brain
+### Documentation
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Framework | VitePress | Static site generator |
+| Hosting | GitHub Pages | Free static hosting |
+| CI/CD | GitHub Actions | Automated deployment |
 
-### PostgreSQL
-- **Host (from host):** localhost:5433
-- **Host (from Docker):** family-brain-db:5432
-- **Database:** family_brain
-- **User:** familyuser
+---
 
-## Implementation Status
+## Project Structure
 
-### Backend (Completed)
-- [x] Infrastructure Setup (Docker, PostgreSQL, pgvector)
-- [x] Database Schema (4 tables with vector index)
-- [x] Backend Scripts (5 Python scripts in Windmill)
-- [x] Windmill UI (App Editor interface)
+```
+Archevi/
+├── frontend/                 # React application
+│   ├── src/
+│   │   ├── components/      # UI components
+│   │   │   ├── ui/          # shadcn components
+│   │   │   ├── chat/        # Chat interface
+│   │   │   ├── documents/   # Document management
+│   │   │   ├── auth/        # Authentication
+│   │   │   ├── analytics/   # Analytics views
+│   │   │   ├── family/      # Family management
+│   │   │   └── settings/    # Settings views
+│   │   ├── api/             # API client
+│   │   ├── store/           # Zustand stores
+│   │   └── lib/             # Utilities
+│   └── package.json
+├── scripts/                  # Windmill Python scripts
+├── Infrastructure/           # Docker & database
+├── windmill-setup/           # Windmill Docker config
+├── docs/                     # VitePress documentation
+│   ├── .vitepress/          # VitePress config
+│   ├── guide/               # User guides
+│   ├── api/                 # API documentation
+│   ├── use-cases/           # Use case examples
+│   └── comparison/          # Competitor comparisons
+├── .github/
+│   └── workflows/           # GitHub Actions
+└── README.md                # Public README
+```
 
-### Frontend Phase 1: Foundation (Completed ✓)
-- [x] Vite + React + TypeScript setup
-- [x] Tailwind CSS with CSS variables
-- [x] ShadCN/ui component library (20+ components)
-- [x] Zustand state management
-- [x] Windmill API client integration
-- [x] Command Palette (Cmd+K)
-- [x] Dark mode with system preference
-- [x] Collapsible sidebar navigation
-- [x] Chat History with multi-session support
-- [x] Rebranding to "Archevi"
+---
 
-### Frontend Phase 2: Multi-user (Deferred - Requires Backend)
-- [ ] User authentication UI
-- [ ] Login/Signup forms
-- [ ] User profile management
-- [ ] Family roles (Admin/Member/Guest)
-- [ ] User preferences
+## Local Development
 
-### Frontend Phase 3: Categories & Documents (Completed)
-- [x] Document upload interface with form validation
-- [x] Category selection (7 categories with Lucide icons)
-- [x] Document browser component with search
-- [x] Semantic search with relevance scores
-- [x] File upload support (.txt, .md)
-- [x] Windmill API integration (embedDocument, searchDocuments)
+### Prerequisites
+- Docker Desktop
+- Node.js 18+
+- pnpm
+- Cohere API key
 
-### Frontend Phase 4: Monitoring (Next)
-- [ ] ELK stack integration
-- [ ] Usage analytics dashboard
-- [ ] Cost tracking visualization
-- [ ] Performance monitoring
+### Quick Start
+```bash
+# Start backend
+cd Infrastructure && docker compose up -d
+cd ../windmill-setup && docker compose up -d
 
-## Security & Privacy
+# Start frontend
+cd ../frontend
+pnpm install
+pnpm run dev
+```
 
-### Data Protection
-- Self-hosted (all data stays local)
-- PostgreSQL bound to localhost only
-- Cohere production keys with optional ZDR
-- Frontend state persisted to localStorage only
+### Access Points
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Frontend | http://localhost:5173 | - |
+| Windmill | http://localhost | admin@archevi.com |
+| PostgreSQL | localhost:5433 | archevi / archevi |
+| Docs (local) | http://localhost:5174 | - |
 
-### Future Authentication (Phase 2)
-- Family member accounts
-- Role-based access control
-- Sensitive document restrictions
+---
 
-## Notes
+## Cost Analysis
 
-### Design Decisions
-- **Why React + Vite:** Modern DX, fast HMR, TypeScript support
-- **Why ShadCN/ui:** Accessible, customizable, copy-paste components
-- **Why Zustand:** Simpler than Redux, built-in persist middleware
-- **Why cmdk:** Battle-tested command palette used by Vercel, Linear
+### Self-Hosted (Current)
+| Component | Monthly Cost |
+|-----------|-------------|
+| Cohere API | ~$2 CAD |
+| Docker (local) | Free |
+| PostgreSQL | Free |
+| **Total** | **~$2 CAD/month** |
 
-### Future Enhancements
-- Voice interface (speech-to-text)
-- Document OCR for scanned documents
-- Mobile-responsive design improvements
-- PWA support for offline access
+### Managed Hosting (Planned)
+| Tier | Price | Features |
+|------|-------|----------|
+| Basic | $14.99/month | 5 users, 10GB storage |
+| Pro | $29.99/month | Unlimited users, 50GB |
+| Enterprise | Custom | Custom deployment |
+
+---
+
+## Opportunities & Ideas
+
+### Market Opportunities
+1. **Elder Care Market** - Medical records, caregiver access
+2. **Estate Planning** - Wills, important documents, emergency info
+3. **Small Business** - Family businesses with shared knowledge
+4. **Remote Families** - Geographically distributed families
+5. **Immigrants** - Multi-language document organization
+
+### Technical Opportunities
+1. **Ollama Integration** - Local LLM for privacy-conscious users
+2. **WhatsApp Bot** - Query documents via WhatsApp
+3. **Email Ingestion** - Auto-import important emails
+4. **Browser Extension** - Save web pages to knowledge base
+5. **Calendar Sync** - Auto-add renewal reminders
+
+### Partnership Opportunities
+1. **Financial Advisors** - Document organization for clients
+2. **Healthcare Providers** - Patient record access
+3. **Legal Services** - Estate planning document management
+4. **Insurance Brokers** - Policy document storage
+
+---
+
+## Key Decisions Made
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| AI Provider | Cohere | Best price/performance, Canadian company |
+| Frontend | React + Vite | Modern DX, TypeScript support |
+| Components | shadcn/ui | Accessible, customizable |
+| State | Zustand | Simpler than Redux |
+| Database | PostgreSQL + pgvector | Mature, proven |
+| Workflow | Windmill | Free self-hosted, MCP support |
+| Docs | VitePress | Fast, Vue-based, clean |
+
+---
+
+## Files Reference
+
+| File | Purpose |
+|------|---------|
+| `README.md` | Public GitHub README |
+| `00_PROJECT_OVERVIEW.md` | This file (internal) |
+| `CLAUDE.md` | Claude Code instructions |
+| `Claude_Session_Log.md` | Current session status |
+| `Claude_Session_Archive.md` | Historical sessions |
+| `DOCUMENTATION_AUTOMATION_PLAN.md` | Docs automation spec |
 
 ---
 
 **Last Updated:** 2025-11-27
-**Status:** Frontend Phase 3 Complete (v2.1) - Documents view with upload and search
+**Maintained By:** Development Team
