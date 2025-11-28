@@ -1,25 +1,34 @@
-# Setting Up Your Cohere API Key
+# Bring Your Own Key (BYOK) Setup
 
-This guide walks you through getting your own Cohere API key - a required step for using Archevi.
+This guide walks you through setting up your own Cohere API key for maximum privacy.
 
-## Why You Need Your Own API Key
+::: tip BYOK is Optional
+Archevi works out of the box with included AI. BYOK is only needed if you want your queries to go directly to Cohere without passing through our servers.
+:::
 
-Archevi uses a **BYOK (Bring Your Own Key)** model. This means:
+## Why Use BYOK?
 
-- **Privacy**: Your AI queries go directly to Cohere, not through us
-- **Transparency**: You see exactly what you're paying for AI
-- **Control**: No usage limits from us - query as much as you want
-- **Security**: We never see your questions or search patterns
+With your own Cohere API key:
+
+- **Maximum Privacy**: Your AI queries go directly to Cohere, not through us
+- **Full Transparency**: You see exactly what you're paying for AI
+- **No Tracking**: We never see your questions or search patterns
+- **Direct Billing**: Pay Cohere directly at their published rates
+
+## When to Use BYOK
+
+BYOK is recommended if you:
+
+- Handle sensitive medical or legal documents
+- Want complete query privacy
+- Prefer direct billing with Cohere
+- Are a power user who wants granular cost control
 
 ## Step 1: Create a Cohere Account
 
 1. Go to [cohere.com](https://cohere.com)
 2. Click **"Get Started Free"** or **"Sign Up"**
 3. Create an account with your email or Google/GitHub
-
-::: tip Free Tier Available
-Cohere offers a generous free tier that's perfect for testing Archevi before committing.
-:::
 
 ## Step 2: Navigate to API Keys
 
@@ -42,18 +51,19 @@ For reliable service, create a production API key:
 - Store it securely (password manager recommended)
 :::
 
-## Step 4: Add Key to Archevi
+## Step 4: Enable BYOK in Archevi
 
 1. Log into your Archevi dashboard
-2. Go to **Settings** > **API Configuration**
-3. Paste your Cohere API key in the field
-4. Click **"Save & Verify"**
+2. Go to **Settings** > **AI Configuration**
+3. Toggle on **"Use my own Cohere API key"**
+4. Paste your Cohere API key in the field
+5. Click **"Save & Verify"**
 
 Archevi will test the connection and confirm everything is working.
 
 ## Understanding Cohere Costs
 
-Cohere charges based on tokens processed. Here's what typical Archevi usage costs:
+When using BYOK, you pay Cohere directly. Here's what typical usage costs:
 
 ### Pricing Breakdown
 
@@ -85,10 +95,7 @@ A typical family question costs less than **$0.001** (a tenth of a cent).
 
 ### In Archevi
 
-Your Archevi dashboard shows:
-- Monthly query count
-- Estimated AI costs
-- Usage trends
+When using BYOK, Archevi doesn't track your usage - check Cohere directly.
 
 ## Setting a Spending Limit
 
@@ -101,6 +108,16 @@ Cohere allows you to set spending limits:
 ::: tip Recommended Limit
 Start with a $10-15/month limit. You can always increase it later.
 :::
+
+## Switching Back to Managed
+
+If you change your mind:
+
+1. Go to **Settings** > **AI Configuration**
+2. Toggle off **"Use my own Cohere API key"**
+3. Your queries will use Archevi's managed key again
+
+Your saved API key will be deleted from our servers.
 
 ## Troubleshooting
 
@@ -122,32 +139,27 @@ Start with a $10-15/month limit. You can always increase it later.
 - Check [Cohere Status](https://status.cohere.com) for outages
 - Try regenerating your API key
 
-## Upgrading Your Cohere Plan
-
-The free tier works for testing, but for production use:
-
-1. Go to Cohere Dashboard > **Settings** > **Billing**
-2. Choose a **Pay-as-you-go** plan
-3. Add a payment method
-4. No monthly minimums - just pay for what you use
-
 ## FAQ
+
+### Is BYOK required?
+
+No. Archevi includes AI usage in your subscription. BYOK is optional for users who want maximum privacy.
 
 ### Can I use the free Trial key?
 
-Yes, for testing! But Trial keys have lower rate limits. For regular family use, upgrade to a Production key with billing enabled.
+Yes, for testing! But Trial keys have lower rate limits. For regular use, upgrade to a Production key with billing enabled.
+
+### Is my API key secure in Archevi?
+
+Yes. Your API key is encrypted at rest (AES-256) and only used to make direct calls to Cohere. We never log your queries.
 
 ### What if I forget my API key?
 
 You can always generate a new one in your Cohere dashboard. Then update it in Archevi settings.
 
-### Is my API key secure in Archevi?
+### Can I switch between managed and BYOK?
 
-Yes. Your API key is encrypted at rest and only used to make direct calls to Cohere. We never log or store your queries.
-
-### Can I use a different AI provider?
-
-Currently, Archevi is optimized for Cohere. Support for additional providers is on the roadmap.
+Yes, anytime. Go to Settings > AI Configuration to toggle between modes.
 
 ---
 

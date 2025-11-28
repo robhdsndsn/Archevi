@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Archevi
   text: Your Family's AI-Powered Memory
-  tagline: Private, secure, and powered by your own AI - complete data isolation guaranteed
+  tagline: Private, secure, and ready in 60 seconds - AI usage included in every plan
   image:
     src: /logo.svg
     alt: Archevi
@@ -23,14 +23,14 @@ features:
   - title: AI-Powered Search
     details: RAG technology understands your questions, not just keywords. Powered by Cohere's enterprise AI.
 
-  - title: Transparent Pricing
-    details: $14.99/month platform fee + you control your own AI costs (~$2-5/month). No surprises.
+  - title: AI Included
+    details: No API key setup required. AI usage included in your subscription with generous allowances.
 
   - title: Built for Families
     details: Medical records, recipes, insurance, family history - organized and searchable by everyone.
 
   - title: Ready in 60 Seconds
-    details: Sign up, connect your Cohere API key, and start chatting. We handle all the infrastructure.
+    details: Sign up and start chatting immediately. We handle all the infrastructure.
 
   - title: PIPEDA Compliant
     details: Canadian-hosted, privacy-first architecture. Your data never leaves your isolated instance.
@@ -49,8 +49,8 @@ Archevi is your family's **private, AI-powered knowledge base**:
 
 ## How It Works
 
-### 1. Sign Up & Connect
-Create your account and connect your own Cohere API key. You control your AI costs directly.
+### 1. Sign Up
+Create your account. No API key required - AI is included.
 
 ### 2. Your Private Instance Spins Up
 Within 60 seconds, you get your own isolated database at `yourfamily.archevi.ca`. No one else can access it.
@@ -66,7 +66,7 @@ Chat naturally with your family's knowledge base. Get instant, accurate answers 
 | Feature | Archevi | Typical SaaS |
 |---------|---------|--------------|
 | Data Storage | **Isolated database per family** | Shared multi-tenant |
-| AI Processing | **Your own API key** | Shared API, logs queries |
+| AI Processing | **Included + optional BYOK** | Shared API, logs queries |
 | Data Access | **Only your family** | Company employees can access |
 | Compliance | **PIPEDA compliant** | Varies |
 
@@ -78,14 +78,14 @@ Chat naturally with your family's knowledge base. Get instant, accurate answers 
 > "The elder care use case is brilliant. All my mom's medical info is now accessible to caregivers instantly."
 > *Michael R., Vancouver*
 
-> "I love that I control my own AI costs. Some months it's $2, busy months maybe $5. Totally transparent."
+> "I love that I don't need to set up API keys or anything. Just signed up and started asking questions."
 > *Jennifer K., Calgary*
 
 ## Simple, Transparent Pricing
 
-**$14.99 CAD/month** - Platform fee for your isolated instance
+**$14.99 CAD/month** - Everything included (AI, storage, support)
 
-**+ Your Cohere API costs** - Typically $2-5/month for average family use
+Most families stay well within the included AI allowance. No surprise bills.
 
 [See Full Pricing](/pricing/) | [Start Free Trial](/guide/)
 

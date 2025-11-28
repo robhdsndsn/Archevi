@@ -8,16 +8,15 @@ Archevi is a **private, AI-powered family knowledge base** that gives you:
 
 - **Instant answers** - Ask questions in natural language
 - **Complete privacy** - Your own isolated database, no data sharing
-- **Cost transparency** - You control your AI costs directly
+- **Zero friction** - Works immediately, no API key setup required
 - **Enterprise security** - PIPEDA compliant, Canadian-hosted
 
 ## How It Works
 
 1. **Sign up** - Create your Archevi account
-2. **Get your Cohere API key** - 2 minutes, free to start
-3. **Your instance spins up** - Private database at `yourfamily.archevi.ca`
-4. **Start adding knowledge** - Upload documents, paste text
-5. **Ask anything** - Get instant answers with source citations
+2. **Your instance spins up** - Private database at `yourfamily.archevi.ca`
+3. **Start adding knowledge** - Upload documents, paste text
+4. **Ask anything** - Get instant answers with source citations
 
 ## Quick Start
 
@@ -25,31 +24,36 @@ Archevi is a **private, AI-powered family knowledge base** that gives you:
 
 [Sign up for Archevi](https://archevi.ca/signup) and choose your plan.
 
-### Step 2: Set Up Your Cohere API Key
-
-You'll need your own Cohere API key (this is what makes Archevi truly private).
-
-[Follow our Cohere setup guide](/guide/cohere-setup)
-
-### Step 3: Complete Onboarding
+### Step 2: Complete Onboarding
 
 After signup, you'll be guided through:
-- Connecting your Cohere API key
 - Inviting family members
 - Uploading your first documents
+- Asking your first question
 
-That's it! You're ready to start asking questions.
+That's it! You're ready to start in under 60 seconds.
 
-## Why BYOK (Bring Your Own Key)?
+## AI Costs: Included
 
-When you use your own Cohere API key:
+Unlike other services, Archevi includes AI usage in your subscription:
+
+| Plan | Included AI Allowance |
+|------|----------------------|
+| Starter ($14.99/mo) | $3.00/month (~150 queries) |
+| Family ($24.99/mo) | $8.00/month (~400 queries) |
+| Family Office | Unlimited |
+
+Most families never exceed their included allowance. If you do, overages are billed at $0.01 per 1,000 tokens (roughly $0.01 per query).
+
+## Optional: Bring Your Own Key (BYOK)
+
+For privacy-conscious users, you can optionally use your own Cohere API key:
 
 - **Your queries go directly to Cohere** - We never see what you search for
-- **You control costs** - Pay Cohere directly, no markups
+- **You control costs** - Pay Cohere directly
 - **Extra privacy** - AI processing happens with YOUR key
-- **No limits** - Query as much as your budget allows
 
-Typical usage is **$2-5/month** in AI costs.
+[Set up BYOK (optional)](/guide/byok-setup)
 
 ## What Can I Store?
 
@@ -76,10 +80,10 @@ Once you've added documents, ask things like:
 
 ## Next Steps
 
-1. [Set up your Cohere API key](/guide/cohere-setup) (required)
-2. [Learn how to use Archevi](/guide/usage)
-3. [Explore use cases](/use-cases/)
-4. [Read the FAQ](/guide/faq)
+1. [Learn how to use Archevi](/guide/usage)
+2. [Explore use cases](/use-cases/)
+3. [Read the FAQ](/guide/faq)
+4. [Set up BYOK (optional)](/guide/byok-setup)
 
 ## Need Help?
 
