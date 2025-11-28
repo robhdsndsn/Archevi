@@ -11,19 +11,23 @@ Learn how to get the most out of your family knowledge base.
 3. Fill in the details:
    - **Title**: Give your document a clear name
    - **Category**: Choose from Financial, Medical, Legal, etc.
-   - **Content**: Paste the document text
+   - **Content**: Paste the document text, upload a PDF, or record a voice note
 4. Click **Upload**
+
+### AI-Enhanced Upload Mode
+
+Toggle **AI Enhanced** mode to unlock smart features:
+- **Auto-Categorization** - AI suggests the best category
+- **Smart Tags** - Automatically extracts 3-5 relevant tags
+- **Expiry Detection** - Finds renewal dates, due dates, policy expirations
 
 ### Supported Content
 
-Archevi works best with text-based content:
-- Medical records and prescriptions
-- Insurance policies and claims
-- Financial statements
-- Recipes
-- Legal documents
-- Family stories and memories
-- Technical manuals
+Archevi works with many content types:
+- **Text documents** - Medical records, prescriptions, recipes, contracts
+- **PDF files** - Automatically extracts text content
+- **Scanned documents** - OCR extracts text from images (Tesseract.js)
+- **Voice notes** - Record and auto-transcribe with Groq Whisper
 
 ::: tip Best Practice
 Break large documents into smaller, focused pieces. "Dad's Medical History" is better than "All Family Medical Records".
@@ -124,7 +128,56 @@ Admins can invite family members:
 | `Enter` | Send message |
 | `Shift + Enter` | New line in message |
 
+## Voice Notes
+
+Record voice memos and have them automatically transcribed:
+
+1. Click **Voice Note** in the upload panel
+2. Click **Record** and speak your note
+3. Click **Stop** when finished
+4. Review the transcript
+5. Add tags and save
+
+Voice notes are transcribed using Groq Whisper (80+ languages supported) and become fully searchable in your knowledge base.
+
+## Expiry Alerts
+
+Never miss an important deadline again:
+
+### Viewing Expiring Documents
+
+1. Check the **Expiry Alerts** widget on your dashboard
+2. Documents are grouped by urgency:
+   - **Urgent** - Expires in 7 days or less
+   - **Soon** - Expires in 8-30 days
+   - **Upcoming** - Expires in 31-90 days
+
+### How Expiry Detection Works
+
+When you upload documents with AI Enhanced mode, Archevi automatically detects:
+- Policy renewal dates
+- Document expiration dates
+- Due dates and deadlines
+- Subscription renewals
+
+## Tags and Filtering
+
+### Tag Cloud
+
+The **Tag Cloud** widget shows all your document tags:
+- Click any tag to filter documents
+- Larger tags = more documents
+- Tags are auto-generated in AI Enhanced mode
+
+### Browsing by Tag
+
+1. Go to **Documents**
+2. Use the tag filter dropdown
+3. Select one or more tags
+4. View matching documents
+
 ## Next Steps
 
 - [Explore use cases](/use-cases/)
 - [View API documentation](/api/)
+- [Set up BYOK for maximum privacy](/guide/byok-setup)

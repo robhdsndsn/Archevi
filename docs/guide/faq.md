@@ -201,15 +201,24 @@ A Discord community is coming soon! [Join the waitlist](https://archevi.ca/commu
 
 ## Roadmap
 
+### What's New in v2.3.0?
+
+We've recently launched several powerful AI features:
+
+- **Voice Notes** - Record and transcribe voice memos (Groq Whisper)
+- **Document OCR** - Scan paper documents and extract text (Tesseract.js)
+- **Smart Tags** - AI auto-generates relevant document tags
+- **Expiry Alerts** - Get notified when documents expire
+- **Auto-Categorization** - AI suggests document categories
+
 ### What features are coming?
 
 - Mobile native apps (iOS/Android)
-- Document OCR (scan paper documents)
-- Voice queries
+- Deep Search mode (agent-driven multi-step retrieval)
 - Multi-language support (French first)
-- Calendar integration
-- Automated reminders
-- Additional AI provider support
+- Calendar integration for expiry dates
+- Email notifications for expiring documents
+- Camera scanning for mobile
 
 ### Can I request features?
 

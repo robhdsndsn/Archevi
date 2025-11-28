@@ -30,8 +30,8 @@ export default defineConfig({
           text: 'Getting Started',
           items: [
             { text: 'Introduction', link: '/guide/' },
-            { text: 'Cohere API Setup', link: '/guide/cohere-setup' },
             { text: 'Using Archevi', link: '/guide/usage' },
+            { text: 'BYOK Setup (Optional)', link: '/guide/byok-setup' },
             { text: 'FAQ', link: '/guide/faq' }
           ]
         }

@@ -23,14 +23,14 @@ features:
   - title: AI-Powered Search
     details: RAG technology understands your questions, not just keywords. Powered by Cohere's enterprise AI.
 
-  - title: AI Included
-    details: No API key setup required. AI usage included in your subscription with generous allowances.
+  - title: Voice Notes & OCR
+    details: Record voice memos (auto-transcribed) and scan paper documents. Everything becomes searchable.
 
-  - title: Built for Families
-    details: Medical records, recipes, insurance, family history - organized and searchable by everyone.
+  - title: Smart Document Management
+    details: Auto-categorization, smart tagging, and expiry alerts. Never miss a renewal date again.
 
   - title: Ready in 60 Seconds
-    details: Sign up and start chatting immediately. We handle all the infrastructure.
+    details: Sign up and start chatting immediately. AI included - no API key setup required.
 
   - title: PIPEDA Compliant
     details: Canadian-hosted, privacy-first architecture. Your data never leaves your isolated instance.
