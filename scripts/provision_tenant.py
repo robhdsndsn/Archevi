@@ -11,6 +11,7 @@ import wmill
 from typing import Optional
 import re
 import secrets
+import json
 
 
 def generate_slug(name: str) -> str:
@@ -144,7 +145,7 @@ def main(
                 cur.execute("""
                     INSERT INTO provisioning_queue (tenant_id, step, metadata)
                     VALUES (%s, %s, %s)
-                """, [tenant_id, step, wmill.to_json(metadata)])
+                """, [tenant_id, step, json.dumps(metadata)])
 
             conn.commit()
 
