@@ -187,7 +187,64 @@ If you realize you created a duplicate file:
 
 ## Project-Specific Notes
 
-[Add project-specific instructions, tech stack, dependencies, etc.]
+### Tech Stack
+- **Backend**: Windmill (workflow orchestration), PostgreSQL + pgvector
+- **AI**: Cohere (Embed v4 for 1024-dim vectors, Command A/R for generation, Rerank v3)
+- **Frontend**: React + Vite + shadcn/ui + Tailwind
+- **Docs**: VitePress at archevi.ca/guide
+
+### Architecture: Multi-Tenant SaaS
+
+**Tenants = Families** - Each family is a billing/isolation unit with:
+- Unique slug for URL routing (`archevi.ca/f/{slug}`)
+- Plan-based limits (AI allowance, max members, storage)
+- Stripe integration for billing
+
+**Users can belong to multiple families** with different roles:
+- `owner` - Full control, billing access
+- `admin` - Manage members, all documents
+- `member` - Add/view documents, chat
+- `viewer` - Read-only access
+
+### Key Database Tables (Migration 003)
+```
+tenants              - Families with billing, plans, AI config
+users                - Global user accounts
+tenant_memberships   - Links users to families with roles
+documents            - Tenant-scoped documents with embeddings
+chat_sessions        - Tenant-scoped conversations
+ai_usage             - Per-tenant AI cost tracking
+provisioning_queue   - Async tenant setup tasks
+```
+
+### Windmill Scripts
+
+**Tenant Management** (`f/tenant/`):
+- `provision_tenant` - Create new family
+- `provisioning_worker` - Process async setup queue
+- `get_user_tenants` - List user's families
+- `switch_tenant` - Change active family context
+- `invite_to_tenant` - Invite members
+
+**Chatbot** (`f/chatbot/`):
+- `rag_query` - Main RAG pipeline with adaptive model selection
+- `embed_document` - Generate embeddings with Cohere Embed v4
+- `get_analytics` - Dashboard analytics (multi-tenant aware)
+- `health_check` - System health monitoring
+- `auth_*` - Authentication endpoints
+
+### URL Strategy
+Path-based routing for MVP: `archevi.ca/f/{tenant_slug}`
+- No wildcard DNS needed
+- Tenant resolved from URL path
+- JWT contains tenant context after login
+
+### Test Data
+Run `f/tenant/test_multi_tenant_system` to create:
+- 5 test users (test-*@archevi.ca)
+- 3 test families (test-hudson, test-chen, test-starter)
+- 7 test documents across families
+- Multi-family memberships for testing
 
 ## Key Resources
 
