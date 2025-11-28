@@ -8,78 +8,120 @@ Archevi is an AI-powered family knowledge base that helps you store, organize, a
 
 ### How is it different from Google Drive or Dropbox?
 
-Unlike file storage services, Archevi understands your content. You can ask "What medications is mom taking?" and get an instant answer, rather than opening multiple files to find the information.
+Unlike file storage services, Archevi **understands your content**. You can ask "What medications is mom taking?" and get an instant answer, rather than opening multiple files to find the information.
 
 ### Is my data safe?
 
-Yes. With self-hosted Archevi, your data never leaves your own servers. With managed hosting, data is encrypted and stored securely in Canadian data centers.
+Absolutely. Each family gets their own **isolated database** - your data is never mixed with other customers. Plus, you control your own AI processing through your Cohere API key, so we never see your queries.
 
-## Technical
+### Where is my data stored?
 
-### What are the system requirements?
+All data is stored in Canadian data centers, making Archevi **PIPEDA compliant**. Your family's information never leaves Canada.
 
-**Self-Hosted:**
-- Docker Desktop
-- 4GB RAM minimum
-- 10GB storage
-- Cohere API key
-
-**Managed:**
-- Just a web browser!
-
-### Which AI model does Archevi use?
-
-Archevi uses Cohere's Command model for RAG (Retrieval-Augmented Generation) and their Embed model for document vectorization. This provides high-quality answers while keeping costs low.
-
-### Can I use a different AI provider?
-
-Currently, Archevi is optimized for Cohere. Support for OpenAI, Anthropic, and local models (Ollama) is on the roadmap.
-
-### How much does the AI cost?
-
-With Cohere's pricing, typical family usage costs about **$2 CAD/month**. Heavy users might see $5-10/month.
-
-## Privacy
+## Privacy & Security
 
 ### Do you read my documents?
 
-**Self-Hosted:** No one but you has access to your data.
+No. Your documents are stored in your isolated database, and we have no access to them. When you query, your questions go directly to Cohere using YOUR API key - we never see what you're asking.
 
-**Managed:** We cannot read your documents. They're encrypted and we have no decryption access.
+### What makes the BYOK model more private?
+
+With Bring Your Own Key (BYOK):
+- Your AI queries go directly to Cohere, not through our servers
+- We never see your search patterns or questions
+- You have full control over your AI usage
+- No query logs on our side
 
 ### Is Archevi PIPEDA compliant?
 
-Yes. Archevi is designed with Canadian privacy law in mind. Your data stays in Canada (for managed hosting) and you have full control over your information.
+Yes. Archevi is designed with Canadian privacy law in mind:
+- Canadian-hosted infrastructure
+- Data isolation per customer
+- Full data export available
+- Clear privacy policies
 
 ### Can I export my data?
 
 Yes! You can export all documents, chat history, and settings at any time in standard formats (JSON, Markdown).
 
+## Technical
+
+### Which AI models does Archevi use?
+
+Archevi uses Cohere's latest enterprise AI:
+- **Embed v4.0** - For understanding and searching your documents
+- **Rerank v3.5** - For finding the most relevant results
+- **Command A** - For generating comprehensive answers
+- **Command R** - For quick, efficient responses
+
+### How much does the AI cost?
+
+You pay Cohere directly. Typical family usage is **$2-5 CAD/month**. Heavy users might see $5-10/month.
+
+A single question costs less than $0.001 (a tenth of a cent).
+
+[See full cost breakdown](/guide/cohere-setup#understanding-cohere-costs)
+
+### Why do I need my own Cohere API key?
+
+This is what makes Archevi truly private:
+- Your queries never touch our servers
+- You control your AI spending directly
+- No usage limits from us
+- Complete transparency on costs
+
+[How to set up your Cohere API key](/guide/cohere-setup)
+
 ## Features
 
 ### How many documents can I store?
 
-**Self-Hosted:** Limited only by your storage space.
-
-**Managed:** 10GB included, expandable upon request.
+- **Starter Plan**: 10GB storage
+- **Family Plan**: 50GB storage
+- **Family Office**: Unlimited
 
 ### Can I share with family members?
 
-Yes! Add up to 5 family members (managed) or unlimited (self-hosted). Each member can have different permission levels.
+Yes! Depending on your plan:
+- **Starter**: Up to 5 family members
+- **Family**: Unlimited family members
+- **Family Office**: Unlimited with custom roles
+
+Each member can have different permission levels (Admin or User).
 
 ### Does it work on mobile?
 
-Yes, Archevi is fully responsive and works on phones and tablets. A native mobile app is on the roadmap.
+Yes, Archevi is fully responsive and works great on phones and tablets. A native mobile app is on the roadmap.
 
 ### Can I use it offline?
 
 Currently, Archevi requires an internet connection for AI processing. Offline mode is being considered for future releases.
 
+## Getting Started
+
+### How long does setup take?
+
+About **60 seconds** to sign up, plus **2 minutes** to set up your Cohere API key. You can start adding documents immediately after.
+
+### What happens after I sign up?
+
+1. You get your own subdomain (e.g., `yourfamily.archevi.ca`)
+2. Your isolated database is created automatically
+3. You connect your Cohere API key
+4. You're ready to add documents and start querying
+
+### Can I try before I buy?
+
+Yes! We offer a **14-day free trial** with full features. You'll still need a Cohere API key (they have a free tier too).
+
 ## Troubleshooting
 
 ### Why are my queries slow?
 
-First query after startup may take a few seconds as the system warms up. Subsequent queries should be fast (1-2 seconds). If consistently slow, check your internet connection and Cohere API status.
+First query after logging in may take a few seconds as the system warms up. Subsequent queries should be fast (1-2 seconds). If consistently slow:
+- Check your internet connection
+- Check [Cohere Status](https://status.cohere.com)
+- Contact support if the issue persists
 
 ### Why didn't it find my document?
 
@@ -90,23 +132,36 @@ First query after startup may take a few seconds as the system warms up. Subsequ
 
 ### How do I reset my password?
 
-**Self-Hosted:** Use the Windmill admin panel.
+Click "Forgot Password" on the login page. You'll receive a reset link via email.
 
-**Managed:** Use the "Forgot Password" link on the login page.
+## Pricing & Billing
 
-## Pricing
+### What's included in the platform fee?
 
-### Why is it so cheap?
+Your monthly fee covers:
+- Isolated database and storage
+- Secure hosting in Canada
+- Automatic backups
+- SSL and security
+- Updates and new features
+- Email support
 
-We use efficient AI models (Cohere) and lean infrastructure. No VC funding pressure means we can keep prices sustainable.
+### Why do I pay Cohere separately?
 
-### Is there a free tier?
+The BYOK model means:
+- **Complete transparency** - You see exactly what AI costs
+- **No markups** - We don't profit from your AI usage
+- **Privacy** - We never see your queries
+- **Control** - Set your own spending limits
 
-Self-hosted is essentially free (just the ~$2/month Cohere API cost). Managed hosting has no free tier, but we offer a 14-day free trial.
+### Can I cancel anytime?
 
-### Do you offer family discounts?
+Yes. Cancel anytime from your dashboard. Your data export is available for 30 days after cancellation.
 
-The base plan includes 5 family members at no extra cost!
+### Do you offer discounts?
+
+- **Founding Member**: First 100 families get 33% off forever
+- **Annual billing**: Coming soon
 
 ## Support
 
@@ -114,12 +169,12 @@ The base plan includes 5 family members at no extra cost!
 
 1. Check this FAQ
 2. Read the [documentation](/guide/)
-3. [GitHub Issues](https://github.com/robhdsndsn/Archevi/issues)
-4. Email support (managed customers)
+3. Email [support@archevi.ca](mailto:support@archevi.ca)
+4. Family plan includes priority support
 
 ### Is there a community?
 
-Yes! Join our [Discord server](https://discord.gg/archevi) (coming soon) to connect with other Archevi users.
+A Discord community is coming soon! [Join the waitlist](https://archevi.ca/community) to be notified.
 
 ## Roadmap
 
@@ -129,10 +184,10 @@ Yes! Join our [Discord server](https://discord.gg/archevi) (coming soon) to conn
 - Document OCR (scan paper documents)
 - Voice queries
 - Multi-language support (French first)
-- Ollama support (local AI)
 - Calendar integration
 - Automated reminders
+- Additional AI provider support
 
 ### Can I request features?
 
-Absolutely! Open an issue on [GitHub](https://github.com/robhdsndsn/Archevi/issues) or vote on existing feature requests.
+Absolutely! Email [feedback@archevi.ca](mailto:feedback@archevi.ca) with your suggestions.

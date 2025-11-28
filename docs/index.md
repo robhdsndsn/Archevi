@@ -4,83 +4,91 @@ layout: home
 hero:
   name: Archevi
   text: Your Family's AI-Powered Memory
-  tagline: Privately stored, instantly accessible, and 90% cheaper than alternatives
+  tagline: Private, secure, and powered by your own AI - complete data isolation guaranteed
   image:
     src: /logo.svg
     alt: Archevi
   actions:
     - theme: brand
-      text: Get Started
+      text: Start Free Trial
       link: /guide/
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/robhdsndsn/Archevi
+      text: See Pricing
+      link: /pricing/
 
 features:
-  - icon: "\U0001F512"
-    title: Privacy First
-    details: Self-hosted means your family data never leaves your control. PIPEDA compliant.
+  - title: True Data Isolation
+    details: Your family gets a dedicated, isolated database. No shared infrastructure, no data mixing - ever.
 
-  - icon: "\U0001F916"
-    title: AI-Powered Search
-    details: RAG technology understands your questions, not just keywords. Find anything instantly.
+  - title: AI-Powered Search
+    details: RAG technology understands your questions, not just keywords. Powered by Cohere's enterprise AI.
 
-  - icon: "\U0001F4B0"
-    title: 90% Cost Savings
-    details: Self-host for ~$2/month or managed for $15/month vs $20-40/month for alternatives.
+  - title: Transparent Pricing
+    details: $14.99/month platform fee + you control your own AI costs (~$2-5/month). No surprises.
 
-  - icon: "\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466"
-    title: Built for Families
-    details: Medical records, recipes, insurance, family history - organized and searchable.
+  - title: Built for Families
+    details: Medical records, recipes, insurance, family history - organized and searchable by everyone.
 
-  - icon: "\U0001F680"
-    title: Easy to Use
-    details: Chat interface everyone can use. No technical knowledge required.
+  - title: Ready in 60 Seconds
+    details: Sign up, connect your Cohere API key, and start chatting. We handle all the infrastructure.
 
-  - icon: "\U0001F513"
-    title: No Vendor Lock-in
-    details: Open source. Your data, your infrastructure, your control.
+  - title: PIPEDA Compliant
+    details: Canadian-hosted, privacy-first architecture. Your data never leaves your isolated instance.
 ---
 
 ## Why Archevi?
 
-Stop losing important family information. Stop paying $240/year for Notion. Stop digging through Google Drive folders.
+Stop losing important family information. Stop paying for tools that weren't built for families. Stop worrying about who can see your data.
 
-Archevi is your family's centralized knowledge base powered by AI:
+Archevi is your family's **private, AI-powered knowledge base**:
 
-- **"What was grandma's cookie recipe?"** - Instant answers
-- **"Where's the home insurance policy?"** - Found in seconds
-- **"What are dad's allergies?"** - Searchable medical history
-- **"What's the WiFi password?"** - No more asking repeatedly
+- **"What was grandma's cookie recipe?"** - Instant answers from your family's documents
+- **"Where's the home insurance policy?"** - Found in seconds, not folders
+- **"What are dad's allergies?"** - Searchable medical history for caregivers
+- **"When does the car registration expire?"** - Never miss important dates
 
-## Quick Start
+## How It Works
 
-### Self-Hosted (DIY)
+### 1. Sign Up & Connect
+Create your account and connect your own Cohere API key. You control your AI costs directly.
 
-```bash
-git clone https://github.com/robhdsndsn/Archevi
-cd Archevi
-docker-compose up -d
-```
+### 2. Your Private Instance Spins Up
+Within 60 seconds, you get your own isolated database at `yourfamily.archevi.ca`. No one else can access it.
 
-**Cost:** ~$2 CAD/month (Cohere API only)
+### 3. Start Adding Knowledge
+Upload documents, paste text, or just type. Our AI automatically organizes and indexes everything.
 
-### Managed Service
+### 4. Ask Anything
+Chat naturally with your family's knowledge base. Get instant, accurate answers with source citations.
 
-Sign up for hassle-free hosting at $14.99 CAD/month.
+## Enterprise-Grade Privacy
 
-[Learn more](/guide/managed-service)
+| Feature | Archevi | Typical SaaS |
+|---------|---------|--------------|
+| Data Storage | **Isolated database per family** | Shared multi-tenant |
+| AI Processing | **Your own API key** | Shared API, logs queries |
+| Data Access | **Only your family** | Company employees can access |
+| Compliance | **PIPEDA compliant** | Varies |
 
-## What People Are Saying
+## What Families Are Saying
 
 > "Finally, all our family recipes in one place and actually findable!"
-> *Sarah T., Early Adopter*
+> *Sarah T., Toronto*
 
 > "The elder care use case is brilliant. All my mom's medical info is now accessible to caregivers instantly."
-> *Michael R., Beta Tester*
+> *Michael R., Vancouver*
 
-## Open Source
+> "I love that I control my own AI costs. Some months it's $2, busy months maybe $5. Totally transparent."
+> *Jennifer K., Calgary*
 
-Archevi is open source under Apache 2.0 License. Contributions welcome!
+## Simple, Transparent Pricing
 
-[View on GitHub](https://github.com/robhdsndsn/Archevi)
+**$14.99 CAD/month** - Platform fee for your isolated instance
+
+**+ Your Cohere API costs** - Typically $2-5/month for average family use
+
+[See Full Pricing](/pricing/) | [Start Free Trial](/guide/)
+
+---
+
+**Questions?** [Contact us](mailto:hello@archevi.ca) | [Documentation](/guide/)

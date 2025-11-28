@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'Archevi Documentation',
-  description: 'Your family\'s AI-powered memory - privately stored, instantly accessible, and 90% cheaper than alternatives',
+  description: 'Your family\'s AI-powered memory - private, isolated, and powered by your own AI',
   base: '/Archevi/',
 
   head: [
@@ -21,7 +21,6 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/' },
       { text: 'Use Cases', link: '/use-cases/' },
       { text: 'Comparison', link: '/comparison/' },
-      { text: 'API', link: '/api/' },
       { text: 'Pricing', link: '/pricing/' }
     ],
 
@@ -31,9 +30,8 @@ export default defineConfig({
           text: 'Getting Started',
           items: [
             { text: 'Introduction', link: '/guide/' },
-            { text: 'Installation', link: '/guide/installation' },
-            { text: 'Managed Service', link: '/guide/managed-service' },
-            { text: 'Usage', link: '/guide/usage' },
+            { text: 'Cohere API Setup', link: '/guide/cohere-setup' },
+            { text: 'Using Archevi', link: '/guide/usage' },
             { text: 'FAQ', link: '/guide/faq' }
           ]
         }
@@ -65,18 +63,6 @@ export default defineConfig({
         }
       ],
 
-      '/api/': [
-        {
-          text: 'API Reference',
-          items: [
-            { text: 'Overview', link: '/api/' },
-            { text: 'Windmill Endpoints', link: '/api/windmill-endpoints' },
-            { text: 'Frontend API', link: '/api/frontend-api' },
-            { text: 'Component API', link: '/api/components/' }
-          ]
-        }
-      ],
-
       '/contributing/': [
         {
           text: 'Contributing',
@@ -93,9 +79,7 @@ export default defineConfig({
         {
           text: 'Pricing',
           items: [
-            { text: 'Overview', link: '/pricing/' },
-            { text: 'Self-Hosted', link: '/pricing/self-hosted' },
-            { text: 'Managed Service', link: '/pricing/managed' }
+            { text: 'Plans & Pricing', link: '/pricing/' }
           ]
         }
       ]
@@ -115,7 +99,7 @@ export default defineConfig({
     },
 
     footer: {
-      message: 'Released under the Apache 2.0 License.',
+      message: 'Canadian-hosted. PIPEDA compliant. Your data stays yours.',
       copyright: 'Copyright 2025-present Archevi'
     },
 
