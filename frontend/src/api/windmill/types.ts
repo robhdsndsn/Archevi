@@ -329,3 +329,100 @@ export interface ParsePDFResult {
   filename?: string;
   error?: string;
 }
+
+// Enhanced document embedding types
+export interface ExpiryDate {
+  date: string;
+  type: 'expiry' | 'renewal' | 'due_date' | 'validity' | 'policy_end' | 'effective_end';
+  confidence: number;
+}
+
+export interface EmbedDocumentEnhancedArgs {
+  title: string;
+  content: string;
+  category?: DocumentCategory;
+  source_file?: string;
+  created_by?: string;
+  auto_categorize_enabled?: boolean;
+  extract_tags_enabled?: boolean;
+  extract_dates_enabled?: boolean;
+}
+
+export interface EmbedDocumentEnhancedResult {
+  document_id: number;
+  message: string;
+  tokens_used: number;
+  category: DocumentCategory;
+  suggested_category?: DocumentCategory;
+  category_confidence: number;
+  tags: string[];
+  expiry_dates: ExpiryDate[];
+  ai_features_used: string[];
+}
+
+// Voice note types
+export interface TranscribeVoiceNoteArgs {
+  audio_content: string;
+  filename?: string;
+  title?: string;
+  created_by?: string;
+}
+
+export interface TranscribeVoiceNoteResult {
+  voice_note_id: number;
+  transcript: string;
+  duration_seconds: number;
+  language: string;
+  title: string;
+  tags: string[];
+  tokens_used: number;
+  transcription_cost: number;
+  embedding_cost: number;
+  total_cost: number;
+}
+
+// Expiring documents query
+export interface ExpiringDocument {
+  id: number;
+  title: string;
+  category: DocumentCategory;
+  expiry_date: string;
+  expiry_type: string;
+  days_until_expiry: number;
+}
+
+// Tag query
+export interface TagCount {
+  tag: string;
+  document_count: number;
+}
+
+export interface GetTagsResult {
+  success: boolean;
+  tags: TagCount[];
+  total_tags: number;
+  error?: string;
+}
+
+// Expiring documents
+export interface ExpiringDocumentDetail {
+  id: number;
+  title: string;
+  category: DocumentCategory;
+  expiry_date: string;
+  expiry_type: string;
+  days_until_expiry: number;
+  confidence: number;
+}
+
+export interface GetExpiringDocumentsResult {
+  success: boolean;
+  documents: ExpiringDocumentDetail[];
+  total: number;
+  by_urgency?: {
+    urgent: number;
+    soon: number;
+    upcoming: number;
+  };
+  error?: string;
+}

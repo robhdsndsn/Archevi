@@ -189,9 +189,34 @@ If you realize you created a duplicate file:
 
 ### Tech Stack
 - **Backend**: Windmill (workflow orchestration), PostgreSQL + pgvector
-- **AI**: Cohere (Embed v4 for 1024-dim vectors, Command A/R for generation, Rerank v3)
-- **Frontend**: React + Vite + shadcn/ui + Tailwind
+- **AI**:
+  - Cohere (Embed v4 for 1024-dim vectors, Command A/R for generation, Rerank v3)
+  - Groq (Whisper large-v3-turbo for voice transcription)
+- **Frontend**: React + Vite + shadcn/ui + Tailwind + Tesseract.js (client-side OCR)
 - **Docs**: VitePress at archevi.ca/guide
+
+### Current Features (v2.3.0)
+
+**Document Management:**
+- PDF upload with text extraction
+- AI Enhanced mode with auto-categorization, smart tags, expiry detection
+- OCR for scanned documents (client-side Tesseract.js)
+- Document search with semantic similarity
+
+**Voice Notes:**
+- Browser-based audio recording
+- Groq Whisper transcription (80+ languages)
+- Auto-embedding for RAG queries
+
+**Dashboard Widgets:**
+- Expiry Alerts - Documents expiring soon (urgent/soon/upcoming)
+- Tag Cloud - Browse documents by AI-extracted tags
+- Analytics - Usage stats and cost tracking
+
+**Authentication:**
+- JWT-based auth with refresh tokens
+- Family member management with roles (admin/member)
+- Invite system with token-based onboarding
 
 ### Architecture: Multi-Tenant SaaS
 
@@ -229,9 +254,14 @@ provisioning_queue   - Async tenant setup tasks
 **Chatbot** (`f/chatbot/`):
 - `rag_query` - Main RAG pipeline with adaptive model selection
 - `embed_document` - Generate embeddings with Cohere Embed v4
+- `embed_document_enhanced` - AI-enhanced embedding with auto-categorization, smart tags, expiry detection
+- `transcribe_voice_note` - Groq Whisper transcription with auto-embedding
+- `get_tags` - Get all unique document tags with counts
+- `get_expiring_documents` - Get documents with upcoming expiry dates
 - `get_analytics` - Dashboard analytics (multi-tenant aware)
 - `health_check` - System health monitoring
 - `auth_*` - Authentication endpoints
+- `parse_pdf` - PDF text extraction
 
 ### URL Strategy
 Path-based routing for MVP: `archevi.ca/f/{tenant_slug}`

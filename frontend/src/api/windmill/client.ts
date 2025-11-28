@@ -22,6 +22,12 @@ import type {
   UpdateDocumentArgs,
   UpdateDocumentResult,
   ParsePDFResult,
+  EmbedDocumentEnhancedArgs,
+  EmbedDocumentEnhancedResult,
+  TranscribeVoiceNoteArgs,
+  TranscribeVoiceNoteResult,
+  GetTagsResult,
+  GetExpiringDocumentsResult,
 } from './types';
 
 const WINDMILL_URL = import.meta.env.VITE_WINDMILL_URL || 'http://localhost';
@@ -81,6 +87,32 @@ export class WindmillClient {
   async embedDocument(args: EmbedDocumentArgs): Promise<EmbedDocumentResult> {
     return this.request<EmbedDocumentResult>(
       '/jobs/run_wait_result/p/f/chatbot/embed_document',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  /**
+   * Embed document with enhanced AI features (auto-categorization, smart tags, expiry detection)
+   */
+  async embedDocumentEnhanced(args: EmbedDocumentEnhancedArgs): Promise<EmbedDocumentEnhancedResult> {
+    return this.request<EmbedDocumentEnhancedResult>(
+      '/jobs/run_wait_result/p/f/chatbot/embed_document_enhanced',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  /**
+   * Transcribe a voice note and embed it for RAG queries
+   */
+  async transcribeVoiceNote(args: TranscribeVoiceNoteArgs): Promise<TranscribeVoiceNoteResult> {
+    return this.request<TranscribeVoiceNoteResult>(
+      '/jobs/run_wait_result/p/f/chatbot/transcribe_voice_note',
       {
         method: 'POST',
         body: JSON.stringify(args),
@@ -336,6 +368,36 @@ export class WindmillClient {
       {
         method: 'POST',
         body: JSON.stringify({ file_content: fileContent, filename }),
+      }
+    );
+  }
+
+  // ============================================
+  // Tag & Expiry Methods
+  // ============================================
+
+  /**
+   * Get all unique tags across documents
+   */
+  async getTags(): Promise<GetTagsResult> {
+    return this.request<GetTagsResult>(
+      '/jobs/run_wait_result/p/f/chatbot/get_tags',
+      {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }
+    );
+  }
+
+  /**
+   * Get documents with upcoming expiry dates
+   */
+  async getExpiringDocuments(days: number = 90): Promise<GetExpiringDocumentsResult> {
+    return this.request<GetExpiringDocumentsResult>(
+      '/jobs/run_wait_result/p/f/chatbot/get_expiring_documents',
+      {
+        method: 'POST',
+        body: JSON.stringify({ days }),
       }
     );
   }
