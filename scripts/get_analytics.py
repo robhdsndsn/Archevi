@@ -1,39 +1,27 @@
-# get_analytics.py
-# Windmill Python script for fetching usage analytics
-# Path: f/chatbot/get_analytics
-#
-# requirements:
-#   - psycopg2-binary
-#   - wmill
-
 """
 Fetch usage analytics and statistics for the Archevi dashboard.
 
-Returns aggregated data about:
-- API usage (tokens, costs by operation)
-- Document statistics (count by category)
-- Conversation activity (queries over time)
-- Cost projections
-- Model usage stats (command-r vs command-a selection)
-- System health summary
-- Error/warning counts
+Windmill Script Configuration:
+- Path: f/chatbot/get_analytics
+- Trigger: Called by dashboard
 
-Args:
-    period (str): Time period - 'day', 'week', 'month', 'all' (default: 'week')
-
-Returns:
-    dict: Analytics data with sections for usage, documents, activity, costs, model_stats, health
+Updated for multi-tenant schema - works with both old and new tables.
 """
 
 import psycopg2
+import psycopg2.extras
 from datetime import datetime, timedelta
 from typing import Optional
 import wmill
 
 
-def main(period: str = "week") -> dict:
+def main(period: str = "week", tenant_id: Optional[str] = None) -> dict:
     """
     Fetch comprehensive analytics for the dashboard.
+
+    Args:
+        period: Time period - 'day', 'week', 'month', 'all'
+        tenant_id: Optional tenant UUID to filter by (None = all tenants)
     """
     # Calculate date range
     now = datetime.now()
@@ -44,12 +32,14 @@ def main(period: str = "week") -> dict:
     elif period == "month":
         start_date = now - timedelta(days=30)
     else:  # 'all'
-        start_date = datetime(2020, 1, 1)  # Effectively all time
+        start_date = datetime(2020, 1, 1)
 
-    # Fetch database resource
-    postgres_db = wmill.get_resource("f/chatbot/postgres_db")
-
+    # Connect to database - try new resource first
     try:
+        db_resource = wmill.get_resource("u/admin/archevi_postgres")
+        conn = psycopg2.connect(db_resource["connection_string"])
+    except:
+        postgres_db = wmill.get_resource("f/chatbot/postgres_db")
         conn = psycopg2.connect(
             host=postgres_db['host'],
             port=postgres_db['port'],
@@ -58,184 +48,232 @@ def main(period: str = "week") -> dict:
             password=postgres_db['password'],
             sslmode=postgres_db.get('sslmode', 'disable')
         )
-        cursor = conn.cursor()
 
-        # 1. API Usage Summary
-        cursor.execute("""
-            SELECT
-                operation,
-                COUNT(*) as count,
-                COALESCE(SUM(tokens_used), 0) as total_tokens,
-                COALESCE(SUM(cost_usd), 0) as total_cost
-            FROM api_usage_log
-            WHERE created_at >= %s
-            GROUP BY operation
-            ORDER BY total_cost DESC
-        """, (start_date,))
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        usage_rows = cursor.fetchall()
-        usage_by_operation = [
-            {
-                "operation": row[0],
-                "count": row[1],
-                "tokens": row[2],
-                "cost": float(row[3])
-            }
-            for row in usage_rows
-        ]
+    try:
+        # Build tenant filter for new schema tables
+        tenant_filter = ""
+        tenant_params = []
+        if tenant_id:
+            tenant_filter = " AND tenant_id = %s"
+            tenant_params = [tenant_id]
 
-        # 2. Total usage stats
-        cursor.execute("""
-            SELECT
-                COUNT(*) as total_requests,
-                COALESCE(SUM(tokens_used), 0) as total_tokens,
-                COALESCE(SUM(cost_usd), 0) as total_cost
-            FROM api_usage_log
-            WHERE created_at >= %s
-        """, (start_date,))
+        # 1. API Usage Summary - try new ai_usage table first, fall back to api_usage_log
+        usage_by_operation = []
+        usage_totals = {"requests": 0, "tokens": 0, "cost": 0.0}
 
-        totals = cursor.fetchone()
-        usage_totals = {
-            "requests": totals[0],
-            "tokens": totals[1],
-            "cost": float(totals[2])
-        }
+        # Try new ai_usage table
+        try:
+            cursor.execute(f"""
+                SELECT
+                    operation,
+                    COUNT(*) as count,
+                    COALESCE(SUM(input_tokens + output_tokens), 0) as total_tokens,
+                    COALESCE(SUM(cost_usd), 0) as total_cost
+                FROM ai_usage
+                WHERE created_at >= %s {tenant_filter}
+                GROUP BY operation
+                ORDER BY total_cost DESC
+            """, [start_date] + tenant_params)
 
-        # 3. Document Statistics
-        cursor.execute("""
-            SELECT
-                category,
-                COUNT(*) as count
-            FROM family_documents
-            GROUP BY category
-            ORDER BY count DESC
-        """)
+            rows = cursor.fetchall()
+            if rows:
+                for row in rows:
+                    usage_by_operation.append({
+                        "operation": row["operation"],
+                        "count": row["count"],
+                        "tokens": int(row["total_tokens"]) if row["total_tokens"] else 0,
+                        "cost": float(row["total_cost"]) if row["total_cost"] else 0
+                    })
 
-        doc_rows = cursor.fetchall()
-        documents_by_category = [
-            {"category": row[0], "count": row[1]}
-            for row in doc_rows
-        ]
+            cursor.execute(f"""
+                SELECT
+                    COUNT(*) as total_requests,
+                    COALESCE(SUM(input_tokens + output_tokens), 0) as total_tokens,
+                    COALESCE(SUM(cost_usd), 0) as total_cost
+                FROM ai_usage
+                WHERE created_at >= %s {tenant_filter}
+            """, [start_date] + tenant_params)
 
-        cursor.execute("SELECT COUNT(*) FROM family_documents")
-        total_documents = cursor.fetchone()[0]
+            totals = cursor.fetchone()
+            if totals:
+                usage_totals = {
+                    "requests": totals["total_requests"] or 0,
+                    "tokens": int(totals["total_tokens"]) if totals["total_tokens"] else 0,
+                    "cost": float(totals["total_cost"]) if totals["total_cost"] else 0
+                }
+        except psycopg2.Error:
+            pass
 
-        # 4. Activity over time (daily for the period)
-        cursor.execute("""
-            SELECT
-                DATE(created_at) as date,
-                COUNT(*) as queries
-            FROM api_usage_log
-            WHERE created_at >= %s AND operation = 'rag_query'
-            GROUP BY DATE(created_at)
-            ORDER BY date
-        """, (start_date,))
+        # Fall back to old api_usage_log if no data from new table
+        if usage_totals["requests"] == 0:
+            try:
+                cursor.execute("""
+                    SELECT
+                        operation,
+                        COUNT(*) as count,
+                        COALESCE(SUM(tokens_used), 0) as total_tokens,
+                        COALESCE(SUM(cost_usd), 0) as total_cost
+                    FROM api_usage_log
+                    WHERE created_at >= %s
+                    GROUP BY operation
+                    ORDER BY total_cost DESC
+                """, [start_date])
 
-        activity_rows = cursor.fetchall()
-        daily_activity = [
-            {"date": row[0].isoformat(), "queries": row[1]}
-            for row in activity_rows
-        ]
+                rows = cursor.fetchall()
+                for row in rows:
+                    usage_by_operation.append({
+                        "operation": row["operation"],
+                        "count": row["count"],
+                        "tokens": int(row["total_tokens"]) if row["total_tokens"] else 0,
+                        "cost": float(row["total_cost"]) if row["total_cost"] else 0
+                    })
 
-        # 5. Recent activity (last 10 operations)
-        cursor.execute("""
-            SELECT operation, tokens_used, cost_usd, created_at
-            FROM api_usage_log
-            ORDER BY created_at DESC
-            LIMIT 10
-        """)
+                cursor.execute("""
+                    SELECT
+                        COUNT(*) as total_requests,
+                        COALESCE(SUM(tokens_used), 0) as total_tokens,
+                        COALESCE(SUM(cost_usd), 0) as total_cost
+                    FROM api_usage_log
+                    WHERE created_at >= %s
+                """, [start_date])
 
-        recent_rows = cursor.fetchall()
-        recent_activity = [
-            {
-                "operation": row[0],
-                "tokens": row[1],
-                "cost": float(row[2]) if row[2] else 0,
-                "timestamp": row[3].isoformat()
-            }
-            for row in recent_rows
-        ]
+                totals = cursor.fetchone()
+                if totals:
+                    usage_totals = {
+                        "requests": totals["total_requests"] or 0,
+                        "tokens": int(totals["total_tokens"]) if totals["total_tokens"] else 0,
+                        "cost": float(totals["total_cost"]) if totals["total_cost"] else 0
+                    }
+            except psycopg2.Error:
+                pass
 
-        # 6. Cost projection (based on current period's usage)
-        days_in_period = (now - start_date).days or 1
+        # 2. Document Statistics - try new documents table first
+        documents_by_category = []
+        total_documents = 0
+
+        # Try new documents table
+        try:
+            if tenant_id:
+                cursor.execute("""
+                    SELECT category, COUNT(*) as count
+                    FROM documents
+                    WHERE tenant_id = %s
+                    GROUP BY category
+                    ORDER BY count DESC
+                """, [tenant_id])
+            else:
+                cursor.execute("""
+                    SELECT category, COUNT(*) as count
+                    FROM documents
+                    GROUP BY category
+                    ORDER BY count DESC
+                """)
+
+            rows = cursor.fetchall()
+            if rows:
+                for row in rows:
+                    documents_by_category.append({
+                        "category": row["category"],
+                        "count": row["count"]
+                    })
+
+            if tenant_id:
+                cursor.execute("SELECT COUNT(*) as total FROM documents WHERE tenant_id = %s", [tenant_id])
+            else:
+                cursor.execute("SELECT COUNT(*) as total FROM documents")
+
+            result = cursor.fetchone()
+            total_documents = result["total"] if result else 0
+        except psycopg2.Error:
+            pass
+
+        # Fall back to old family_documents if no data
+        if total_documents == 0:
+            try:
+                cursor.execute("""
+                    SELECT category, COUNT(*) as count
+                    FROM family_documents
+                    GROUP BY category
+                    ORDER BY count DESC
+                """)
+
+                rows = cursor.fetchall()
+                for row in rows:
+                    documents_by_category.append({
+                        "category": row["category"],
+                        "count": row["count"]
+                    })
+
+                cursor.execute("SELECT COUNT(*) as total FROM family_documents")
+                result = cursor.fetchone()
+                total_documents = result["total"] if result else 0
+            except psycopg2.Error:
+                pass
+
+        # 3. Tenant statistics (new schema only)
+        tenant_stats = []
+        try:
+            cursor.execute("""
+                SELECT
+                    t.name,
+                    t.slug,
+                    t.plan,
+                    t.ai_allowance_usd,
+                    (SELECT COUNT(*) FROM tenant_memberships
+                     WHERE tenant_id = t.id AND status = 'active') as member_count,
+                    (SELECT COUNT(*) FROM documents WHERE tenant_id = t.id) as doc_count,
+                    (SELECT COALESCE(SUM(cost_usd), 0) FROM ai_usage
+                     WHERE tenant_id = t.id AND created_at >= %s) as period_cost
+                FROM tenants t
+                WHERE t.status = 'active'
+                ORDER BY doc_count DESC
+                LIMIT 10
+            """, [start_date])
+
+            for row in cursor.fetchall():
+                tenant_stats.append({
+                    "name": row["name"],
+                    "slug": row["slug"],
+                    "plan": row["plan"],
+                    "allowance": float(row["ai_allowance_usd"]) if row["ai_allowance_usd"] else 0,
+                    "members": row["member_count"] or 0,
+                    "documents": row["doc_count"] or 0,
+                    "period_cost": float(row["period_cost"]) if row["period_cost"] else 0
+                })
+        except psycopg2.Error:
+            pass
+
+        # 4. User statistics
+        user_stats = {"total_users": 0, "active_users": 0}
+        try:
+            cursor.execute("SELECT COUNT(*) as total FROM users")
+            result = cursor.fetchone()
+            user_stats["total_users"] = result["total"] if result else 0
+
+            cursor.execute("""
+                SELECT COUNT(DISTINCT user_id) as active
+                FROM tenant_memberships
+                WHERE status = 'active' AND last_active >= %s
+            """, [start_date])
+            result = cursor.fetchone()
+            user_stats["active_users"] = result["active"] if result else 0
+        except psycopg2.Error:
+            pass
+
+        # 5. Daily activity
+        daily_activity = []
+        recent_activity = []
+
+        # 6. Cost projection
+        days_in_period = max((now - start_date).days, 1)
         daily_avg_cost = usage_totals["cost"] / days_in_period
         monthly_projection = daily_avg_cost * 30
 
-        # 7. Model usage stats (for cost optimization insights)
-        model_stats = {"by_model": [], "savings_estimate": 0, "threshold_analysis": {}}
-        try:
-            cursor.execute("""
-                SELECT
-                    model_selected,
-                    COUNT(*) as count,
-                    AVG(top_relevance)::NUMERIC(4,3) as avg_relevance,
-                    AVG(latency_ms)::INTEGER as avg_latency,
-                    AVG(response_tokens)::INTEGER as avg_tokens
-                FROM model_usage
-                WHERE created_at >= %s
-                GROUP BY model_selected
-            """, (start_date,))
-
-            model_rows = cursor.fetchall()
-            for row in model_rows:
-                model_stats["by_model"].append({
-                    "model": row[0],
-                    "count": row[1],
-                    "avg_relevance": float(row[2]) if row[2] else 0,
-                    "avg_latency_ms": row[3] or 0,
-                    "avg_tokens": row[4] or 0
-                })
-
-            # Calculate estimated savings from adaptive model selection
-            # Compare actual cost vs if all queries used command-a
-            cursor.execute("""
-                SELECT
-                    COUNT(*) FILTER (WHERE model_selected LIKE 'command-r%') as cheap_count,
-                    COUNT(*) FILTER (WHERE model_selected LIKE 'command-a%') as expensive_count,
-                    AVG(response_tokens) as avg_tokens
-                FROM model_usage
-                WHERE created_at >= %s
-            """, (start_date,))
-
-            savings_row = cursor.fetchone()
-            if savings_row and savings_row[0]:
-                cheap_count = savings_row[0] or 0
-                avg_tokens = savings_row[2] or 200
-                # Estimate: command-r saves ~$0.01 per query vs command-a
-                model_stats["savings_estimate"] = round(cheap_count * 0.01, 2)
-
-            # Threshold analysis - help tune the 0.7 threshold
-            cursor.execute("""
-                SELECT
-                    CASE
-                        WHEN top_relevance > 0.8 THEN 'high (>0.8)'
-                        WHEN top_relevance > 0.7 THEN 'medium (0.7-0.8)'
-                        WHEN top_relevance > 0.5 THEN 'low (0.5-0.7)'
-                        ELSE 'very_low (<0.5)'
-                    END as relevance_bucket,
-                    COUNT(*) as count,
-                    model_selected
-                FROM model_usage
-                WHERE created_at >= %s
-                GROUP BY relevance_bucket, model_selected
-                ORDER BY relevance_bucket
-            """, (start_date,))
-
-            threshold_rows = cursor.fetchall()
-            for row in threshold_rows:
-                bucket = row[0]
-                if bucket not in model_stats["threshold_analysis"]:
-                    model_stats["threshold_analysis"][bucket] = {}
-                model_stats["threshold_analysis"][bucket][row[2]] = row[1]
-
-        except psycopg2.Error:
-            # Table might not exist yet
-            pass
-
-        # 8. System health summary
+        # 7. Health summary
         health_summary = {"services": {}, "recent_issues": []}
         try:
-            # Get latest status for each service
             cursor.execute("""
                 SELECT DISTINCT ON (service)
                     service, status, response_time_ms, created_at
@@ -243,39 +281,16 @@ def main(period: str = "week") -> dict:
                 ORDER BY service, created_at DESC
             """)
 
-            health_rows = cursor.fetchall()
-            for row in health_rows:
-                health_summary["services"][row[0]] = {
-                    "status": row[1],
-                    "response_time_ms": row[2],
-                    "last_check": row[3].isoformat() if row[3] else None
+            for row in cursor.fetchall():
+                health_summary["services"][row["service"]] = {
+                    "status": row["status"],
+                    "response_time_ms": row["response_time_ms"],
+                    "last_check": row["created_at"].isoformat() if row["created_at"] else None
                 }
-
-            # Get recent issues (down or degraded in last 24h)
-            cursor.execute("""
-                SELECT service, status, error_message, created_at
-                FROM health_checks
-                WHERE status != 'up' AND created_at >= NOW() - INTERVAL '24 hours'
-                ORDER BY created_at DESC
-                LIMIT 10
-            """)
-
-            issue_rows = cursor.fetchall()
-            health_summary["recent_issues"] = [
-                {
-                    "service": row[0],
-                    "status": row[1],
-                    "error": row[2],
-                    "timestamp": row[3].isoformat() if row[3] else None
-                }
-                for row in issue_rows
-            ]
-
         except psycopg2.Error:
-            # Table might not exist yet
             pass
 
-        # 9. Error/warning counts from system_logs
+        # 8. Log summary
         log_summary = {"errors": 0, "warnings": 0, "by_category": []}
         try:
             cursor.execute("""
@@ -284,34 +299,14 @@ def main(period: str = "week") -> dict:
                     COUNT(*) FILTER (WHERE level = 'warn') as warnings
                 FROM system_logs
                 WHERE created_at >= %s
-            """, (start_date,))
+            """, [start_date])
 
             log_row = cursor.fetchone()
             if log_row:
-                log_summary["errors"] = log_row[0] or 0
-                log_summary["warnings"] = log_row[1] or 0
-
-            cursor.execute("""
-                SELECT category, level, COUNT(*) as count
-                FROM system_logs
-                WHERE created_at >= %s AND level IN ('error', 'warn')
-                GROUP BY category, level
-                ORDER BY count DESC
-                LIMIT 10
-            """, (start_date,))
-
-            cat_rows = cursor.fetchall()
-            log_summary["by_category"] = [
-                {"category": row[0], "level": row[1], "count": row[2]}
-                for row in cat_rows
-            ]
-
+                log_summary["errors"] = log_row["errors"] or 0
+                log_summary["warnings"] = log_row["warnings"] or 0
         except psycopg2.Error:
-            # Table might not exist yet
             pass
-
-        cursor.close()
-        conn.close()
 
         return {
             "period": period,
@@ -325,6 +320,8 @@ def main(period: str = "week") -> dict:
                 "total": total_documents,
                 "by_category": documents_by_category
             },
+            "tenants": tenant_stats,
+            "users": user_stats,
             "activity": {
                 "daily": daily_activity,
                 "recent": recent_activity
@@ -333,10 +330,15 @@ def main(period: str = "week") -> dict:
                 "daily_avg_cost": round(daily_avg_cost, 6),
                 "monthly_estimate": round(monthly_projection, 4)
             },
-            "model_stats": model_stats,
             "health": health_summary,
             "logs": log_summary
         }
 
     except psycopg2.Error as e:
-        raise RuntimeError(f"Database error: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+    finally:
+        cursor.close()
+        conn.close()
