@@ -12,8 +12,14 @@
 Embed and store a document in the Family Second Brain knowledge base.
 
 This script takes document metadata and content, generates a 1024-dimensional
-embedding using Cohere's embed-english-v3.0 model, and stores it in PostgreSQL
+embedding using Cohere's embed-v4.0 model (April 2025), and stores it in PostgreSQL
 with pgvector for semantic search.
+
+Embed 4 Features:
+- Multimodal support (text + images)
+- 128K context window (can process 200-page documents)
+- Matryoshka embeddings (variable dimensions: 256, 512, 1024, 1536)
+- Improved multilingual support
 
 Args:
     title (str): Document title
@@ -52,9 +58,9 @@ def main(
     """
     Embed and store a document in the knowledge base.
 
-    The document content is embedded using Cohere's embed-english-v3.0 model
-    (1024 dimensions) and stored in PostgreSQL with pgvector for efficient
-    semantic search.
+    The document content is embedded using Cohere's embed-v4.0 model
+    (1024 dimensions, 128K context) and stored in PostgreSQL with pgvector
+    for efficient semantic search.
     """
     # Validate inputs
     if not title or not title.strip():
@@ -73,17 +79,20 @@ def main(
     # Initialize Cohere client
     co = cohere.ClientV2(api_key=cohere_api_key)
 
-    # Generate embedding
+    # Generate embedding using Embed 4 (April 2025)
+    # Using 1024 dimensions for balance of quality and storage efficiency
+    # Embed 4 supports Matryoshka dimensions: 256, 512, 1024, 1536
     try:
         response = co.embed(
             texts=[content],
-            model="embed-english-v3.0",
+            model="embed-v4.0",
             input_type="search_document",
-            embedding_types=["float"]
+            embedding_types=["float"],
+            output_dimension=1024  # Matryoshka: can use 256, 512, 1024, or 1536
         )
         embedding = response.embeddings.float_[0]
         tokens_used = response.meta.billed_units.input_tokens if response.meta and response.meta.billed_units else len(content.split())
-    except cohere.errors.CohereAPIError as e:
+    except Exception as e:
         raise RuntimeError(f"Cohere API error: {str(e)}")
 
     # Connect to PostgreSQL

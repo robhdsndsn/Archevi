@@ -32,6 +32,12 @@ import {
   Shield,
   MessageSquare,
   Upload,
+  Heart,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Cpu,
+  PiggyBank,
 } from 'lucide-react';
 import {
   BarChart,
@@ -46,6 +52,7 @@ import {
   Cell,
   LineChart,
   Line,
+  Legend,
 } from 'recharts';
 import { windmill, type AnalyticsData, type AnalyticsPeriod } from '@/api/windmill';
 import { useAuthStore } from '@/store/auth-store';
@@ -516,6 +523,220 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Model Usage & Cost Optimization */}
+          {data.model_stats && data.model_stats.by_model.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Cpu className="h-4 w-4" />
+                    Model Usage
+                  </CardTitle>
+                  <CardDescription>Adaptive model selection breakdown</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={data.model_stats.by_model.map((m, i) => ({
+                          name: m.model.includes('command-a') ? 'Command A (Powerful)' : 'Command R (Fast)',
+                          value: m.count,
+                          fill: m.model.includes('command-a') ? '#8b5cf6' : '#10b981',
+                        }))}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {data.model_stats.by_model.map((_, index) => (
+                          <Cell key={`cell-${index}`} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                        formatter={(value: number, name: string) => [
+                          `${value} queries`,
+                          name
+                        ]}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="mt-4 space-y-2">
+                    {data.model_stats.by_model.map((model) => (
+                      <div key={model.model} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {model.model.includes('command-a') ? 'Command A' : 'Command R'}
+                        </span>
+                        <span>
+                          {model.avg_latency_ms}ms avg · {model.avg_tokens} tokens
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <PiggyBank className="h-4 w-4" />
+                    Cost Savings
+                  </CardTitle>
+                  <CardDescription>Adaptive selection impact</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-center p-6 rounded-lg bg-green-50 dark:bg-green-950/30">
+                      <p className="text-sm text-green-600 dark:text-green-400">Estimated Savings</p>
+                      <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                        ${data.model_stats.savings_estimate.toFixed(2)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        vs using Command A for all queries
+                      </p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      <p className="font-medium mb-2">Threshold Analysis (0.7)</p>
+                      {Object.entries(data.model_stats.threshold_analysis).map(([bucket, models]) => (
+                        <div key={bucket} className="flex justify-between py-1 border-b last:border-0">
+                          <span>{bucket}</span>
+                          <span>
+                            {Object.entries(models).map(([model, count]) => (
+                              <Badge
+                                key={model}
+                                variant="outline"
+                                className="ml-1 text-xs"
+                              >
+                                {model.includes('command-a') ? 'A' : 'R'}: {count}
+                              </Badge>
+                            ))}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* System Health */}
+          {data.health && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  System Health
+                </CardTitle>
+                <CardDescription>Service status and recent issues</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4 mb-4">
+                  {Object.entries(data.health.services).map(([name, service]) => (
+                    <div
+                      key={name}
+                      className={`p-3 rounded-lg border ${
+                        service.status === 'up'
+                          ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30'
+                          : service.status === 'degraded'
+                          ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30'
+                          : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {service.status === 'up' ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        ) : service.status === 'degraded' ? (
+                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        )}
+                        <span className="font-medium text-sm capitalize">
+                          {name.replace('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {service.response_time_ms}ms
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                {data.health.recent_issues.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      Recent Issues (24h)
+                    </p>
+                    <div className="space-y-2">
+                      {data.health.recent_issues.slice(0, 5).map((issue, i) => (
+                        <div key={i} className="flex items-center justify-between text-sm p-2 rounded bg-muted/50">
+                          <span>
+                            <Badge variant="outline" className="mr-2">{issue.service}</Badge>
+                            {issue.status}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {issue.timestamp && new Date(issue.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {data.health.recent_issues.length === 0 && (
+                  <p className="text-sm text-green-600 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    No issues in the last 24 hours
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Error/Warning Summary */}
+          {data.logs && (data.logs.errors > 0 || data.logs.warnings > 0) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  System Logs
+                </CardTitle>
+                <CardDescription>Errors and warnings this period</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 mb-4">
+                  <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/30 text-center">
+                    <p className="text-2xl font-bold text-red-600">{data.logs.errors}</p>
+                    <p className="text-sm text-muted-foreground">Errors</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950/30 text-center">
+                    <p className="text-2xl font-bold text-yellow-600">{data.logs.warnings}</p>
+                    <p className="text-sm text-muted-foreground">Warnings</p>
+                  </div>
+                </div>
+                {data.logs.by_category.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">By Category</p>
+                    {data.logs.by_category.map((cat, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm py-1 border-b last:border-0">
+                        <span>{cat.category}</span>
+                        <Badge variant={cat.level === 'error' ? 'destructive' : 'secondary'}>
+                          {cat.count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </ScrollArea>
     </div>

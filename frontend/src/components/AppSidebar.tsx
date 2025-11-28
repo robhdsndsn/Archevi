@@ -29,6 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarRail,
 } from '@/components/ui/sidebar';
 import {
   Collapsible,
@@ -55,14 +56,14 @@ const categories = [
 ];
 
 export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin', onViewAsChange }: AppSidebarProps) {
-  const [categoriesOpen, setCategoriesOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const handleNavigate = (view: string) => {
     onNavigate?.(view);
   };
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -168,8 +169,8 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
 
         <SidebarSeparator />
 
-        {/* Categories */}
-        <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+        {/* Categories - hidden when sidebar collapsed to icons */}
+        <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen} className="group-data-[collapsible=icon]:hidden">
           <SidebarGroup>
             <SidebarGroupLabel asChild>
               <CollapsibleTrigger className="flex w-full items-center justify-between">
@@ -217,6 +218,7 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
         </SidebarMenu>
         <NavUser onNavigate={handleNavigate} viewAs={viewAs} onViewAsChange={onViewAsChange} />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

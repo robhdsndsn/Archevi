@@ -13,7 +13,11 @@ import { Archive, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
-export function LoginPage() {
+interface LoginPageProps {
+  onForgotPassword?: () => void;
+}
+
+export function LoginPage({ onForgotPassword }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -111,6 +115,20 @@ export function LoginPage() {
                   </Button>
                 </div>
               </div>
+
+              {/* Forgot Password Link */}
+              {onForgotPassword && (
+                <div className="text-right">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="px-0 text-sm text-muted-foreground hover:text-primary"
+                    onClick={onForgotPassword}
+                  >
+                    Forgot password?
+                  </Button>
+                </div>
+              )}
 
               {/* Submit Button */}
               <Button

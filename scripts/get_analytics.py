@@ -14,12 +14,15 @@ Returns aggregated data about:
 - Document statistics (count by category)
 - Conversation activity (queries over time)
 - Cost projections
+- Model usage stats (command-r vs command-a selection)
+- System health summary
+- Error/warning counts
 
 Args:
     period (str): Time period - 'day', 'week', 'month', 'all' (default: 'week')
 
 Returns:
-    dict: Analytics data with sections for usage, documents, activity, costs
+    dict: Analytics data with sections for usage, documents, activity, costs, model_stats, health
 """
 
 import psycopg2
@@ -158,6 +161,155 @@ def main(period: str = "week") -> dict:
         daily_avg_cost = usage_totals["cost"] / days_in_period
         monthly_projection = daily_avg_cost * 30
 
+        # 7. Model usage stats (for cost optimization insights)
+        model_stats = {"by_model": [], "savings_estimate": 0, "threshold_analysis": {}}
+        try:
+            cursor.execute("""
+                SELECT
+                    model_selected,
+                    COUNT(*) as count,
+                    AVG(top_relevance)::NUMERIC(4,3) as avg_relevance,
+                    AVG(latency_ms)::INTEGER as avg_latency,
+                    AVG(response_tokens)::INTEGER as avg_tokens
+                FROM model_usage
+                WHERE created_at >= %s
+                GROUP BY model_selected
+            """, (start_date,))
+
+            model_rows = cursor.fetchall()
+            for row in model_rows:
+                model_stats["by_model"].append({
+                    "model": row[0],
+                    "count": row[1],
+                    "avg_relevance": float(row[2]) if row[2] else 0,
+                    "avg_latency_ms": row[3] or 0,
+                    "avg_tokens": row[4] or 0
+                })
+
+            # Calculate estimated savings from adaptive model selection
+            # Compare actual cost vs if all queries used command-a
+            cursor.execute("""
+                SELECT
+                    COUNT(*) FILTER (WHERE model_selected LIKE 'command-r%') as cheap_count,
+                    COUNT(*) FILTER (WHERE model_selected LIKE 'command-a%') as expensive_count,
+                    AVG(response_tokens) as avg_tokens
+                FROM model_usage
+                WHERE created_at >= %s
+            """, (start_date,))
+
+            savings_row = cursor.fetchone()
+            if savings_row and savings_row[0]:
+                cheap_count = savings_row[0] or 0
+                avg_tokens = savings_row[2] or 200
+                # Estimate: command-r saves ~$0.01 per query vs command-a
+                model_stats["savings_estimate"] = round(cheap_count * 0.01, 2)
+
+            # Threshold analysis - help tune the 0.7 threshold
+            cursor.execute("""
+                SELECT
+                    CASE
+                        WHEN top_relevance > 0.8 THEN 'high (>0.8)'
+                        WHEN top_relevance > 0.7 THEN 'medium (0.7-0.8)'
+                        WHEN top_relevance > 0.5 THEN 'low (0.5-0.7)'
+                        ELSE 'very_low (<0.5)'
+                    END as relevance_bucket,
+                    COUNT(*) as count,
+                    model_selected
+                FROM model_usage
+                WHERE created_at >= %s
+                GROUP BY relevance_bucket, model_selected
+                ORDER BY relevance_bucket
+            """, (start_date,))
+
+            threshold_rows = cursor.fetchall()
+            for row in threshold_rows:
+                bucket = row[0]
+                if bucket not in model_stats["threshold_analysis"]:
+                    model_stats["threshold_analysis"][bucket] = {}
+                model_stats["threshold_analysis"][bucket][row[2]] = row[1]
+
+        except psycopg2.Error:
+            # Table might not exist yet
+            pass
+
+        # 8. System health summary
+        health_summary = {"services": {}, "recent_issues": []}
+        try:
+            # Get latest status for each service
+            cursor.execute("""
+                SELECT DISTINCT ON (service)
+                    service, status, response_time_ms, created_at
+                FROM health_checks
+                ORDER BY service, created_at DESC
+            """)
+
+            health_rows = cursor.fetchall()
+            for row in health_rows:
+                health_summary["services"][row[0]] = {
+                    "status": row[1],
+                    "response_time_ms": row[2],
+                    "last_check": row[3].isoformat() if row[3] else None
+                }
+
+            # Get recent issues (down or degraded in last 24h)
+            cursor.execute("""
+                SELECT service, status, error_message, created_at
+                FROM health_checks
+                WHERE status != 'up' AND created_at >= NOW() - INTERVAL '24 hours'
+                ORDER BY created_at DESC
+                LIMIT 10
+            """)
+
+            issue_rows = cursor.fetchall()
+            health_summary["recent_issues"] = [
+                {
+                    "service": row[0],
+                    "status": row[1],
+                    "error": row[2],
+                    "timestamp": row[3].isoformat() if row[3] else None
+                }
+                for row in issue_rows
+            ]
+
+        except psycopg2.Error:
+            # Table might not exist yet
+            pass
+
+        # 9. Error/warning counts from system_logs
+        log_summary = {"errors": 0, "warnings": 0, "by_category": []}
+        try:
+            cursor.execute("""
+                SELECT
+                    COUNT(*) FILTER (WHERE level = 'error') as errors,
+                    COUNT(*) FILTER (WHERE level = 'warn') as warnings
+                FROM system_logs
+                WHERE created_at >= %s
+            """, (start_date,))
+
+            log_row = cursor.fetchone()
+            if log_row:
+                log_summary["errors"] = log_row[0] or 0
+                log_summary["warnings"] = log_row[1] or 0
+
+            cursor.execute("""
+                SELECT category, level, COUNT(*) as count
+                FROM system_logs
+                WHERE created_at >= %s AND level IN ('error', 'warn')
+                GROUP BY category, level
+                ORDER BY count DESC
+                LIMIT 10
+            """, (start_date,))
+
+            cat_rows = cursor.fetchall()
+            log_summary["by_category"] = [
+                {"category": row[0], "level": row[1], "count": row[2]}
+                for row in cat_rows
+            ]
+
+        except psycopg2.Error:
+            # Table might not exist yet
+            pass
+
         cursor.close()
         conn.close()
 
@@ -180,7 +332,10 @@ def main(period: str = "week") -> dict:
             "projections": {
                 "daily_avg_cost": round(daily_avg_cost, 6),
                 "monthly_estimate": round(monthly_projection, 4)
-            }
+            },
+            "model_stats": model_stats,
+            "health": health_summary,
+            "logs": log_summary
         }
 
     except psycopg2.Error as e:

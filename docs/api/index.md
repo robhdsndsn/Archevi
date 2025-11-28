@@ -27,12 +27,37 @@ Get your token from Windmill's UI under Settings > Tokens.
 
 ## Endpoints
 
+### Document Management
+
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/jobs/run/p/u/admin/embed_document` | POST | Upload and embed a document |
-| `/jobs/run/p/u/admin/rag_query` | POST | Query documents using RAG |
+| `/jobs/run/p/u/admin/get_document` | POST | Get a single document by ID |
+| `/jobs/run/p/u/admin/update_document` | POST | Update an existing document |
+| `/jobs/run/p/u/admin/delete_document` | POST | Delete a document |
 | `/jobs/run/p/u/admin/search_documents` | POST | Search documents by keyword |
+| `/jobs/run/p/u/admin/parse_pdf` | POST | Parse PDF and extract text |
+
+### Query & Analytics
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/jobs/run/p/u/admin/rag_query` | POST | Query documents using RAG |
+| `/jobs/run/p/u/admin/get_conversation_history` | POST | Get conversation history |
 | `/jobs/run/p/u/admin/get_analytics` | POST | Get usage analytics |
+
+### Family Members
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/jobs/run/p/u/admin/manage_family_members` | POST | Manage family member accounts |
+
+### Authentication & System
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/jobs/run/p/u/admin/auth_request_password_reset` | POST | Request password reset token |
+| `/jobs/run/p/u/admin/health_check` | POST | System health monitoring |
 
 ## Quick Examples
 

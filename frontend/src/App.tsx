@@ -7,7 +7,7 @@ import { DocumentsView } from '@/components/documents';
 import { AnalyticsView } from '@/components/analytics';
 import { SettingsView } from '@/components/settings';
 import { FamilyMembersView } from '@/components/family';
-import { LoginPage } from '@/components/auth';
+import { LoginPage, SetPasswordPage, ForgotPasswordPage } from '@/components/auth';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { useChatStore } from '@/store/chat-store';
@@ -20,8 +20,18 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const [currentView, setCurrentView] = useState('chat');
   const [viewAs, setViewAs] = useState<ViewAsRole>('admin');
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { switchSession } = useChatStore();
   const { isAuthenticated, isLoading, user } = useAuthStore();
+
+  // Check for invite token in URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('token')) {
+      setShowSetPassword(true);
+    }
+  }, []);
 
   // Effective admin status - true only if user is admin AND viewing as admin
   const isEffectiveAdmin = user?.role === 'admin' && viewAs === 'admin';
@@ -98,9 +108,31 @@ function App() {
     );
   }
 
+  // Show set password page for invited users
+  if (showSetPassword) {
+    return (
+      <SetPasswordPage
+        onSuccess={() => {
+          // Clear URL params and show login
+          window.history.replaceState({}, '', window.location.pathname);
+          setShowSetPassword(false);
+        }}
+        onCancel={() => {
+          window.history.replaceState({}, '', window.location.pathname);
+          setShowSetPassword(false);
+        }}
+      />
+    );
+  }
+
+  // Show forgot password page
+  if (showForgotPassword) {
+    return <ForgotPasswordPage onBack={() => setShowForgotPassword(false)} />;
+  }
+
   // Show login page if not authenticated
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return <LoginPage onForgotPassword={() => setShowForgotPassword(true)} />;
   }
 
   // Main authenticated app

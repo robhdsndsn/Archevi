@@ -14,6 +14,14 @@ import type {
   VerifyResult,
   RefreshResult,
   AuthResult,
+  InviteResult,
+  InviteValidationResult,
+  PasswordResetResult,
+  GetDocumentResult,
+  DeleteDocumentResult,
+  UpdateDocumentArgs,
+  UpdateDocumentResult,
+  ParsePDFResult,
 } from './types';
 
 const WINDMILL_URL = import.meta.env.VITE_WINDMILL_URL || 'http://localhost';
@@ -158,6 +166,32 @@ export class WindmillClient {
     );
   }
 
+  /**
+   * Generate an invite link for a family member
+   */
+  async generateInvite(memberId: number): Promise<InviteResult> {
+    return this.request<InviteResult>(
+      '/jobs/run_wait_result/p/f/chatbot/manage_family_members',
+      {
+        method: 'POST',
+        body: JSON.stringify({ action: 'generate_invite', member_id: memberId }),
+      }
+    );
+  }
+
+  /**
+   * Validate an invite token and get member info
+   */
+  async validateInviteToken(token: string): Promise<InviteValidationResult> {
+    return this.request<InviteValidationResult>(
+      '/jobs/run_wait_result/p/f/chatbot/manage_family_members',
+      {
+        method: 'POST',
+        body: JSON.stringify({ action: 'get_by_invite_token', member_data: { token } }),
+      }
+    );
+  }
+
   // ============================================
   // Auth Methods
   // ============================================
@@ -233,6 +267,75 @@ export class WindmillClient {
           invite_token: inviteToken,
           admin_override: adminOverride,
         }),
+      }
+    );
+  }
+
+  /**
+   * Request a password reset token
+   */
+  async requestPasswordReset(email: string): Promise<PasswordResetResult> {
+    return this.request<PasswordResetResult>(
+      '/jobs/run_wait_result/p/f/chatbot/auth_request_password_reset',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }
+    );
+  }
+
+  // ============================================
+  // Document CRUD Methods
+  // ============================================
+
+  /**
+   * Get a single document by ID
+   */
+  async getDocument(documentId: number): Promise<GetDocumentResult> {
+    return this.request<GetDocumentResult>(
+      '/jobs/run_wait_result/p/f/chatbot/get_document',
+      {
+        method: 'POST',
+        body: JSON.stringify({ document_id: documentId }),
+      }
+    );
+  }
+
+  /**
+   * Delete a document by ID
+   */
+  async deleteDocument(documentId: number): Promise<DeleteDocumentResult> {
+    return this.request<DeleteDocumentResult>(
+      '/jobs/run_wait_result/p/f/chatbot/delete_document',
+      {
+        method: 'POST',
+        body: JSON.stringify({ document_id: documentId }),
+      }
+    );
+  }
+
+  /**
+   * Update a document (re-embeds if content changes)
+   */
+  async updateDocument(args: UpdateDocumentArgs): Promise<UpdateDocumentResult> {
+    return this.request<UpdateDocumentResult>(
+      '/jobs/run_wait_result/p/f/chatbot/update_document',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  /**
+   * Parse a PDF file and extract text content
+   */
+  async parsePDF(fileContent: string, filename: string): Promise<ParsePDFResult> {
+    return this.request<ParsePDFResult>(
+      '/jobs/run_wait_result/p/f/chatbot/parse_pdf',
+      {
+        method: 'POST',
+        body: JSON.stringify({ file_content: fileContent, filename }),
       }
     );
   }

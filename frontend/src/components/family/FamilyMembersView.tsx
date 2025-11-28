@@ -52,6 +52,9 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Link2,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { windmill, type FamilyMember, type MemberRole } from '@/api/windmill';
 import { toast } from 'sonner';
@@ -102,6 +105,12 @@ export function FamilyMembersView() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+  // Invite link management
+  const [inviteDialogMember, setInviteDialogMember] = useState<FamilyMember | null>(null);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteExpires, setInviteExpires] = useState<string | null>(null);
+  const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   const fetchMembers = async () => {
     setIsLoading(true);
@@ -261,6 +270,54 @@ export function FamilyMembersView() {
       });
     } finally {
       setIsSettingPassword(false);
+    }
+  };
+
+  const handleGenerateInvite = async (member: FamilyMember) => {
+    setInviteDialogMember(member);
+    setInviteLink(null);
+    setInviteExpires(null);
+    setInviteCopied(false);
+    setIsGeneratingInvite(true);
+
+    try {
+      const result = await windmill.generateInvite(member.id);
+      if (result.success && result.invite_token) {
+        // Build the invite URL
+        const baseUrl = window.location.origin;
+        const inviteUrl = `${baseUrl}?token=${result.invite_token}&email=${encodeURIComponent(result.email || member.email)}`;
+        setInviteLink(inviteUrl);
+        setInviteExpires(result.expires_at || null);
+        fetchMembers(); // Refresh to show invite_pending status
+      } else {
+        toast.error('Failed to generate invite', {
+          description: result.error || 'Please try again.',
+        });
+        setInviteDialogMember(null);
+      }
+    } catch (err) {
+      toast.error('Failed to generate invite', {
+        description: err instanceof Error ? err.message : 'Please try again.',
+      });
+      setInviteDialogMember(null);
+    } finally {
+      setIsGeneratingInvite(false);
+    }
+  };
+
+  const handleCopyInvite = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setInviteCopied(true);
+      toast.success('Invite link copied!', {
+        description: 'Share this link with the family member.',
+      });
+      setTimeout(() => setInviteCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy', {
+        description: 'Please copy the link manually.',
+      });
     }
   };
 
@@ -475,6 +532,17 @@ export function FamilyMembersView() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-1">
+                      {!member.has_password && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Generate invite link"
+                          onClick={() => handleGenerateInvite(member)}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -686,6 +754,88 @@ export function FamilyMembersView() {
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Link Dialog */}
+      <Dialog open={inviteDialogMember !== null} onOpenChange={() => setInviteDialogMember(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5" />
+              Invite Link
+            </DialogTitle>
+            <DialogDescription>
+              {inviteDialogMember
+                ? `Share this link with ${inviteDialogMember.name} so they can set their password`
+                : 'Generate an invite link'}
+            </DialogDescription>
+          </DialogHeader>
+          {isGeneratingInvite ? (
+            <div className="py-8 text-center">
+              <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground">Generating invite link...</p>
+            </div>
+          ) : inviteLink ? (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Invite Link</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={inviteLink}
+                    readOnly
+                    className="font-mono text-xs"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleCopyInvite}
+                    className="shrink-0"
+                  >
+                    {inviteCopied ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              {inviteExpires && (
+                <p className="text-xs text-muted-foreground">
+                  This link expires on {formatDate(inviteExpires)}
+                </p>
+              )}
+              <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                <p className="font-medium mb-1">How to use:</p>
+                <ol className="list-decimal list-inside text-muted-foreground space-y-1 text-xs">
+                  <li>Copy the invite link above</li>
+                  <li>Share it with {inviteDialogMember?.name}</li>
+                  <li>They'll be prompted to set their password</li>
+                  <li>Once set, they can sign in normally</li>
+                </ol>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteDialogMember(null)}>
+              Done
+            </Button>
+            {inviteLink && (
+              <Button onClick={handleCopyInvite}>
+                {inviteCopied ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Link
+                  </>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,9 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Upload, FileText, Loader2, CheckCircle2 } from 'lucide-react';
+import { Upload, FileText, Loader2, CheckCircle2, FileUp, X } from 'lucide-react';
 import { windmill, DOCUMENT_CATEGORIES, type DocumentCategory } from '@/api/windmill';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { parsePDF } from '@/lib/pdf-parser';
 
 interface DocumentUploadProps {
   onSuccess?: () => void;
@@ -31,8 +33,11 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<DocumentCategory | ''>('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<{ name: string; type: string; pageCount?: number } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +73,10 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       setTitle('');
       setContent('');
       setCategory('');
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       onSuccess?.();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to upload document';
@@ -80,27 +89,71 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     }
   };
 
-  const handleFileRead = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileRead = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'text/plain' && !file.name.endsWith('.md')) {
-      setError('Only .txt and .md files are supported');
+    setError(null);
+    const isPDF = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+    const isTextFile = file.type === 'text/plain' || file.name.endsWith('.txt') || file.name.endsWith('.md');
+
+    if (!isPDF && !isTextFile) {
+      setError('Supported formats: PDF, TXT, MD');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      setContent(text);
-      if (!title) {
-        setTitle(file.name.replace(/\.(txt|md)$/, ''));
+    if (isPDF) {
+      // Handle PDF files using client-side parsing
+      setIsParsing(true);
+      setSelectedFile({ name: file.name, type: 'pdf' });
+
+      try {
+        const result = await parsePDF(file);
+
+        if (result.success && result.text) {
+          setContent(result.text);
+          setSelectedFile({ name: file.name, type: 'pdf', pageCount: result.pageCount });
+          if (!title) {
+            setTitle(file.name.replace(/\.pdf$/i, ''));
+          }
+          toast.success('PDF parsed', {
+            description: `Extracted text from ${result.pageCount} page${result.pageCount === 1 ? '' : 's'}.`,
+          });
+        } else {
+          setError(result.error || 'Failed to parse PDF');
+          setSelectedFile(null);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to parse PDF');
+        setSelectedFile(null);
+      } finally {
+        setIsParsing(false);
       }
-    };
-    reader.onerror = () => {
-      setError('Failed to read file');
-    };
-    reader.readAsText(file);
+    } else {
+      // Handle text files
+      setSelectedFile({ name: file.name, type: file.name.endsWith('.md') ? 'md' : 'txt' });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        setContent(text);
+        if (!title) {
+          setTitle(file.name.replace(/\.(txt|md)$/i, ''));
+        }
+      };
+      reader.onerror = () => {
+        setError('Failed to read file');
+        setSelectedFile(null);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    setContent('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -172,26 +225,54 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <Label
-              htmlFor="file"
-              className="text-sm text-muted-foreground cursor-pointer hover:text-foreground"
-            >
-              Or upload a .txt or .md file
-            </Label>
-            <Input
-              id="file"
-              type="file"
-              accept=".txt,.md"
-              onChange={handleFileRead}
-              disabled={isUploading}
-              className="hidden"
-            />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <FileUp className="h-4 w-4 text-muted-foreground" />
+              <Label
+                htmlFor="file"
+                className="text-sm text-muted-foreground cursor-pointer hover:text-foreground"
+              >
+                Upload a file (PDF, TXT, or MD)
+              </Label>
+              <Input
+                id="file"
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,.md"
+                onChange={handleFileRead}
+                disabled={isUploading || isParsing}
+                className="hidden"
+              />
+            </div>
+            {isParsing && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Parsing PDF...
+              </div>
+            )}
+            {selectedFile && !isParsing && (
+              <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                <FileText className="h-4 w-4" />
+                <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
+                <Badge variant="secondary" className="text-xs">
+                  {selectedFile.type.toUpperCase()}
+                  {selectedFile.pageCount && ` (${selectedFile.pageCount} pages)`}
+                </Badge>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={clearFile}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isUploading} className="w-full">
+          <Button type="submit" disabled={isUploading || isParsing} className="w-full">
             {isUploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

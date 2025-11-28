@@ -7,12 +7,12 @@
 #   - wmill
 
 """
-Manage family members: list, add, update, remove.
+Manage family members: list, add, update, remove, generate_invite.
 
 Args:
-    action (str): 'list', 'add', 'update', 'remove'
+    action (str): 'list', 'add', 'update', 'remove', 'generate_invite'
     member_data (dict): Data for the member (for add/update)
-    member_id (int): ID for update/remove operations
+    member_id (int): ID for update/remove/generate_invite operations
 
 Returns:
     dict: Result of the operation with members list or status
@@ -21,6 +21,8 @@ Returns:
 import psycopg2
 from typing import Optional
 import wmill
+import secrets
+from datetime import datetime, timedelta
 
 
 def main(
@@ -185,6 +187,73 @@ def main(
             cursor.close()
             conn.close()
             return {"success": True, "message": f"Member '{row[1]}' removed successfully"}
+
+        elif action == "generate_invite":
+            if not member_id:
+                return {"success": False, "error": "member_id required for generate_invite action"}
+
+            # Generate a secure invite token (32 bytes = 64 hex chars)
+            invite_token = secrets.token_urlsafe(32)
+            # Token expires in 7 days
+            invite_expires = datetime.utcnow() + timedelta(days=7)
+
+            cursor.execute("""
+                UPDATE family_members
+                SET invite_token = %s,
+                    invite_expires = %s
+                WHERE id = %s AND is_active = true
+                RETURNING id, email, name, invite_token
+            """, (invite_token, invite_expires, member_id))
+
+            row = cursor.fetchone()
+            if not row:
+                return {"success": False, "error": "Member not found or inactive"}
+
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            return {
+                "success": True,
+                "member_id": row[0],
+                "email": row[1],
+                "name": row[2],
+                "invite_token": row[3],
+                "expires_at": invite_expires.isoformat(),
+                "message": f"Invite link generated for {row[2]}"
+            }
+
+        elif action == "get_by_invite_token":
+            # Validate an invite token and return member info
+            token = member_data.get("token") if member_data else None
+            if not token:
+                return {"success": False, "error": "token required in member_data"}
+
+            cursor.execute("""
+                SELECT id, email, name, role, invite_expires
+                FROM family_members
+                WHERE invite_token = %s
+                  AND is_active = true
+                  AND invite_expires > NOW()
+            """, (token,))
+
+            row = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            if not row:
+                return {"success": False, "error": "Invalid or expired invite token"}
+
+            return {
+                "success": True,
+                "member": {
+                    "id": row[0],
+                    "email": row[1],
+                    "name": row[2],
+                    "role": row[3],
+                    "invite_expires": row[4].isoformat() if row[4] else None
+                }
+            }
 
         else:
             return {"success": False, "error": f"Unknown action: {action}"}

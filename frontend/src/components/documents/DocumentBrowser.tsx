@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -15,6 +17,24 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -30,8 +50,12 @@ import {
   Receipt,
   Calendar,
   TrendingUp,
+  Pencil,
+  Trash2,
+  Eye,
 } from 'lucide-react';
-import { windmill, DOCUMENT_CATEGORIES, type Document, type DocumentCategory } from '@/api/windmill';
+import { windmill, DOCUMENT_CATEGORIES, type Document, type DocumentCategory, type FullDocument } from '@/api/windmill';
+import { toast } from 'sonner';
 
 const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
   recipes: <ChefHat className="h-4 w-4" />,
@@ -45,9 +69,12 @@ const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
 
 interface DocumentCardProps {
   document: Document;
+  onView: (id: number) => void;
+  onEdit: (id: number) => void;
+  onDelete: (id: number, title: string) => void;
 }
 
-function DocumentCard({ document }: DocumentCardProps) {
+function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps) {
   const icon = CATEGORY_ICONS[document.category] || <FileText className="h-4 w-4" />;
   const categoryLabel = DOCUMENT_CATEGORIES.find(c => c.value === document.category)?.label || document.category;
 
@@ -60,7 +87,7 @@ function DocumentCard({ document }: DocumentCardProps) {
   const relevancePercent = Math.round(document.relevance_score * 100);
 
   return (
-    <Card className="hover:bg-accent/50 transition-colors">
+    <Card className="hover:bg-accent/50 transition-colors group">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -69,9 +96,40 @@ function DocumentCard({ document }: DocumentCardProps) {
               {document.title}
             </CardTitle>
           </div>
-          <Badge variant="secondary" className="shrink-0">
-            {categoryLabel}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge variant="secondary" className="shrink-0">
+              {categoryLabel}
+            </Badge>
+            <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => onView(document.id)}
+                title="View document"
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => onEdit(document.id)}
+                title="Edit document"
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-destructive hover:text-destructive"
+                onClick={() => onDelete(document.id, document.title)}
+                title="Delete document"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -103,6 +161,20 @@ export function DocumentBrowser() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // View/Edit/Delete state
+  const [viewDocument, setViewDocument] = useState<FullDocument | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDocument, setEditDocument] = useState<FullDocument | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: number; title: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Edit form state
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editCategory, setEditCategory] = useState<DocumentCategory>('general');
+
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
@@ -127,6 +199,100 @@ export function DocumentBrowser() {
       setDocuments([]);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleView = async (id: number) => {
+    setIsLoading(true);
+    try {
+      const result = await windmill.getDocument(id);
+      if (result.success && result.document) {
+        setViewDocument(result.document);
+        setViewDialogOpen(true);
+      } else {
+        toast.error(result.error || 'Failed to load document');
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to load document');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEdit = async (id: number) => {
+    setIsLoading(true);
+    try {
+      const result = await windmill.getDocument(id);
+      if (result.success && result.document) {
+        setEditDocument(result.document);
+        setEditTitle(result.document.title);
+        setEditContent(result.document.content);
+        setEditCategory(result.document.category);
+        setEditDialogOpen(true);
+      } else {
+        toast.error(result.error || 'Failed to load document');
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to load document');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editDocument) return;
+
+    setIsLoading(true);
+    try {
+      const result = await windmill.updateDocument({
+        document_id: editDocument.id,
+        title: editTitle !== editDocument.title ? editTitle : undefined,
+        content: editContent !== editDocument.content ? editContent : undefined,
+        category: editCategory !== editDocument.category ? editCategory : undefined,
+      });
+
+      if (result.success) {
+        toast.success(result.message || 'Document updated');
+        setEditDialogOpen(false);
+        setEditDocument(null);
+        // Refresh search results
+        if (hasSearched && searchTerm) {
+          handleSearch();
+        }
+      } else {
+        toast.error(result.error || 'Failed to update document');
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update document');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (id: number, title: string) => {
+    setDocumentToDelete({ id, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!documentToDelete) return;
+
+    setIsLoading(true);
+    try {
+      const result = await windmill.deleteDocument(documentToDelete.id);
+      if (result.success) {
+        toast.success(result.message || 'Document deleted');
+        setDeleteDialogOpen(false);
+        setDocumentToDelete(null);
+        // Remove from local state
+        setDocuments(docs => docs.filter(d => d.id !== documentToDelete.id));
+      } else {
+        toast.error(result.error || 'Failed to delete document');
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete document');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -209,7 +375,13 @@ export function DocumentBrowser() {
             <ScrollArea className="h-[calc(100vh-24rem)]">
               <div className="grid gap-3 md:grid-cols-2">
                 {documents.map((doc) => (
-                  <DocumentCard key={doc.id} document={doc} />
+                  <DocumentCard
+                    key={doc.id}
+                    document={doc}
+                    onView={handleView}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                  />
                 ))}
               </div>
             </ScrollArea>
@@ -229,6 +401,135 @@ export function DocumentBrowser() {
           </div>
         </Card>
       )}
+
+      {/* View Document Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {viewDocument && CATEGORY_ICONS[viewDocument.category]}
+              {viewDocument?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {viewDocument && (
+                <Badge variant="secondary" className="mt-1">
+                  {DOCUMENT_CATEGORIES.find(c => c.value === viewDocument.category)?.label}
+                </Badge>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[50vh] mt-4">
+            <div className="whitespace-pre-wrap text-sm">
+              {viewDocument?.content}
+            </div>
+          </ScrollArea>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <div className="text-xs text-muted-foreground">
+              {viewDocument?.created_at && (
+                <span>Created: {new Date(viewDocument.created_at).toLocaleDateString()}</span>
+              )}
+              {viewDocument?.updated_at && viewDocument.updated_at !== viewDocument.created_at && (
+                <span className="ml-4">Updated: {new Date(viewDocument.updated_at).toLocaleDateString()}</span>
+              )}
+            </div>
+            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Document Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Document</DialogTitle>
+            <DialogDescription>
+              Make changes to your document. Content changes will update the AI search index.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Title</Label>
+              <Input
+                id="edit-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Document title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-category">Category</Label>
+              <Select value={editCategory} onValueChange={(v) => setEditCategory(v as DocumentCategory)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOCUMENT_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-content">Content</Label>
+              <Textarea
+                id="edit-content"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder="Document content"
+                className="min-h-[200px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{documentToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

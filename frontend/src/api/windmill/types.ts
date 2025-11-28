@@ -105,6 +105,33 @@ export interface RecentActivity {
   timestamp: string;
 }
 
+export interface ModelUsageStats {
+  model: string;
+  count: number;
+  avg_relevance: number;
+  avg_latency_ms: number;
+  avg_tokens: number;
+}
+
+export interface HealthService {
+  status: 'up' | 'down' | 'degraded';
+  response_time_ms: number;
+  last_check: string | null;
+}
+
+export interface HealthIssue {
+  service: string;
+  status: string;
+  error: string | null;
+  timestamp: string | null;
+}
+
+export interface LogSummaryCategory {
+  category: string;
+  level: string;
+  count: number;
+}
+
 export interface AnalyticsData {
   period: AnalyticsPeriod;
   start_date: string;
@@ -128,6 +155,20 @@ export interface AnalyticsData {
   projections: {
     daily_avg_cost: number;
     monthly_estimate: number;
+  };
+  model_stats?: {
+    by_model: ModelUsageStats[];
+    savings_estimate: number;
+    threshold_analysis: Record<string, Record<string, number>>;
+  };
+  health?: {
+    services: Record<string, HealthService>;
+    recent_issues: HealthIssue[];
+  };
+  logs?: {
+    errors: number;
+    warnings: number;
+    by_category: LogSummaryCategory[];
   };
 }
 
@@ -200,5 +241,91 @@ export interface RefreshResult {
 export interface AuthResult {
   success: boolean;
   message?: string;
+  error?: string;
+}
+
+// Invite types
+export interface InviteResult {
+  success: boolean;
+  member_id?: number;
+  email?: string;
+  name?: string;
+  invite_token?: string;
+  expires_at?: string;
+  message?: string;
+  error?: string;
+}
+
+export interface InviteValidationResult {
+  success: boolean;
+  member?: {
+    id: number;
+    email: string;
+    name: string;
+    role: MemberRole;
+    invite_expires: string | null;
+  };
+  error?: string;
+}
+
+// Password reset types
+export interface PasswordResetResult {
+  success: boolean;
+  reset_token?: string;
+  email?: string;
+  name?: string;
+  expires_at?: string;
+  message?: string;
+  error?: string;
+}
+
+// Document CRUD types
+export interface FullDocument {
+  id: number;
+  title: string;
+  content: string;
+  category: DocumentCategory;
+  source_file: string | null;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface GetDocumentResult {
+  success: boolean;
+  document: FullDocument | null;
+  error?: string;
+}
+
+export interface DeleteDocumentResult {
+  success: boolean;
+  message?: string;
+  deleted_title?: string;
+  deleted_id?: number;
+  error?: string;
+}
+
+export interface UpdateDocumentArgs {
+  document_id: number;
+  title?: string;
+  content?: string;
+  category?: DocumentCategory;
+}
+
+export interface UpdateDocumentResult {
+  success: boolean;
+  message?: string;
+  document_id?: number;
+  re_embedded?: boolean;
+  tokens_used?: number;
+  error?: string;
+}
+
+// PDF parsing types
+export interface ParsePDFResult {
+  success: boolean;
+  text?: string;
+  page_count?: number;
+  filename?: string;
   error?: string;
 }

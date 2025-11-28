@@ -84,15 +84,16 @@
 
 ### Data Flow
 
-1. **User submits query** → Windmill Text Input component
-2. **Button triggers** → `f/chatbot/rag_query` script
+1. **User submits query** → React frontend chat interface
+2. **API call triggers** → `f/chatbot/rag_query` script via Windmill
 3. **Script workflow:**
-   - Embed query with Cohere (`embed-english-v3.0`)
+   - Embed query with Cohere (`embed-v4.0`, 1024 dimensions)
    - Search pgvector for top 10 similar documents (cosine similarity)
-   - Rerank top 10 to get best 3 (Cohere Rerank v3)
-   - Generate answer with Command-R using context
-   - Return `{answer, sources, confidence}`
-4. **Response displays** → Rich Text component
+   - Rerank top 10 using Cohere Rerank v3.5 with YAML-formatted docs
+   - Generate answer with Command A (111B params) using retrieved context
+   - Calculate weighted confidence score (50% top, 30% second, 20% third)
+   - Return `{answer, sources, confidence, session_id}`
+4. **Response displays** → React chat UI with relevance percentages
 5. **Conversation stored** → PostgreSQL for history
 
 ---
@@ -102,12 +103,22 @@
 | Component | Technology | Why This Choice |
 |-----------|-----------|-----------------|
 | **Workflow Platform** | Windmill (self-hosted) | Free unlimited executions, native Claude Code integration via MCP, built-in UI editor |
-| **Embeddings** | Cohere Embed English v3.0 (1024d) | $0.10 per 1M tokens, high quality, optimized for RAG |
-| **Reranking** | Cohere Rerank English v3.0 | $1.00 per 1M tokens, improves retrieval accuracy |
-| **Generation** | Cohere Command-R7B | $0.0375/$0.15 per 1M tokens (input/output), cost-effective for chat |
+| **Embeddings** | Cohere Embed v4.0 (1024d) | $0.10 per 1M tokens, **multimodal**, 128K context, Matryoshka embeddings |
+| **Reranking** | Cohere Rerank v3.5 | $2.00 per 1K searches, state-of-the-art multilingual retrieval |
+| **Generation** | Cohere Command A | $2.50/1M input, $10/1M output, 111B parameters, 256K context |
 | **Vector Database** | PostgreSQL + pgvector | Free, proven reliability, no separate service needed |
-| **Frontend** | Windmill App Editor (Svelte) | Built-in, 60+ components, no custom code needed |
+| **Frontend** | React + Vite + shadcn/ui | Modern stack with excellent DX and component library |
 | **Backend** | Python 3.11+ | Native Windmill support, rich ecosystem |
+
+### Model Upgrades (May 2025)
+
+We upgraded to the latest Cohere models for improved performance:
+
+| Model | Previous | Current | Key Benefits |
+|-------|----------|---------|--------------|
+| Embeddings | embed-english-v3.0 | **embed-v4.0** | Multimodal, 128K context, 200-page docs |
+| Generation | command-r | **command-a-03-2025** | 111B params, 256K context, 150% faster |
+| Reranking | rerank-english-v3.0 | **rerank-v3.5** | Best multilingual, YAML-formatted input |
 
 ### Why NOT Other Options
 
@@ -1039,27 +1050,45 @@ find backups/ -name "family_brain_*.sql.gz" -mtime +30 -delete
 - Average query retrieves 10 documents
 - Average response: 200 tokens
 
-**Cohere API Costs:**
+**Cohere API Costs (Updated May 2025):**
 
 | Operation | Usage | Rate | Cost |
 |-----------|-------|------|------|
 | Initial Embedding (100 docs @ 500 tokens avg) | 50,000 tokens | $0.10 / 1M | $0.005 |
 | Query Embeddings (900 @ 50 tokens) | 45,000 tokens | $0.10 / 1M | $0.0045 |
-| Reranking (900 queries × 10 docs) | 9,000 searches | $1.00 / 1M | $0.009 |
-| Generation (900 × 200 tokens output) | 180,000 tokens | $0.15 / 1M | $0.027 |
+| Reranking (900 queries × 10 docs) | 9,000 searches | $2.00 / 1K | $0.018 |
+| Generation Input (900 × ~1500 tokens context) | 1,350,000 tokens | $2.50 / 1M | $3.38 |
+| Generation Output (900 × 200 tokens) | 180,000 tokens | $10.00 / 1M | $1.80 |
 
-**Total Cohere: ~$0.05/month**
+**Total Cohere: ~$5.21/month** (with Command A)
 
 **Infrastructure (Self-Hosted):**
 - VPS (2 vCPU, 4GB RAM): $10-20/month (DigitalOcean, Hetzner)
 - Domain name: $1/month (optional)
 
-**Total Monthly: $10-20/month**
+**Total Monthly: $15-25/month**
 
-**Cost Reduction Tips:**
-1. Use Command-R7B instead of Command-R (60% cheaper)
-2. Reduce reranking to top 5 instead of 10 (-50% rerank cost)
-3. Self-host on home server (free infrastructure)
+**Cost per Query: ~$0.006** (~0.6 cents)
+
+### Cost Comparison: Old vs New Stack
+
+| Stack | Cost per 1K Queries |
+|-------|---------------------|
+| Old (command-r, embed-v3, rerank-v3) | ~$2.02 |
+| New (command-a, embed-v4, rerank-v3.5) | ~$5.79 |
+| **Difference** | +$3.77 (~3x) |
+
+The increased cost is justified by:
+- 150% faster generation throughput
+- Better answer quality (111B vs smaller model)
+- Multimodal embedding capability (future image support)
+- Improved relevance scoring
+
+**Cost Optimization Options:**
+1. Use Command R for simple queries, Command A for complex ones
+2. Reduce context window by limiting document chunks
+3. Cache frequent queries/embeddings
+4. Self-host on home server (free infrastructure)
 
 ---
 
@@ -1383,7 +1412,55 @@ The human will handle UI construction in Phase 4 manually, as Claude Code cannot
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 2025  
-**Author:** Generated for Claude Code implementation  
+---
+
+## Changelog
+
+### v2.0 - May 2025 (Cohere Model Upgrades)
+
+**Backend Improvements:**
+- Upgraded embedding model from `embed-english-v3.0` to `embed-v4.0`
+  - Multimodal support (text + images)
+  - 128K context window (can process 200-page documents)
+  - Matryoshka embeddings (variable dimensions: 256, 512, 1024, 1536)
+- Upgraded generation model from `command-r` to `command-a-03-2025`
+  - 111B parameters (vs Command R's smaller size)
+  - 256K context window
+  - 150% higher throughput
+- Upgraded rerank model from `rerank-english-v3.0` to `rerank-v3.5`
+  - State-of-the-art multilingual retrieval
+  - YAML-formatted document input for better ranking
+
+**Scoring Improvements:**
+- Implemented weighted confidence calculation (50% top, 30% second, 20% third result)
+- Improved fallback similarity formula: `1.0 / (1.0 + distance)` for better score spread
+- Added relevance percentages to source citations in UI
+
+**Frontend Improvements:**
+- Client-side PDF parsing using PDF.js (pdfjs-dist)
+- No longer requires backend PDF parsing script
+- Supports PDFs up to 200 pages with text extraction
+
+**Windmill Deployment Hashes:**
+- `embed_document`: `b11bcf2f9b9cd4ff` (Embed 4)
+- `rag_query`: `60b894f5184c0d70` (Adaptive model selection + Embed 4 + Rerank v3.5)
+
+**Adaptive Model Selection (Cost Optimization):**
+- High relevance (>0.7) → `command-r` (cheap: $0.15/$0.60 per 1M tokens)
+- Low relevance (≤0.7) → `command-a` (powerful: $2.50/$10 per 1M tokens)
+- Response now includes `model_used` and `top_relevance` for monitoring
+- Expected savings: ~60% at scale (assuming 70% of queries are simple lookups)
+
+### v1.0 - November 2025 (Initial Implementation)
+
+- Basic RAG pipeline with Cohere embed-english-v3.0, rerank-english-v3.0, command-r
+- PostgreSQL + pgvector for vector storage
+- React frontend with shadcn/ui components
+- Document upload with PDF/TXT/MD support
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** May 2025
+**Author:** Generated for Claude Code implementation
 **License:** Internal use only (family project)
