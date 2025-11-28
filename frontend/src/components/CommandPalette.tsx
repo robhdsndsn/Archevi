@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import {
   CommandDialog,
   CommandEmpty,
@@ -32,8 +32,17 @@ interface CommandPaletteProps {
   isDark?: boolean;
 }
 
-export function CommandPalette({ onToggleTheme, onNavigate, isDark }: CommandPaletteProps) {
+export interface CommandPaletteRef {
+  open: () => void;
+}
+
+export const CommandPalette = forwardRef<CommandPaletteRef, CommandPaletteProps>(
+  function CommandPalette({ onToggleTheme, onNavigate, isDark }, ref) {
   const [open, setOpen] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    open: () => setOpen(true),
+  }));
   const { clearChat, currentSession, createNewSession, sessions } = useChatStore();
   const session = currentSession();
   const messages = session?.messages || [];
@@ -205,5 +214,23 @@ export function CommandPalette({ onToggleTheme, onNavigate, isDark }: CommandPal
         </CommandGroup>
       </CommandList>
     </CommandDialog>
+  );
+});
+
+// Search button component for the header
+export function SearchButton({ onClick }: { onClick: () => void }) {
+  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm text-muted-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+    >
+      <Search className="h-4 w-4" />
+      <span className="hidden sm:inline">Search</span>
+      <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <span className="text-xs">{isMac ? '\u2318' : 'Ctrl'}</span>K
+      </kbd>
+    </button>
   );
 }

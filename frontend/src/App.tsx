@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import { ChatHistory } from '@/components/ChatHistory';
-import { CommandPalette } from '@/components/CommandPalette';
+import { CommandPalette, SearchButton, type CommandPaletteRef } from '@/components/CommandPalette';
 import { AppSidebar } from '@/components/AppSidebar';
 import { DocumentsView } from '@/components/documents';
 import { AnalyticsView } from '@/components/analytics';
@@ -24,6 +24,7 @@ function App() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { switchSession } = useChatStore();
   const { isAuthenticated, isLoading, user } = useAuthStore();
+  const commandPaletteRef = useRef<CommandPaletteRef>(null);
 
   // Check for invite token in URL on mount
   useEffect(() => {
@@ -138,7 +139,7 @@ function App() {
   // Main authenticated app
   return (
     <SidebarProvider>
-      <CommandPalette onToggleTheme={toggleTheme} onNavigate={handleNavigate} isDark={isDark} />
+      <CommandPalette ref={commandPaletteRef} onToggleTheme={toggleTheme} onNavigate={handleNavigate} isDark={isDark} />
       <AppSidebar
           onNavigate={handleNavigate}
           currentView={currentView}
@@ -150,7 +151,8 @@ function App() {
           <SidebarTrigger className="-ml-2" />
           <span className="font-medium">{getViewTitle()}</span>
           <div className="flex-1" />
-          <span className="text-xs text-muted-foreground hidden sm:block">
+          <SearchButton onClick={() => commandPaletteRef.current?.open()} />
+          <span className="text-xs text-muted-foreground hidden sm:block ml-2">
             {user?.name} ({user?.role})
           </span>
         </header>
