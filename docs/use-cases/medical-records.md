@@ -72,9 +72,10 @@ When medications change, upload a new document with the current date. Archevi wi
 
 Medical information is sensitive. With Archevi:
 
-- **Self-hosted:** Data never leaves your servers
-- **Managed:** Data is encrypted and PIPEDA compliant
-- **Access control:** Limit who can see medical documents
+- **Canadian Hosting:** Data stored on Canadian servers, PIPEDA compliant
+- **Encrypted Storage:** All documents encrypted at rest and in transit
+- **Dedicated Database:** Your family's data is isolated from other users
+- **Access Control:** Limit who can see medical documents
 
 ## Tips for Medical Documents
 

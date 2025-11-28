@@ -6,12 +6,14 @@ See how Archevi compares to popular alternatives.
 
 | Feature | Archevi | Notion | Obsidian | Google Drive |
 |---------|---------|--------|----------|--------------|
-| AI Search | Yes (RAG) | Limited | Plugin | Basic |
-| Self-Hosted | Yes | No | Yes | No |
-| Monthly Cost | $2-15 | $20-40 | Free-$10 | Free-$3 |
-| Privacy | Full | Limited | Full | Limited |
-| Family Sharing | Built-in | Extra | Manual | Basic |
-| Learning Curve | Low | Medium | High | Low |
+| AI Search | Yes (RAG + Rerank) | $10/user add-on | Via plugins | Basic keyword |
+| Hosting | Managed (Canadian) | US cloud | Local files | US cloud |
+| Monthly Cost | $14.99 CAD | $20-40 | Free-$10 | Free-$3 |
+| Privacy | PIPEDA compliant | US-hosted | Full (local) | US-hosted |
+| Family Sharing | Built-in | Extra cost | Sync addon | Basic |
+| Voice Notes | Yes (transcribed) | No | Via plugins | Storage only |
+| OCR | Yes (built-in) | No | Via plugins | No |
+| Expiry Alerts | Yes | No | No | No |
 
 ## Detailed Comparisons
 
@@ -21,7 +23,7 @@ See how Archevi compares to popular alternatives.
 
 ## Why Choose Archevi?
 
-1. **True AI Search** - Ask questions in natural language, not keywords
-2. **Privacy First** - Self-host or encrypted managed hosting
-3. **90% Cheaper** - No expensive subscriptions
-4. **Built for Families** - Not just another productivity tool
+1. **True AI Search** - Ask questions in natural language with Cohere RAG
+2. **Canadian Privacy** - PIPEDA compliant, data stays in Canada
+3. **All-Inclusive Pricing** - $14.99/month includes AI, storage, and family sharing
+4. **Built for Families** - Voice notes, expiry alerts, and document organization
