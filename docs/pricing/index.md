@@ -29,7 +29,7 @@ Perfect for most families getting organized.
 
 **+ Cohere API: ~$2-5/month** (you control this)
 
-[Start Free Trial](/guide/getting-started)
+[Start Free Trial](/guide/)
 
 ---
 
@@ -47,7 +47,7 @@ For larger families or heavy usage.
 
 **+ Cohere API: ~$5-10/month** (scales with usage)
 
-[Start Free Trial](/guide/getting-started)
+[Start Free Trial](/guide/)
 
 ---
 
@@ -162,4 +162,4 @@ Yes! 14-day free trial with full features. You'll still need a Cohere API key (t
 | Starter | $14.99/mo | **$9.99/mo** |
 | Family | $24.99/mo | **$16.99/mo** |
 
-Limited spots remaining. [Check availability →](/guide/getting-started)
+Limited spots remaining. [Check availability](/guide/)
