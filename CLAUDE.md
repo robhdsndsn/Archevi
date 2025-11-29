@@ -195,7 +195,7 @@ If you realize you created a duplicate file:
 - **Frontend**: React + Vite + shadcn/ui + Tailwind + Tesseract.js (client-side OCR)
 - **Docs**: VitePress at archevi.ca/guide
 
-### Current Features (v2.3.0)
+### Current Features (v0.3.0 Multi-Tenant)
 
 **Document Management:**
 - PDF upload with text extraction
@@ -283,6 +283,80 @@ Run `f/tenant/test_multi_tenant_system` to create:
 - Project Overview: [[00_PROJECT_OVERVIEW.md]]
 - Master Instructions: [[Master_Claude_Project_Instructions.md]]
 - User Profile: [[00_USER_PROFILE.md]]
+
+---
+
+## NEXT SESSION TODO (Updated Nov 28, 2025 - Evening)
+
+### Immediate (GitHub Polish)
+- [ ] Rewrite GitHub README for public visibility
+- [ ] Add project screenshots or demo GIF
+- [ ] Create marketing-focused feature list highlighting multi-tenant
+- [ ] Document deployment instructions for self-hosting
+
+### High Priority Features
+- [x] ~~Tenant creation/editing UI in admin dashboard~~ DONE
+- [x] ~~Advanced search filters (date range, tags)~~ DONE
+- [ ] Member invitation system (email-based)
+- [ ] Document expiry notification emails
+- [ ] Mobile-responsive improvements
+- [ ] Deploy new Windmill scripts (create_tenant, update_tenant, search_documents_advanced)
+
+### Medium Priority
+- [ ] Bulk document import (ZIP upload)
+- [ ] Document sharing between tenant members
+- [ ] Export chat history as PDF
+- [ ] Replace browser scrollbars with shadcn ScrollArea
+- [ ] Add skeleton loading states for RAG responses
+
+### Infrastructure
+- [ ] Production Docker Compose config
+- [ ] CI/CD pipeline with GitHub Actions
+- [ ] Automated database backup strategy
+- [ ] Per-tenant rate limiting
+
+### Nice-to-Have
+- [ ] Multi-language OCR selection
+- [ ] Document versioning
+- [ ] Custom AI model selection per query
+- [ ] Usage alerts and notifications
+- [ ] Admin audit logging
+
+---
+
+## Recent Session Summary (Nov 28, 2025 - Evening)
+
+### Completed This Session
+1. VitePress documentation updated for v0.3.0
+2. Tenant creation UI with dialog form
+3. Tenant editing UI with settings dialog
+4. Advanced search filters (date range, tags)
+5. New Windmill scripts: create_tenant, update_tenant, search_documents_advanced
+6. All changes pushed to GitHub
+
+### Key Files Changed
+- `docs/` - Updated API, architecture, FAQ, usage docs
+- `frontend/src/components/admin/AdminView.tsx` - Create/edit dialogs
+- `frontend/src/components/documents/DocumentBrowser.tsx` - Advanced filters
+- `frontend/src/api/windmill/types.ts` - New types for tenant CRUD, advanced search
+- `frontend/src/api/windmill/client.ts` - New API methods
+- `scripts/create_tenant.py` - New admin script
+- `scripts/update_tenant.py` - New admin script
+- `scripts/search_documents_advanced.py` - Advanced search with filters
+
+### Previous Session (Earlier Nov 28)
+1. Multi-tenant RAG isolation - VERIFIED (4/4 tests pass)
+2. Admin dashboard with tenant management
+3. TypeScript build errors fixed
+
+### Test Results
+| Test | Result |
+|------|--------|
+| Hudson queries own docs | PASS |
+| Chen queries own docs | PASS |
+| Cross-tenant blocked | PASS |
+| Admin APIs work | PASS |
+| Frontend build | PASS |
 
 ---
 
