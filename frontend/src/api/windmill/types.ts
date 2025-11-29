@@ -426,3 +426,125 @@ export interface GetExpiringDocumentsResult {
   };
   error?: string;
 }
+
+// ============================================
+// Multi-Tenant Admin Types
+// ============================================
+
+export type TenantPlan = 'starter' | 'family' | 'family_office' | 'trial';
+export type TenantStatus = 'active' | 'suspended' | 'cancelled' | 'pending';
+
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  plan: TenantPlan;
+  status: TenantStatus;
+  ai_allowance_usd: number;
+  max_members: number;
+  created_at: string;
+  member_count: number;
+  document_count: number;
+}
+
+export interface TenantMember {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  joined_at: string | null;
+}
+
+export interface TenantDetails {
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+    plan: TenantPlan;
+    status: TenantStatus;
+    ai_allowance_usd: number;
+    max_members: number;
+    max_storage_gb: number;
+    api_mode: string;
+    created_at: string;
+    updated_at: string;
+  };
+  members: TenantMember[];
+  document_stats: {
+    total: number;
+    by_category: Record<string, number>;
+  };
+  usage: {
+    input_tokens_30d: number;
+    output_tokens_30d: number;
+    cost_usd_30d: number;
+    operations_30d: number;
+  };
+  recent_chats: Array<{
+    id: string;
+    title: string;
+    created_at: string;
+  }>;
+}
+
+// Tenant creation/update types
+export interface CreateTenantArgs {
+  name: string;
+  slug: string;
+  plan: TenantPlan;
+  owner_email: string;
+  owner_name: string;
+  ai_allowance_usd?: number;
+  max_members?: number;
+  max_storage_gb?: number;
+}
+
+export interface CreateTenantResult {
+  success: boolean;
+  tenant_id?: string;
+  slug?: string;
+  message?: string;
+  error?: string;
+}
+
+export interface UpdateTenantArgs {
+  tenant_id: string;
+  name?: string;
+  plan?: TenantPlan;
+  status?: TenantStatus;
+  ai_allowance_usd?: number;
+  max_members?: number;
+  max_storage_gb?: number;
+}
+
+export interface UpdateTenantResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+// Plan configurations
+export const TENANT_PLANS: { value: TenantPlan; label: string; description: string }[] = [
+  { value: 'starter', label: 'Starter', description: '5 members, 10GB storage, $3 AI/mo' },
+  { value: 'family', label: 'Family', description: '10 members, 50GB storage, $8 AI/mo' },
+  { value: 'family_office', label: 'Family Office', description: 'Unlimited members & storage' },
+  { value: 'trial', label: 'Trial', description: '14-day free trial' },
+];
+
+// Advanced search types
+export interface AdvancedSearchArgs {
+  search_term?: string;
+  category?: DocumentCategory;
+  date_from?: string;
+  date_to?: string;
+  created_by?: string;
+  tags?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+export interface AdvancedSearchResult {
+  documents: Document[];
+  total: number;
+  has_more: boolean;
+}

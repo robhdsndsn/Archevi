@@ -1,0 +1,211 @@
+# search_documents_advanced.py
+# Windmill Python script for advanced document search
+# Path: f/chatbot/search_documents_advanced
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - cohere
+
+"""
+Search documents with advanced filtering options.
+
+Supports semantic search combined with:
+- Date range filtering
+- Category filtering
+- Tag filtering
+- Pagination
+
+Args:
+    search_term: Optional text search query
+    category: Optional category filter
+    date_from: Optional start date (ISO format)
+    date_to: Optional end date (ISO format)
+    tags: Optional list of tags to filter by
+    limit: Max results (default 20)
+    offset: Pagination offset (default 0)
+    tenant_id: Tenant ID for multi-tenant isolation
+
+Returns:
+    dict: Documents, total count, and pagination info
+"""
+
+import psycopg2
+import cohere
+from datetime import datetime
+from typing import TypedDict, List
+import wmill
+
+
+class Document(TypedDict):
+    id: int
+    title: str
+    content_preview: str
+    category: str
+    relevance_score: float
+    created_at: str
+    tags: List[str]
+
+
+class SearchResult(TypedDict):
+    documents: List[Document]
+    total: int
+    has_more: bool
+
+
+def main(
+    search_term: str | None = None,
+    category: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    tags: List[str] | None = None,
+    limit: int = 20,
+    offset: int = 0,
+    tenant_id: str | None = None,
+) -> SearchResult:
+    """Search documents with advanced filters."""
+
+    postgres_db = wmill.get_resource("f/chatbot/postgres_db")
+
+    conn = psycopg2.connect(
+        host=postgres_db['host'],
+        port=postgres_db['port'],
+        dbname=postgres_db['dbname'],
+        user=postgres_db['user'],
+        password=postgres_db['password'],
+        sslmode=postgres_db.get('sslmode', 'disable')
+    )
+    cursor = conn.cursor()
+
+    # Build query with filters
+    conditions = []
+    params = []
+
+    # Tenant isolation (if multi-tenant)
+    if tenant_id:
+        conditions.append("d.tenant_id = %s")
+        params.append(tenant_id)
+
+    # Category filter
+    if category:
+        conditions.append("d.category = %s")
+        params.append(category)
+
+    # Date range filters
+    if date_from:
+        try:
+            from_date = datetime.fromisoformat(date_from.replace('Z', '+00:00'))
+            conditions.append("d.created_at >= %s")
+            params.append(from_date)
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            to_date = datetime.fromisoformat(date_to.replace('Z', '+00:00'))
+            conditions.append("d.created_at <= %s")
+            params.append(to_date)
+        except ValueError:
+            pass
+
+    # Tag filtering
+    if tags and len(tags) > 0:
+        # Filter documents that have ANY of the specified tags
+        conditions.append("d.tags && %s")
+        params.append(tags)
+
+    # If we have a search term, use vector similarity
+    if search_term and search_term.strip():
+        # Get embedding for search term
+        cohere_api_key = wmill.get_variable("f/chatbot/cohere_api_key")
+        co = cohere.ClientV2(api_key=cohere_api_key)
+
+        response = co.embed(
+            texts=[search_term],
+            model="embed-v4.0",
+            input_type="search_query",
+            embedding_types=["float"]
+        )
+        query_embedding = response.embeddings.float_[0]
+
+        # Build the query with vector similarity
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+        # First get total count
+        count_query = f"""
+            SELECT COUNT(*)
+            FROM documents d
+            WHERE {where_clause}
+              AND d.embedding IS NOT NULL
+        """
+        cursor.execute(count_query, params)
+        total = cursor.fetchone()[0]
+
+        # Then get paginated results with similarity
+        search_query = f"""
+            SELECT
+                d.id,
+                d.title,
+                LEFT(d.content, 200) as content_preview,
+                d.category,
+                1 - (d.embedding <=> %s::vector) as similarity,
+                d.created_at,
+                COALESCE(d.tags, ARRAY[]::text[]) as tags
+            FROM documents d
+            WHERE {where_clause}
+              AND d.embedding IS NOT NULL
+            ORDER BY d.embedding <=> %s::vector
+            LIMIT %s OFFSET %s
+        """
+        cursor.execute(
+            search_query,
+            [query_embedding] + params + [query_embedding, limit, offset]
+        )
+
+    else:
+        # No search term - just filter and order by date
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+        # Get total count
+        count_query = f"SELECT COUNT(*) FROM documents d WHERE {where_clause}"
+        cursor.execute(count_query, params)
+        total = cursor.fetchone()[0]
+
+        # Get paginated results
+        search_query = f"""
+            SELECT
+                d.id,
+                d.title,
+                LEFT(d.content, 200) as content_preview,
+                d.category,
+                0 as similarity,
+                d.created_at,
+                COALESCE(d.tags, ARRAY[]::text[]) as tags
+            FROM documents d
+            WHERE {where_clause}
+            ORDER BY d.created_at DESC
+            LIMIT %s OFFSET %s
+        """
+        cursor.execute(search_query, params + [limit, offset])
+
+    results = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    documents = []
+    for row in results:
+        documents.append({
+            "id": row[0],
+            "title": row[1],
+            "content_preview": row[2] or "",
+            "category": row[3],
+            "relevance_score": float(row[4]) if row[4] else 0,
+            "created_at": row[5].isoformat() if row[5] else "",
+            "tags": list(row[6]) if row[6] else []
+        })
+
+    return {
+        "documents": documents,
+        "total": total,
+        "has_more": offset + len(documents) < total
+    }

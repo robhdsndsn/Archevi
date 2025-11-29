@@ -5,6 +5,7 @@ export type {
   Source,
   WindmillError,
   Document,
+  FullDocument,
   DocumentCategory,
   EmbedDocumentArgs,
   EmbedDocumentResult,
@@ -24,5 +25,16 @@ export type {
   VerifyResult,
   RefreshResult,
   AuthResult,
+  Tenant,
+  TenantDetails,
+  TenantMember,
+  TenantPlan,
+  TenantStatus,
+  CreateTenantArgs,
+  CreateTenantResult,
+  UpdateTenantArgs,
+  UpdateTenantResult,
+  AdvancedSearchArgs,
+  AdvancedSearchResult,
 } from './types';
-export { DOCUMENT_CATEGORIES } from './types';
+export { DOCUMENT_CATEGORIES, TENANT_PLANS } from './types';

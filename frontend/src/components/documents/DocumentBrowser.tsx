@@ -35,6 +35,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -53,6 +57,9 @@ import {
   Pencil,
   Trash2,
   Eye,
+  SlidersHorizontal,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 import { windmill, DOCUMENT_CATEGORIES, type Document, type DocumentCategory, type FullDocument } from '@/api/windmill';
 import { toast } from 'sonner';
@@ -161,6 +168,13 @@ export function DocumentBrowser() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Advanced filters state
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
+
   // View/Edit/Delete state
   const [viewDocument, setViewDocument] = useState<FullDocument | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -175,11 +189,33 @@ export function DocumentBrowser() {
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState<DocumentCategory>('general');
 
+  const hasActiveFilters = dateFrom || dateTo || selectedTags.length > 0;
+
+  const clearFilters = () => {
+    setDateFrom('');
+    setDateTo('');
+    setSelectedTags([]);
+    setTagInput('');
+  };
+
+  const addTag = (tag: string) => {
+    const trimmed = tag.trim().toLowerCase();
+    if (trimmed && !selectedTags.includes(trimmed)) {
+      setSelectedTags([...selectedTags, trimmed]);
+    }
+    setTagInput('');
+  };
+
+  const removeTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter(t => t !== tag));
+  };
+
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
-    if (!searchTerm.trim()) {
-      setError('Please enter a search term');
+    // Allow search with just filters (no search term required if filters are active)
+    if (!searchTerm.trim() && !hasActiveFilters && category === 'all') {
+      setError('Please enter a search term or apply filters');
       return;
     }
 
@@ -188,12 +224,26 @@ export function DocumentBrowser() {
     setHasSearched(true);
 
     try {
-      const results = await windmill.searchDocuments({
-        search_term: searchTerm.trim(),
-        category: category === 'all' ? undefined : category,
-        limit: 10,
-      });
-      setDocuments(results);
+      // Use advanced search if filters are active
+      if (hasActiveFilters) {
+        const result = await windmill.advancedSearchDocuments({
+          search_term: searchTerm.trim() || undefined,
+          category: category === 'all' ? undefined : category,
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+          tags: selectedTags.length > 0 ? selectedTags : undefined,
+          limit: 20,
+        });
+        setDocuments(result.documents);
+      } else {
+        // Use simple search for basic queries
+        const results = await windmill.searchDocuments({
+          search_term: searchTerm.trim(),
+          category: category === 'all' ? undefined : category,
+          limit: 20,
+        });
+        setDocuments(results);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
       setDocuments([]);
@@ -300,15 +350,34 @@ export function DocumentBrowser() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Search Documents
-          </CardTitle>
-          <CardDescription>
-            Find documents in the knowledge base using semantic search
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Search Documents
+              </CardTitle>
+              <CardDescription>
+                Find documents in the knowledge base using semantic search
+              </CardDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="flex items-center gap-2"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="ml-1">
+                  {(dateFrom ? 1 : 0) + (dateTo ? 1 : 0) + selectedTags.length}
+                </Badge>
+              )}
+              <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Input
@@ -344,6 +413,98 @@ export function DocumentBrowser() {
               <span className="ml-2 hidden sm:inline">Search</span>
             </Button>
           </form>
+
+          {/* Advanced Filters */}
+          <Collapsible open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
+            <CollapsibleContent className="space-y-4 pt-4 border-t">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <Label htmlFor="date-from" className="text-sm font-medium">From Date</Label>
+                  <Input
+                    id="date-from"
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    disabled={isSearching}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="date-to" className="text-sm font-medium">To Date</Label>
+                  <Input
+                    id="date-to"
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    disabled={isSearching}
+                  />
+                </div>
+
+                {/* Tags Filter */}
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <Label htmlFor="tags" className="text-sm font-medium">Tags</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="tags"
+                      placeholder="Add tag..."
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addTag(tagInput);
+                        }
+                      }}
+                      disabled={isSearching}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => addTag(tagInput)}
+                      disabled={isSearching || !tagInput.trim()}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selected Tags */}
+              {selectedTags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedTags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="text-muted-foreground"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear all filters
+                  </Button>
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         </CardContent>
       </Card>
 

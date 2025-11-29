@@ -28,6 +28,14 @@ import type {
   TranscribeVoiceNoteResult,
   GetTagsResult,
   GetExpiringDocumentsResult,
+  Tenant,
+  TenantDetails,
+  CreateTenantArgs,
+  CreateTenantResult,
+  UpdateTenantArgs,
+  UpdateTenantResult,
+  AdvancedSearchArgs,
+  AdvancedSearchResult,
 } from './types';
 
 const WINDMILL_URL = import.meta.env.VITE_WINDMILL_URL || 'http://localhost';
@@ -398,6 +406,78 @@ export class WindmillClient {
       {
         method: 'POST',
         body: JSON.stringify({ days }),
+      }
+    );
+  }
+  // ============================================
+  // Admin: Multi-Tenant Management
+  // ============================================
+
+  /**
+   * List all tenants (admin only)
+   */
+  async listTenants(): Promise<Tenant[]> {
+    return this.request<Tenant[]>(
+      '/jobs/run_wait_result/p/f/admin/list_tenants',
+      {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }
+    );
+  }
+
+  /**
+   * Get detailed tenant info (admin only)
+   */
+  async getTenantDetails(tenantId: string): Promise<TenantDetails> {
+    return this.request<TenantDetails>(
+      '/jobs/run_wait_result/p/f/admin/get_tenant_details',
+      {
+        method: 'POST',
+        body: JSON.stringify({ tenant_id: tenantId }),
+      }
+    );
+  }
+
+  /**
+   * Create a new tenant (admin only)
+   */
+  async createTenant(args: CreateTenantArgs): Promise<CreateTenantResult> {
+    return this.request<CreateTenantResult>(
+      '/jobs/run_wait_result/p/f/admin/create_tenant',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  /**
+   * Update an existing tenant (admin only)
+   */
+  async updateTenant(args: UpdateTenantArgs): Promise<UpdateTenantResult> {
+    return this.request<UpdateTenantResult>(
+      '/jobs/run_wait_result/p/f/admin/update_tenant',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  // ============================================
+  // Advanced Search
+  // ============================================
+
+  /**
+   * Search documents with advanced filters
+   */
+  async advancedSearchDocuments(args: AdvancedSearchArgs): Promise<AdvancedSearchResult> {
+    return this.request<AdvancedSearchResult>(
+      '/jobs/run_wait_result/p/f/chatbot/search_documents_advanced',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
       }
     );
   }
