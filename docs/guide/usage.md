@@ -103,21 +103,36 @@ Click on **Sources** to see which documents were used.
 
 ### Adding Members
 
-Admins can invite family members:
+Owners and Admins can invite family members:
 1. Go to **Family Members**
-2. Click **Add Member**
-3. Enter name and email
-4. Choose role (Admin or User)
+2. Click **Invite Member**
+3. Enter email address
+4. Choose role
 
 ### Role Permissions
 
-| Permission | Admin | User |
-|------------|-------|------|
-| View documents | Yes | Yes |
-| Upload documents | Yes | Yes |
-| Delete documents | Yes | No |
-| Manage members | Yes | No |
-| View analytics | Full | Limited |
+| Permission | Owner | Admin | Member | Viewer |
+|------------|-------|-------|--------|--------|
+| View documents | Yes | Yes | Yes | Yes |
+| Upload documents | Yes | Yes | Yes | No |
+| Delete documents | Yes | Yes | No | No |
+| Manage members | Yes | Yes | No | No |
+| View analytics | Full | Full | Limited | No |
+| Billing access | Yes | No | No | No |
+| Delete family | Yes | No | No | No |
+
+### Multi-Family Support
+
+Users can belong to multiple families with different roles in each:
+
+- **Switch families** using the family selector in the sidebar
+- **Different roles** - You might be an Owner of your own family and a Member of your parents' family
+- **Separate data** - Each family's documents and chats are completely isolated
+
+Use cases:
+- Adult children helping elderly parents
+- Blended families with separate knowledge bases
+- Professional organizers managing multiple clients
 
 ## Keyboard Shortcuts
 

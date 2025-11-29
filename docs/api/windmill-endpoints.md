@@ -2,6 +2,10 @@
 
 Complete reference for all Windmill-based API endpoints.
 
+::: info Version 0.3.0
+This documentation reflects the multi-tenant architecture. All endpoints now require `tenant_id` for data isolation.
+:::
+
 ## embed_document
 
 Upload and embed a new document into the knowledge base.
@@ -595,6 +599,310 @@ Authorization: Bearer {token}
   "expires_at": "2024-01-15T11:30:00Z",
   "message": "Password reset token generated for John Doe. Valid for 1 hour."
 }
+```
+
+---
+
+---
+
+## Admin Endpoints
+
+The following endpoints are available to system administrators for tenant management.
+
+---
+
+## list_tenants
+
+List all tenants in the system (admin only).
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/admin/list_tenants
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+No parameters required.
+
+### Response
+
+```json
+{
+  "success": true,
+  "tenants": [
+    {
+      "id": "uuid-123",
+      "name": "The Hudson Family",
+      "slug": "hudson",
+      "plan": "family",
+      "status": "active",
+      "member_count": 4,
+      "document_count": 127,
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "count": 3
+}
+```
+
+---
+
+## get_tenant_details
+
+Get detailed information about a specific tenant (admin only).
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/admin/get_tenant_details
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tenant_id` | string | Yes | UUID of the tenant |
+
+### Example Request
+
+```json
+{
+  "tenant_id": "uuid-123"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "tenant": {
+    "id": "uuid-123",
+    "name": "The Hudson Family",
+    "slug": "hudson",
+    "plan": "family",
+    "status": "active",
+    "ai_allowance_usd": 8.00,
+    "max_members": 10,
+    "max_storage_gb": 50,
+    "created_at": "2024-01-15T10:30:00Z"
+  },
+  "members": [
+    {
+      "user_id": "user-001",
+      "email": "dad@example.com",
+      "name": "Dad Hudson",
+      "role": "owner",
+      "status": "active"
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc-001",
+      "title": "Home Insurance Policy",
+      "category": "insurance",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "usage": {
+    "current_month_usd": 2.45,
+    "total_queries": 89,
+    "total_embeddings": 127
+  }
+}
+```
+
+---
+
+## embed_document_enhanced
+
+Upload a document with AI-enhanced processing (auto-categorization, smart tags, expiry detection).
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/embed_document_enhanced
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tenant_id` | string | Yes | Tenant UUID |
+| `user_id` | string | Yes | User UUID |
+| `title` | string | Yes | Document title |
+| `content` | string | Yes | Full text content |
+| `category` | string | No | Will be auto-detected if not provided |
+
+### Response
+
+```json
+{
+  "success": true,
+  "document_id": "doc_abc123",
+  "ai_enhanced": {
+    "suggested_category": "insurance",
+    "tags": ["home", "policy", "state-farm", "renewal"],
+    "expiry_date": "2025-06-15",
+    "confidence": 0.92
+  },
+  "tokens_used": 1250
+}
+```
+
+---
+
+## transcribe_voice_note
+
+Transcribe a voice recording and optionally embed it.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/transcribe_voice_note
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tenant_id` | string | Yes | Tenant UUID |
+| `user_id` | string | Yes | User UUID |
+| `audio_base64` | string | Yes | Base64-encoded audio file |
+| `language` | string | No | Language code (default: auto-detect) |
+| `embed` | boolean | No | Auto-embed as document (default: true) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "transcript": "Remember to renew the car insurance by June 15th...",
+  "language": "en",
+  "duration_seconds": 45,
+  "document_id": "doc_voice123",
+  "tokens_used": 500
+}
+```
+
+---
+
+## get_tags
+
+Get all unique document tags with counts for a tenant.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/get_tags
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tenant_id` | string | Yes | Tenant UUID |
+
+### Response
+
+```json
+{
+  "success": true,
+  "tags": [
+    { "tag": "insurance", "count": 12 },
+    { "tag": "medical", "count": 8 },
+    { "tag": "recipe", "count": 5 }
+  ]
+}
+```
+
+---
+
+## get_expiring_documents
+
+Get documents with upcoming expiry dates.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/get_expiring_documents
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tenant_id` | string | Yes | Tenant UUID |
+| `days_ahead` | number | No | Days to look ahead (default: 90) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "documents": [
+    {
+      "id": "doc-001",
+      "title": "Car Insurance Policy",
+      "expiry_date": "2025-01-20",
+      "days_until_expiry": 5,
+      "urgency": "urgent"
+    },
+    {
+      "id": "doc-002",
+      "title": "Home Insurance",
+      "expiry_date": "2025-02-15",
+      "days_until_expiry": 31,
+      "urgency": "upcoming"
+    }
+  ],
+  "summary": {
+    "urgent": 1,
+    "soon": 2,
+    "upcoming": 5
+  }
+}
+```
+
+---
+
+## Tenant Management Endpoints
+
+### get_user_tenants
+
+Get all tenants a user belongs to.
+
+```http
+POST /api/w/archevi/jobs/run/p/f/tenant/get_user_tenants
+```
+
+### switch_tenant
+
+Switch the active tenant context for a user.
+
+```http
+POST /api/w/archevi/jobs/run/p/f/tenant/switch_tenant
+```
+
+### invite_to_tenant
+
+Invite a new member to a tenant.
+
+```http
+POST /api/w/archevi/jobs/run/p/f/tenant/invite_to_tenant
 ```
 
 ---

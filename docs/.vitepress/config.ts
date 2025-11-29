@@ -19,8 +19,9 @@ export default defineConfig({
 
     nav: [
       { text: 'Guide', link: '/guide/' },
+      { text: 'API', link: '/api/' },
+      { text: 'Architecture', link: '/architecture/multi-tenant-design' },
       { text: 'Use Cases', link: '/use-cases/' },
-      { text: 'Comparison', link: '/comparison/' },
       { text: 'Pricing', link: '/pricing/' }
     ],
 
@@ -33,6 +34,27 @@ export default defineConfig({
             { text: 'Using Archevi', link: '/guide/usage' },
             { text: 'BYOK Setup (Optional)', link: '/guide/byok-setup' },
             { text: 'FAQ', link: '/guide/faq' }
+          ]
+        }
+      ],
+
+      '/api/': [
+        {
+          text: 'API Reference',
+          items: [
+            { text: 'Overview', link: '/api/' },
+            { text: 'Windmill Endpoints', link: '/api/windmill-endpoints' },
+            { text: 'Frontend API', link: '/api/frontend-api' }
+          ]
+        }
+      ],
+
+      '/architecture/': [
+        {
+          text: 'Architecture',
+          items: [
+            { text: 'Multi-Tenant Design', link: '/architecture/multi-tenant-design' },
+            { text: 'API Key Management', link: '/architecture/api-key-management' }
           ]
         }
       ],

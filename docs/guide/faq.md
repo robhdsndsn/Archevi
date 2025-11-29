@@ -108,7 +108,20 @@ Yes! Depending on your plan:
 - **Family**: Unlimited family members
 - **Family Office**: Unlimited with custom roles
 
-Each member can have different permission levels (Admin or User).
+Each member can have different permission levels:
+- **Owner** - Full control, billing access
+- **Admin** - Manage members, all documents
+- **Member** - Add/view documents, chat
+- **Viewer** - Read-only access
+
+### Can I belong to multiple families?
+
+Yes! The multi-tenant architecture supports users belonging to multiple families. For example:
+- Adult children managing elderly parents' family + their own
+- Blended families with separate knowledge bases
+- Professional organizers managing multiple clients
+
+Switch between families using the family selector in the sidebar.
 
 ### Does it work on mobile?
 
@@ -201,9 +214,20 @@ A Discord community is coming soon! [Join the waitlist](https://archevi.ca/commu
 
 ## Roadmap
 
-### What's New in v2.3.0?
+### What's New in v0.3.0?
 
-We've recently launched several powerful AI features:
+Major multi-tenant architecture release:
+
+- **Multi-Tenant Architecture** - Complete data isolation between families
+- **Multi-Family Support** - Users can belong to multiple families with different roles
+- **Admin Dashboard** - System-wide tenant management for administrators
+- **Plan-Based Limits** - Starter, Family, and Family Office tiers
+- **Per-Tenant AI Tracking** - Usage and cost monitoring per family
+- **Verified Isolation** - Cross-tenant queries are blocked (tested and verified)
+
+### What's New in v0.2.0?
+
+AI-enhanced document features:
 
 - **Voice Notes** - Record and transcribe voice memos (Groq Whisper)
 - **Document OCR** - Scan paper documents and extract text (Tesseract.js)
@@ -213,12 +237,13 @@ We've recently launched several powerful AI features:
 
 ### What features are coming?
 
+- Tenant creation UI in admin dashboard
+- Member invitation system (email-based)
+- Document expiry notification emails
+- Mobile-responsive improvements
+- Bulk document import (ZIP upload)
+- Advanced search filters (date range, category)
 - Mobile native apps (iOS/Android)
-- Deep Search mode (agent-driven multi-step retrieval)
-- Multi-language support (French first)
-- Calendar integration for expiry dates
-- Email notifications for expiring documents
-- Camera scanning for mobile
 
 ### Can I request features?
 

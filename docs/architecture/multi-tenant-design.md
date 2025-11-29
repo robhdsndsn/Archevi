@@ -1,5 +1,9 @@
 # Multi-Tenant Architecture
 
+::: tip Version 0.3.0
+Multi-tenant isolation has been implemented and verified. Cross-tenant data access is completely blocked.
+:::
+
 ## Overview
 
 Archevi supports users belonging to multiple families (tenants) with different roles. This enables use cases like:
@@ -181,18 +185,35 @@ def rag_query(tenant_id: str, user_id: str, query: str):
 - Row Level Security (RLS) available for direct DB access
 - No cross-tenant queries possible through API
 
+### Verified Isolation Testing
+
+The multi-tenant isolation has been tested and verified:
+
+| Test Case | Expected | Result |
+|-----------|----------|--------|
+| Family A queries own documents | Returns Family A docs only | PASS |
+| Family B queries own documents | Returns Family B docs only | PASS |
+| Family A queries for Family B data | No results (blocked) | PASS |
+| Family B queries for Family A data | No results (blocked) | PASS |
+
+**RAG queries are fully isolated** - the vector similarity search includes a mandatory `tenant_id` filter, ensuring documents from other tenants are never returned regardless of semantic similarity.
+
 ### Billing Isolation
 
 - Each tenant has own Stripe customer
 - AI usage tracked per tenant
 - Overages billed to tenant's payment method
 
-### Subdomain Routing
+### URL Routing
+
+Path-based routing for simplicity:
 
 ```
-hudson.archevi.ca -> tenant_id: abc123
-smith.archevi.ca -> tenant_id: def456
+archevi.ca/f/hudson -> tenant_id: abc123
+archevi.ca/f/smith  -> tenant_id: def456
 ```
+
+Subdomain routing (`hudson.archevi.ca`) is planned for future releases.
 
 ## Provisioning Flow
 
