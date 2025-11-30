@@ -1,0 +1,125 @@
+JOHNSON FAMILY MEDICAL RECORDS SUMMARY
+Family Healthcare Provider: Hamilton Family Health Centre
+Address: 567 Medical Drive, Hamilton, ON L8P 3R2
+Phone: (905) 555-0400
+
+DAVID JOHNSON (Age 42)
+Health Card: 1234-567-890-DJ
+Primary Doctor: Dr. Michael Roberts, MD
+Last Physical: September 15, 2024
+
+Medical History:
+- Type 2 Diabetes (diagnosed 2019)
+- High cholesterol (managed with medication)
+- Seasonal allergies
+
+Current Medications:
+- Metformin 1000mg twice daily (diabetes)
+- Atorvastatin 20mg daily (cholesterol)
+- Reactine 10mg as needed (allergies)
+
+Allergies: Shellfish (moderate reaction)
+Emergency Contact: Maria Johnson (905) 555-0143
+
+Recent Tests/Appointments:
+- HbA1c: 6.8% (September 2024) - Good control
+- Cholesterol panel: Within normal range
+- Next appointment: December 15, 2024
+
+MARIA JOHNSON (Age 39)  
+Health Card: 1234-567-891-MJ
+Primary Doctor: Dr. Sarah Wilson, MD
+Last Physical: October 8, 2024
+
+Medical History:
+- Hypothyroidism (diagnosed 2020)
+- Migraines (occasional)
+- Previous pregnancy complications (managed)
+
+Current Medications:
+- Synthroid 75mcg daily (thyroid)
+- Sumatriptan as needed (migraines)
+- Multivitamin daily
+
+Allergies: Penicillin (severe), Latex (mild)
+Emergency Contact: David Johnson (905) 555-0142
+
+Recent Tests/Appointments:
+- Thyroid function: Normal (October 2024)
+- Mammogram: Scheduled November 12, 2024
+- Pap test: Normal (August 2024)
+- Next appointment: January 8, 2025
+
+ALEX JOHNSON (Age 12)
+Health Card: 1234-567-892-AJ  
+Pediatrician: Dr. Sarah Chen, MD
+Last Checkup: August 20, 2024 (back-to-school physical)
+
+Medical History:
+- Mild asthma (exercise-induced)
+- No chronic conditions
+
+Current Medications:
+- Ventolin inhaler as needed (asthma)
+- Children's multivitamin
+
+Allergies: None known
+Emergency Contacts: David (905) 555-0142, Maria (905) 555-0143
+
+Recent Activity:
+- All immunizations current
+- Vision/hearing: Normal
+- Growth/development: On track
+- Sports physical: Cleared for all activities
+- Next appointment: February 20, 2025 (annual)
+
+EMMA JOHNSON (Age 9)
+Health Card: 1234-567-893-EJ
+Pediatrician: Dr. Sarah Chen, MD  
+Last Checkup: July 10, 2024 (routine checkup)
+
+Medical History:
+- No chronic conditions
+- Excellent health record
+
+Current Medications:
+- Children's multivitamin
+- None required
+
+Allergies: None known
+Emergency Contacts: David (905) 555-0142, Maria (905) 555-0143
+
+Recent Activity:
+- All immunizations current
+- Vision/hearing: Normal  
+- Growth/development: Excellent
+- No concerns noted
+- Next appointment: January 10, 2025 (annual)
+
+FAMILY MEDICAL INFORMATION
+Health Insurance: Blue Cross Blue Shield (see health-insurance.txt)
+Pharmacy: Hamilton Pharmacy Plus
+Pharmacist Phone: (905) 555-0550
+
+EMERGENCY MEDICAL CONTACTS
+Hamilton General Hospital Emergency: (905) 555-1000
+Children's Emergency After Hours: (905) 555-KIDS
+Poison Control: 1-800-268-9017
+Family Doctor On-Call Service: (905) 555-0400
+
+MEDICAL DIRECTIVES & IMPORTANT NOTES
+- David's diabetes management plan on file with school (Alex/Emma aware)
+- Maria's migraine triggers documented (stress, weather changes)
+- Alex's inhaler locations: Home, school nurse, sports bag
+- All family members' medical records backed up digitally
+- Medical power of attorney documents: See legal-documents.txt
+
+SPECIALIST REFERRALS
+David: Endocrinologist Dr. Jennifer Park (diabetes management)
+Maria: Neurologist Dr. Robert Kim (migraine specialist)  
+Alex: Respirologist Dr. Lisa Zhang (asthma monitoring)
+
+PRESCRIPTION RENEWALS
+David's medications: Auto-renewal every 3 months
+Maria's Synthroid: Auto-renewal every 6 months
+Alex's inhaler: Check expiry monthly, replace as needed

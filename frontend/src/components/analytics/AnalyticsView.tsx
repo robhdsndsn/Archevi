@@ -539,7 +539,7 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={data.model_stats.by_model.map((m, i) => ({
+                        data={data.model_stats.by_model.map((m) => ({
                           name: m.model.includes('command-a') ? 'Command A (Powerful)' : 'Command R (Fast)',
                           value: m.count,
                           fill: m.model.includes('command-a') ? '#8b5cf6' : '#10b981',

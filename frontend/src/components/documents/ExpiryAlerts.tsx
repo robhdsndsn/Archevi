@@ -21,7 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { windmill } from '@/api/windmill';
-import type { ExpiringDocumentDetail, DocumentCategory } from '@/api/windmill/types';
+import type { ExpiringDocumentDetail } from '@/api/windmill/types';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   insurance: <Shield className="h-4 w-4" />,

@@ -68,8 +68,10 @@ No more hunting through PDFs. No more forgotten expiration dates. Your documents
 ### Prerequisites
 
 - Node.js 18+
-- Docker & Docker Compose
+- **Docker Desktop** (must be running for backend services)
 - API keys: [Cohere](https://cohere.com/) (embeddings/chat), [Groq](https://groq.com/) (voice)
+
+> **Note:** Windmill and PostgreSQL run in Docker containers. Start Docker Desktop before running the backend.
 
 ### 1. Clone and Configure
 

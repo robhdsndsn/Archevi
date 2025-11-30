@@ -13,30 +13,30 @@ Content is our primary acquisition engine. We create valuable, searchable conten
 **Week 1**:
 
 1. **"Why We Built Archevi: The Alternative to Notion for Families"**
-   - Personal story
-   - Problem identification
-   - Solution overview
-   - Target: Personal finance, frugal communities
+ - Personal story
+ - Problem identification
+ - Solution overview
+ - Target: Personal finance, frugal communities
 
 2. **"The Hidden Cost of Google Drive: Why Families Need Better Knowledge Management"**
-   - Google Drive limitations
-   - Privacy concerns
-   - Organizational chaos
-   - Target: r/privacy, r/PersonalFinanceCanada
+ - Google Drive limitations
+ - Privacy concerns
+ - Organizational chaos
+ - Target: r/privacy, r/PersonalFinanceCanada
 
 **Week 2**:
 
 3. **"Taking Control of Your Family's Digital Life"**
-   - Benefits of organized family knowledge
-   - Common misconceptions
-   - Getting started guide
-   - Target: r/selfhosted, r/homelab
+ - Benefits of organized family knowledge
+ - Common misconceptions
+ - Getting started guide
+ - Target: r/selfhosted, r/homelab
 
 4. **"PIPEDA and Family Data Privacy: Why It Matters for Canadians"**
-   - Canadian privacy laws
-   - Data sovereignty
-   - Family data protection
-   - Target: Canadian privacy advocates
+ - Canadian privacy laws
+ - Data sovereignty
+ - Family data protection
+ - Target: Canadian privacy advocates
 
 ---
 
@@ -45,30 +45,30 @@ Content is our primary acquisition engine. We create valuable, searchable conten
 **Week 3**:
 
 5. **"How RAG Technology Makes Family Knowledge Searchable"**
-   - RAG explained simply
-   - Benefits over keyword search
-   - Real examples
-   - Target: HackerNews, r/MachineLearning
+ - RAG explained simply
+ - Benefits over keyword search
+ - Real examples
+ - Target: HackerNews, r/MachineLearning
 
 6. **"Comparing Archevi, Notion, and Obsidian: A Technical Analysis"**
-   - Feature comparison table
-   - Architecture differences
-   - Use case fit
-   - Target: r/productivity, r/NotionSo
+ - Feature comparison table
+ - Architecture differences
+ - Use case fit
+ - Target: r/productivity, r/NotionSo
 
 **Week 4**:
 
 7. **"Getting Started with Archevi: Complete Guide"**
-   - Step-by-step tutorial
-   - Troubleshooting tips
-   - Video walkthrough
-   - Target: SEO ("how to set up archevi")
+ - Step-by-step tutorial
+ - Troubleshooting tips
+ - Video walkthrough
+ - Target: SEO ("how to set up archevi")
 
 8. **"Building a RAG System with Cohere and pgvector"**
-   - Technical tutorial
-   - Code examples
-   - Performance tips
-   - Target: Dev.to, HackerNews
+ - Technical tutorial
+ - Code examples
+ - Performance tips
+ - Target: Dev.to, HackerNews
 
 ---
 
@@ -77,31 +77,31 @@ Content is our primary acquisition engine. We create valuable, searchable conten
 **Week 5**:
 
 9. **"How One Family Organized 20 Years of Medical Records"**
-   - Real customer story (anonymized if needed)
-   - Specific pain points
-   - Solution walkthrough
-   - Results/benefits
-   - Target: Elder care communities
+ - Real customer story (anonymized if needed)
+ - Specific pain points
+ - Solution walkthrough
+ - Results/benefits
+ - Target: Elder care communities
 
 10. **"Never Lose a Recipe Again: Digital Recipe Management Done Right"**
-    - Recipe organization problem
-    - Archevi solution
-    - Sharing with family
-    - Target: Cooking communities, r/Cooking
+ - Recipe organization problem
+ - Archevi solution
+ - Sharing with family
+ - Target: Cooking communities, r/Cooking
 
 **Week 6**:
 
 11. **"Estate Planning for Families: Making Your Knowledge Accessible"**
-    - Estate planning checklist
-    - Document organization
-    - Family access
-    - Target: r/PersonalFinanceCanada, estate planning forums
+ - Estate planning checklist
+ - Document organization
+ - Family access
+ - Target: r/PersonalFinanceCanada, estate planning forums
 
 12. **"Managing a Blended Family: Document Organization for Complex Households"**
-    - Blended family challenges
-    - Multiple household management
-    - Co-parenting coordination
-    - Target: Step-family communities
+ - Blended family challenges
+ - Multiple household management
+ - Co-parenting coordination
+ - Target: Step-family communities
 
 ---
 
@@ -110,30 +110,30 @@ Content is our primary acquisition engine. We create valuable, searchable conten
 **Week 7**:
 
 13. **"Data Privacy for Families: Why Self-Hosting Matters"**
-    - Canadian privacy laws
-    - Big Tech concerns
-    - Benefits of data control
-    - Target: Privacy advocates
+ - Canadian privacy laws
+ - Big Tech concerns
+ - Benefits of data control
+ - Target: Privacy advocates
 
 14. **"Comparing Cloud Security: Your Options Explained"**
-    - Security comparison
-    - Threat models
-    - Best practices
-    - Target: r/privacy, r/cybersecurity
+ - Security comparison
+ - Threat models
+ - Best practices
+ - Target: r/privacy, r/cybersecurity
 
 **Week 8**:
 
 15. **"Zero Data Retention: How Archevi Protects Your Family"**
-    - ZDR explanation
-    - Cohere partnership
-    - Data handling
-    - Target: Privacy forums
+ - ZDR explanation
+ - Cohere partnership
+ - Data handling
+ - Target: Privacy forums
 
 16. **"Data Sovereignty for Canadian Families: A Complete Guide"**
-    - What is data sovereignty
-    - Why it matters
-    - How to achieve it
-    - Target: Canadian tech communities
+ - What is data sovereignty
+ - Why it matters
+ - How to achieve it
+ - Target: Canadian tech communities
 
 ---
 
@@ -142,60 +142,60 @@ Content is our primary acquisition engine. We create valuable, searchable conten
 **Week 9**:
 
 17. **"Integrating Archevi with Your Smart Home"**
-    - Home Assistant integration
-    - Voice control setup
-    - Automation ideas
-    - Target: r/homeassistant, r/smarthome
+ - Home Assistant integration
+ - Voice control setup
+ - Automation ideas
+ - Target: r/homeassistant, r/smarthome
 
 18. **"Building a Family Emergency Binder That Actually Works"**
-    - Emergency preparedness
-    - Document checklist
-    - Digital + physical strategy
-    - Target: Prepper communities, r/preppers
+ - Emergency preparedness
+ - Document checklist
+ - Digital + physical strategy
+ - Target: Prepper communities, r/preppers
 
 **Week 10**:
 
 19. **"Multigenerational Knowledge Transfer: Preserving Family History"**
-    - Importance of family history
-    - Digitization strategies
-    - Archevi for oral histories
-    - Target: Genealogy communities
+ - Importance of family history
+ - Digitization strategies
+ - Archevi for oral histories
+ - Target: Genealogy communities
 
 20. **"How We Reduced Our Family's SaaS Costs by 75%"**
-    - Audit of family subscriptions
-    - Cost reduction strategy
-    - Cost breakdown
-    - Target: r/Frugal, r/PersonalFinanceCanada
+ - Audit of family subscriptions
+ - Cost reduction strategy
+ - Cost breakdown
+ - Target: r/Frugal, r/PersonalFinanceCanada
 
 **Week 11**:
 
 21. **"Archevi for Family Offices: Enterprise Knowledge Management"**
-    - Family office use case
-    - Complex household management
-    - Staff coordination
-    - Target: LinkedIn, wealth management forums
+ - Family office use case
+ - Complex household management
+ - Staff coordination
+ - Target: LinkedIn, wealth management forums
 
 22. **"Building in Public: How Archevi Built a Community"**
-    - Building in public approach
-    - Community engagement
-    - Lessons learned
-    - Target: r/opensource, Indie Hackers
+ - Building in public approach
+ - Community engagement
+ - Lessons learned
+ - Target: r/opensource, Indie Hackers
 
 **Week 12**:
 
 23. **"Year in Review: Archevi's First 100 Customers"**
-    - Stats and milestones
-    - Customer stories
-    - Lessons learned
-    - Roadmap preview
-    - Target: Email list, blog readers
+ - Stats and milestones
+ - Customer stories
+ - Lessons learned
+ - Roadmap preview
+ - Target: Email list, blog readers
 
 24. **"The Future of Family Knowledge Management"**
-    - Industry trends
-    - AI advancements
-    - Privacy considerations
-    - Archevi roadmap
-    - Target: Thought leadership, LinkedIn
+ - Industry trends
+ - AI advancements
+ - Privacy considerations
+ - Archevi roadmap
+ - Target: Thought leadership, LinkedIn
 
 ---
 
@@ -204,49 +204,49 @@ Content is our primary acquisition engine. We create valuable, searchable conten
 ### Setup & Tutorial Videos (High Priority)
 
 1. **"How to Set Up Archevi in 30 Minutes"** (15 min)
-   - Full walkthrough
-   - Troubleshooting common issues
-   - Target: YouTube, embedded in docs
+ - Full walkthrough
+ - Troubleshooting common issues
+ - Target: YouTube, embedded in docs
 
 2. **"Archevi vs Notion: Live Comparison"** (10 min)
-   - Side-by-side demo
-   - Speed comparison
-   - Feature comparison
-   - Target: YouTube, ProductHunt
+ - Side-by-side demo
+ - Speed comparison
+ - Feature comparison
+ - Target: YouTube, ProductHunt
 
 3. **"Setting Up Your First Family Documents"** (8 min)
-   - Document upload
-   - Categorization
-   - Search demo
-   - Target: Onboarding, YouTube
+ - Document upload
+ - Categorization
+ - Search demo
+ - Target: Onboarding, YouTube
 
 ### Use Case Videos (Medium Priority)
 
 4. **"Organizing Family Medical Records"** (7 min)
-   - Medical records problem
-   - Archevi solution demo
-   - Results
-   - Target: Elder care communities
+ - Medical records problem
+ - Archevi solution demo
+ - Results
+ - Target: Elder care communities
 
 5. **"Digital Recipe Book Setup"** (6 min)
-   - Recipe management
-   - Sharing with family
-   - Search demo
-   - Target: Cooking communities
+ - Recipe management
+ - Sharing with family
+ - Search demo
+ - Target: Cooking communities
 
 6. **"Estate Planning Documents Organization"** (8 min)
-   - Estate planning checklist
-   - Document setup
-   - Family access
-   - Target: Estate planning forums
+ - Estate planning checklist
+ - Document setup
+ - Family access
+ - Target: Estate planning forums
 
 ### Short-Form Content (If Comfortable)
 
 7. **TikTok/Reels Series: "Family Organization Tips"**
-   - 30-60 second tips
-   - Show, don't tell
-   - Call to action in bio
-   - Target: Younger audience, viral potential
+ - 30-60 second tips
+ - Show, don't tell
+ - Call to action in bio
+ - Target: Younger audience, viral potential
 
 ---
 
@@ -368,25 +368,25 @@ or when your hands are full. Try it in the chat interface.
 
 This week's highlights:
 
-📱 NEW FEATURE: Voice Search
-   Talk to Archevi instead of typing. Great for elderly
-   family members or hands-free use.
+ NEW FEATURE: Voice Search
+ Talk to Archevi instead of typing. Great for elderly
+ family members or hands-free use.
 
-👨‍🍳 CUSTOMER STORY: The Wilson Family
-   How they digitized 50 years of family recipes and
-   made them searchable. [Read more →]
+‍ CUSTOMER STORY: The Wilson Family
+ How they digitized 50 years of family recipes and
+ made them searchable. [Read more →]
 
-📝 BLOG POST: "Recipe Organization: Best Practices"
-   Tips for categorizing, tagging, and finding recipes
-   fast. [Read →]
+ BLOG POST: "Recipe Organization: Best Practices"
+ Tips for categorizing, tagging, and finding recipes
+ fast. [Read →]
 
-💡 TIP OF THE WEEK:
-   Use the @ symbol to mention documents in chat:
-   "Compare @insurance_home with @insurance_auto"
+ TIP OF THE WEEK:
+ Use the @ symbol to mention documents in chat:
+ "Compare @insurance_home with @insurance_auto"
 
-🎙️ PODCAST: I was on Self-Hosted this week
-   Talked about building Archevi and privacy for
-   families. [Listen →]
+️ PODCAST: I was on Self-Hosted this week
+ Talked about building Archevi and privacy for
+ families. [Listen →]
 
 Coming next week: Document versioning!
 

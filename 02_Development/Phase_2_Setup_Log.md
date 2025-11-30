@@ -5,7 +5,7 @@
 
 ---
 
-## Completed Tasks ✓
+## Completed Tasks 
 
 ### 1. Environment Configuration (Completed)
 - **Created:** `Infrastructure/.env`
@@ -32,24 +32,24 @@ docker ps --filter "name=family-brain-db"
 All tables created successfully via schema.sql auto-initialization:
 
 **Tables Created:**
-1. ✅ `family_documents` - Documents with 1024d vector embeddings
-2. ✅ `conversations` - Chat history with sources
-3. ✅ `document_metadata` - Upload tracking
-4. ✅ `api_usage_log` - Cost monitoring
+1. `family_documents` - Documents with 1024d vector embeddings
+2. `conversations` - Chat history with sources
+3. `document_metadata` - Upload tracking
+4. `api_usage_log` - Cost monitoring
 
 **pgvector Extension:**
-- ✅ Version: 0.8.1
-- ✅ Enabled and verified
+- Version: 0.8.1
+- Enabled and verified
 
 **Vector Column:**
-- ✅ Type: vector(1024)
-- ✅ Column: family_documents.embedding
-- ✅ Index: HNSW (hnsw) with vector_cosine_ops
+- Type: vector(1024)
+- Column: family_documents.embedding
+- Index: HNSW (hnsw) with vector_cosine_ops
 
 **Additional Indexes:**
-- ✅ Primary key on id
-- ✅ Category index (btree)
-- ✅ Created_at index (DESC, btree)
+- Primary key on id
+- Category index (btree)
+- Created_at index (DESC, btree)
 
 **Verification Commands Used:**
 ```sql
@@ -66,21 +66,21 @@ SELECT * FROM pg_extension WHERE extname = 'vector';
 ### 4. Windmill Installation (Completed)
 - **Setup Location:** `C:\Users\RHudson\Desktop\Claudius\Projects\FamilySecondBrain\windmill-setup`
 - **Files Downloaded:**
-  - ✅ docker-compose.yml (6710 bytes)
-  - ✅ .env (479 bytes)
-  - ✅ Caddyfile (378 bytes)
+ - docker-compose.yml (6710 bytes)
+ - .env (479 bytes)
+ - Caddyfile (378 bytes)
 - **Status:** All 8 containers running successfully
 - **Access URL:** http://localhost
 
 **Windmill Components Running:**
-1. ✅ windmill_server - Main API and web interface
-2. ✅ windmill_worker (x3) - Script execution engines
-3. ✅ windmill_worker_native - Native language support
-4. ✅ db - PostgreSQL for Windmill data
-5. ✅ lsp - Language Server Protocol
-6. ✅ multiplayer - Real-time collaboration
-7. ✅ windmill_indexer - Search indexing
-8. ✅ caddy - Reverse proxy (port 80)
+1. windmill_server - Main API and web interface
+2. windmill_worker (x3) - Script execution engines
+3. windmill_worker_native - Native language support
+4. db - PostgreSQL for Windmill data
+5. lsp - Language Server Protocol
+6. multiplayer - Real-time collaboration
+7. windmill_indexer - Search indexing
+8. caddy - Reverse proxy (port 80)
 
 **Admin Credentials Created:**
 - **Email:** admin@familybrain.com
@@ -95,13 +95,24 @@ SELECT * FROM pg_extension WHERE extname = 'vector';
 - **Status:** Active and ready for scripts
 
 ### 6. Windmill MCP Integration (Completed)
-- **MCP Token Generated:** ✅
-- **MCP URL:** http://localhost/api/mcp/w/family-brain/sse?token=bE9ivXyS47LQJlyVQ5O0AvtxHjUkQvUI
+- **MCP Token:** `oCtiDUVTlVfzJWqAyQAb5wseem1Qgmd3` (limited scope for MCP operations)
+- **MCP URL:** http://localhost/api/mcp/w/family-brain/sse?token=oCtiDUVTlVfzJWqAyQAb5wseem1Qgmd3
 - **Integration Type:** Server-Sent Events (SSE)
 - **Added to Projects:**
-  - ✅ Claude_Code (master project)
-  - ✅ FamilySecondBrain
+ - Claudius_Master (master project)
+ - FamilySecondBrain
 - **Status:** Ready for use after Claude Code reload
+
+### 6b. Windmill User Token (For Script Deployment)
+- **User Token:** `t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi` (full admin permissions)
+- **Used For:** Deploying scripts via REST API, administrative operations
+- **Scope:** No restrictions (full access)
+
+**Token Types Explained:**
+| Token Type | Scope | Use Case |
+|------------|-------|----------|
+| MCP Token | Limited (variables, resources, run scripts) | Claude Code MCP integration |
+| User Token | Full admin | Script deployment, API automation |
 
 ---
 
@@ -114,12 +125,12 @@ SELECT * FROM pg_extension WHERE extname = 'vector';
 **Database Resource Configuration:**
 ```json
 {
-  "host": "family-brain-db",
-  "port": 5432,
-  "dbname": "family_brain",
-  "user": "familyuser",
-  "password": "FamilyBrain2024!SecurePassword",
-  "sslmode": "disable"
+ "host": "family-brain-db",
+ "port": 5432,
+ "dbname": "family_brain",
+ "user": "familyuser",
+ "password": "FamilyBrain2024!SecurePassword",
+ "sslmode": "disable"
 }
 ```
 
@@ -171,30 +182,34 @@ Name: Family Brain
 ID: family-brain
 URL: http://localhost/w/family-brain
 
-# MCP Integration
-MCP URL: http://localhost/api/mcp/w/family-brain/sse?token=bE9ivXyS47LQJlyVQ5O0AvtxHjUkQvUI
+# MCP Integration (for Claude Code)
+MCP URL: http://localhost/api/mcp/w/family-brain/sse?token=oCtiDUVTlVfzJWqAyQAb5wseem1Qgmd3
 Transport: SSE (Server-Sent Events)
-Token: bE9ivXyS47LQJlyVQ5O0AvtxHjUkQvUI
+MCP Token: oCtiDUVTlVfzJWqAyQAb5wseem1Qgmd3
+
+# User Token (for script deployment)
+User Token: t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi
+Scope: Full admin (no restrictions)
 ```
 
 ### File Locations
 ```
 FamilySecondBrain/
 ├── Infrastructure/
-│   ├── docker-compose.yml      # PostgreSQL setup
-│   ├── schema.sql              # Database schema (auto-applied)
-│   ├── .env                    # Environment variables
-│   └── .env.example            # Template
+│ ├── docker-compose.yml # PostgreSQL setup
+│ ├── schema.sql # Database schema (auto-applied)
+│ ├── .env # Environment variables
+│ └── .env.example # Template
 ├── windmill-setup/
-│   ├── docker-compose.yml      # Windmill setup
-│   ├── .env                    # Windmill config
-│   └── Caddyfile               # Proxy config
-├── .mcp.json                   # Windmill MCP configuration
+│ ├── docker-compose.yml # Windmill setup
+│ ├── .env # Windmill config
+│ └── Caddyfile # Proxy config
+├── .mcp.json # Windmill MCP configuration
 └── 02_Development/
-    └── Phase_2_Setup_Log.md    # This file
+ └── Phase_2_Setup_Log.md # This file
 
-Claude_Code/ (master project)
-└── .mcp.json                   # Windmill MCP configuration (shared)
+Claudius_Master/ (master project)
+└── .mcp.json # Windmill MCP configuration (shared)
 ```
 
 ### Docker Containers Status
@@ -257,27 +272,27 @@ docker compose restart
 Phase 3 is complete. Proceed to Phase 4:
 
 1. **Build Windmill UI (manual drag-and-drop ~15 min):**
-   - Create new App: "Family Second Brain"
-   - Add Text Input component for user queries
-   - Add Button to trigger RAG query
-   - Add Rich Text component for AI responses
-   - Add Table/List for conversation history
-   - Add Modal for document upload
+ - Create new App: "Family Second Brain"
+ - Add Text Input component for user queries
+ - Add Button to trigger RAG query
+ - Add Rich Text component for AI responses
+ - Add Table/List for conversation history
+ - Add Modal for document upload
 
 2. **Connect Components to Backend Scripts:**
-   - Button onClick → run `f/chatbot/rag_query`
-   - Pass query input value to script
-   - Display result in Rich Text component
-   - Load history from `f/chatbot/get_conversation_history`
+ - Button onClick → run `f/chatbot/rag_query`
+ - Pass query input value to script
+ - Display result in Rich Text component
+ - Load history from `f/chatbot/get_conversation_history`
 
 3. **Test the Complete Flow:**
-   - Add sample documents via `f/chatbot/embed_document`
-   - Run test queries
-   - Verify responses and sources
+ - Add sample documents via `f/chatbot/embed_document`
+ - Run test queries
+ - Verify responses and sources
 
 4. **Deploy and Share:**
-   - Set app permissions
-   - Share URL with family members
+ - Set app permissions
+ - Share URL with family members
 
 ---
 

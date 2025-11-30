@@ -9,7 +9,12 @@
 #   - wmill
 
 """
-Embed and store a document in the Family Second Brain knowledge base.
+Embed and store a document in the Archevi knowledge base.
+
+Multi-Tenant Architecture:
+- Each document is scoped to a specific tenant_id
+- Documents are ONLY visible/searchable within their tenant
+- Complete data isolation at the database level
 
 This script takes document metadata and content, generates a 1024-dimensional
 embedding using Cohere's embed-v4.0 model (April 2025), and stores it in PostgreSQL
@@ -25,11 +30,13 @@ Args:
     title (str): Document title
     content (str): Document text content
     category (str): Category ('recipes', 'medical', 'financial', 'family_history', 'general')
+    tenant_id (str): UUID of the tenant (family) - REQUIRED for isolation
     source_file (str, optional): Original filename if uploaded
-    created_by (str, optional): User who added the document
+    created_by (str, optional): UUID of user who added the document
+    metadata (dict, optional): Additional metadata (tags, expiry_dates, etc.)
 
 Returns:
-    dict: {document_id: int, message: str, tokens_used: int}
+    dict: {document_id: str, tenant_id: str, message: str, tokens_used: int}
 
 Example:
     # In Windmill:
@@ -37,7 +44,8 @@ Example:
         title="Grandma's Apple Pie Recipe",
         content="Ingredients: 6 apples, 1 cup sugar...",
         category="recipes",
-        created_by="sarah@family.com"
+        tenant_id="5302d94d-4c08-459d-b49f-d211abdb4047",
+        created_by="a41ff201-73dc-413e-a41b-05535858a159"
     )
 """
 
@@ -45,6 +53,7 @@ import cohere
 import psycopg2
 from pgvector.psycopg2 import register_vector
 from typing import Optional
+import json
 import wmill
 
 
@@ -52,23 +61,27 @@ def main(
     title: str,
     content: str,
     category: str,
+    tenant_id: str,
     source_file: Optional[str] = None,
     created_by: Optional[str] = None,
+    metadata: Optional[dict] = None,
 ) -> dict:
     """
-    Embed and store a document in the knowledge base.
+    Embed and store a document in the knowledge base (tenant-scoped).
 
     The document content is embedded using Cohere's embed-v4.0 model
     (1024 dimensions, 128K context) and stored in PostgreSQL with pgvector
-    for efficient semantic search.
+    for efficient semantic search. Documents are isolated by tenant_id.
     """
     # Validate inputs
     if not title or not title.strip():
         raise ValueError("Title cannot be empty")
     if not content or not content.strip():
         raise ValueError("Content cannot be empty")
+    if not tenant_id or not tenant_id.strip():
+        raise ValueError("tenant_id is required for data isolation")
 
-    valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general', 'insurance', 'invoices']
+    valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general', 'insurance', 'invoices', 'legal', 'education', 'personal']
     if category not in valid_categories:
         raise ValueError(f"Category must be one of: {valid_categories}")
 
@@ -108,21 +121,24 @@ def main(
         register_vector(conn)
         cursor = conn.cursor()
 
-        # Insert document with embedding
+        # Prepare metadata JSON
+        doc_metadata = metadata or {}
+
+        # Insert document with embedding (tenant-scoped)
         cursor.execute("""
-            INSERT INTO family_documents (title, content, category, source_file, created_by, embedding)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO documents (tenant_id, title, content, category, source_file, created_by, embedding, metadata)
+            VALUES (%s::uuid, %s, %s, %s, %s, %s::uuid, %s, %s)
             RETURNING id
-        """, (title.strip(), content.strip(), category, source_file, created_by, embedding))
+        """, (tenant_id, title.strip(), content.strip(), category, source_file, created_by, embedding, json.dumps(doc_metadata)))
 
-        document_id = cursor.fetchone()[0]
+        document_id = str(cursor.fetchone()[0])
 
-        # Log API usage
+        # Log API usage (tenant-scoped for billing)
         estimated_cost = tokens_used * 0.0000001  # $0.10 per 1M tokens
         cursor.execute("""
-            INSERT INTO api_usage_log (operation, tokens_used, cost_usd)
-            VALUES ('embed', %s, %s)
-        """, (tokens_used, estimated_cost))
+            INSERT INTO ai_usage (tenant_id, user_id, operation, model, input_tokens, output_tokens, cost_usd)
+            VALUES (%s::uuid, %s::uuid, 'embed', 'embed-v4.0', %s, 0, %s)
+        """, (tenant_id, created_by, tokens_used, estimated_cost))
 
         conn.commit()
         cursor.close()
@@ -133,6 +149,7 @@ def main(
 
     return {
         "document_id": document_id,
+        "tenant_id": tenant_id,
         "message": f"Document '{title}' successfully embedded and stored",
         "tokens_used": tokens_used,
         "category": category

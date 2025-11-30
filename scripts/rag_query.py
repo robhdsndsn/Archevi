@@ -9,14 +9,19 @@
 #   - wmill
 
 """
-RAG (Retrieval-Augmented Generation) query pipeline for Family Second Brain.
+RAG (Retrieval-Augmented Generation) query pipeline for Archevi.
+
+Multi-Tenant Architecture:
+- Each query is scoped to a specific tenant_id
+- Documents from other tenants are NEVER visible or searchable
+- Complete data isolation at the database level
 
 This script implements the complete RAG workflow:
 1. Embed user query using Cohere Embed 4 (April 2025)
-2. Vector search in PostgreSQL/pgvector for relevant documents
+2. Vector search in PostgreSQL/pgvector for relevant documents (tenant-scoped)
 3. Rerank results using Cohere Rerank v3.5 (December 2024)
 4. Generate answer using Cohere Command A (March 2025) with context
-5. Store conversation history
+5. Store conversation history (tenant-scoped)
 
 Model Upgrades (May 2025):
 - Embed v4.0: Multimodal, 128K context, Matryoshka embeddings
@@ -30,20 +35,23 @@ Cost Optimization (Adaptive Model Selection):
 
 Args:
     query (str): User's natural language question
+    tenant_id (str): UUID of the tenant (family) - REQUIRED for isolation
     session_id (str, optional): Conversation session ID (auto-generated if not provided)
-    user_email (str, optional): User identifier for conversation history
+    user_id (str, optional): UUID of the user making the query
 
 Returns:
     dict: {
         answer: str,
         sources: list[{id, title, category, relevance}],
         confidence: float,
-        session_id: str
+        session_id: str,
+        tenant_id: str
     }
 
 Example:
     result = await f.chatbot.rag_query(
         query="What's the recipe for grandma's apple pie?",
+        tenant_id="5302d94d-4c08-459d-b49f-d211abdb4047",
         session_id="user-123-session"
     )
 """
@@ -60,17 +68,23 @@ import wmill
 
 def main(
     query: str,
+    tenant_id: str,
     session_id: Optional[str] = None,
-    user_email: Optional[str] = None,
+    user_id: Optional[str] = None,
 ) -> dict:
     """
     Execute RAG pipeline: embed query -> search -> rerank -> generate -> store
+    All operations are scoped to the specified tenant_id for data isolation.
     """
     # Validate input
     if not query or not query.strip():
         raise ValueError("Query cannot be empty")
 
+    if not tenant_id or not tenant_id.strip():
+        raise ValueError("tenant_id is required for data isolation")
+
     query = query.strip()
+    tenant_id = tenant_id.strip()
 
     # Generate session ID if not provided
     if not session_id:
@@ -118,13 +132,16 @@ def main(
         register_vector(conn)
         cursor = conn.cursor()
 
-        # Search for top 10 similar documents
+        # Search for top 10 similar documents - TENANT ISOLATED
+        # Only searches documents belonging to this specific tenant
+        # Filter out documents without embeddings (NULL embedding returns NULL distance)
         cursor.execute("""
             SELECT id, title, content, category, embedding <=> %s::vector AS distance
-            FROM family_documents
+            FROM documents
+            WHERE tenant_id = %s::uuid AND embedding IS NOT NULL
             ORDER BY distance
             LIMIT 10
-        """, (query_embedding,))
+        """, (query_embedding, tenant_id))
 
         search_results = cursor.fetchall()
 
@@ -137,14 +154,15 @@ def main(
         sources = []
         confidence = 0.0
 
-        # Store conversation
-        _store_conversation(cursor, conn, session_id, user_email, query, answer, sources)
+        # Store conversation (tenant-scoped)
+        _store_conversation(cursor, conn, tenant_id, session_id, user_id, query, answer, sources)
 
         return {
             "answer": answer,
             "sources": sources,
             "confidence": confidence,
-            "session_id": session_id
+            "session_id": session_id,
+            "tenant_id": tenant_id
         }
 
     # Step 3: Rerank results using Cohere Rerank
@@ -290,10 +308,10 @@ def main(
     except Exception as e:
         raise RuntimeError(f"Cohere generation error: {str(e)}")
 
-    # Format sources for response
+    # Format sources for response (id is UUID string now)
     sources = [
         {
-            "id": int(doc["id"]),
+            "id": doc["id"],
             "title": doc["title"],
             "category": doc["category"],
             "relevance": round(doc["relevance_score"], 3)
@@ -301,14 +319,14 @@ def main(
         for doc in top_docs
     ]
 
-    # Step 5: Store conversation history
-    _store_conversation(cursor, conn, session_id, user_email, query, answer, sources)
+    # Step 5: Store conversation history (tenant-scoped)
+    _store_conversation(cursor, conn, tenant_id, session_id, user_id, query, answer, sources)
 
-    # Log API usage
+    # Log API usage (tenant-scoped for billing)
     cursor.execute("""
-        INSERT INTO api_usage_log (operation, tokens_used, cost_usd)
-        VALUES ('rag_query', %s, %s)
-    """, (total_tokens, total_cost))
+        INSERT INTO ai_usage (tenant_id, user_id, operation, model, input_tokens, output_tokens, cost_usd)
+        VALUES (%s::uuid, %s::uuid, 'generate', %s, %s, %s, %s)
+    """, (tenant_id, user_id, selected_model, gen_input_tokens, gen_output_tokens, total_cost))
 
     # Log model selection for analytics and threshold tuning
     latency_ms = int((time.time() - start_time) * 1000)
@@ -343,23 +361,31 @@ def main(
         "sources": sources,
         "confidence": round(confidence, 3),
         "session_id": session_id,
+        "tenant_id": tenant_id,
         "model_used": selected_model,
         "top_relevance": round(top_relevance, 3),
         "latency_ms": latency_ms
     }
 
 
-def _store_conversation(cursor, conn, session_id: str, user_email: Optional[str],
+def _store_conversation(cursor, conn, tenant_id: str, session_id: str, user_id: Optional[str],
                         query: str, answer: str, sources: list):
-    """Store user query and assistant response in conversation history."""
+    """Store user query and assistant response in conversation history (tenant-scoped)."""
+    # Ensure chat session exists for this tenant
+    cursor.execute("""
+        INSERT INTO chat_sessions (id, tenant_id, user_id, title)
+        VALUES (%s::uuid, %s::uuid, %s::uuid, %s)
+        ON CONFLICT (id) DO NOTHING
+    """, (session_id, tenant_id, user_id, query[:100] if query else "New Chat"))
+
     # Store user message
     cursor.execute("""
-        INSERT INTO conversations (session_id, role, content, user_email)
-        VALUES (%s, 'user', %s, %s)
-    """, (session_id, query, user_email))
+        INSERT INTO chat_messages (session_id, role, content)
+        VALUES (%s::uuid, 'user', %s)
+    """, (session_id, query))
 
     # Store assistant response with sources
     cursor.execute("""
-        INSERT INTO conversations (session_id, role, content, sources, user_email)
-        VALUES (%s, 'assistant', %s, %s, %s)
-    """, (session_id, answer, json.dumps(sources), user_email))
+        INSERT INTO chat_messages (session_id, role, content, sources)
+        VALUES (%s::uuid, 'assistant', %s, %s)
+    """, (session_id, answer, json.dumps(sources)))

@@ -64,7 +64,7 @@ This is your tactical playbook for launch week. Follow each day's checklist to m
 **Post 1: r/selfhosted** (7:00 AM)
 ```markdown
 Title: "I built an open-source family knowledge base with RAG
-       search - Archevi"
+ search - Archevi"
 
 Body:
 Hey r/selfhosted!
@@ -105,7 +105,7 @@ for improvement. Happy to answer technical questions!
 **Post 2: r/privacy** (8:00 AM)
 ```markdown
 Title: "Built a privacy-first alternative to Notion for families -
-       with true data isolation"
+ with true data isolation"
 
 Body:
 Privacy-conscious folks,
@@ -154,7 +154,7 @@ But can you actually find anything in there?
 I built Archevi to solve this problem with semantic search:
 
 **Before:** "I know we have that insurance document
-           somewhere in these 50 folders..."
+ somewhere in these 50 folders..."
 
 **After:** "Show me our home insurance policy" → instant answer
 
@@ -179,7 +179,7 @@ Who else is tired of Ctrl+F in their document hoard?
 **Post 4: r/PersonalFinanceCanada** (12:00 PM)
 ```markdown
 Title: "How I cut our family's knowledge management costs
-       from $34/month to $20/month"
+ from $34/month to $20/month"
 
 Body:
 PFC community,
@@ -342,7 +342,7 @@ privacy aspects.
 
 **To: Waitlist**
 ```
-Subject: 🎉 Archevi is live: Your family's AI memory
+Subject: Archevi is live: Your family's AI memory
 
 Hey [Name],
 
@@ -350,11 +350,11 @@ After 6 months of building (and lots of help from beta
 testers like you), Archevi is officially live!
 
 What you can do today:
-✓ Start your 14-day free trial
-✓ Bring your own Cohere API key (~$2-5/month)
-✓ Join our Discord community
+ Start your 14-day free trial
+ Bring your own Cohere API key (~$2-5/month)
+ Join our Discord community
 
-🎁 FOUNDING MEMBER OFFER
+ FOUNDING MEMBER OFFER
 Be one of the first 100 customers and get:
 - $9.99/month forever (normally $14.99)
 - Priority support
@@ -363,7 +363,7 @@ Be one of the first 100 customers and get:
 
 This offer expires in 7 days.
 
-👉 Start your free trial: [link]
+ Start your free trial: [link]
 
 What's happening:
 - ProductHunt: #3 product of the day
@@ -395,45 +395,45 @@ P.S. Check out the demo video: [link]
 
 **Twitter Thread** (10:00 AM):
 ```
-🧵 Thread: We launched Archevi this week. Here's what happened:
+ Thread: We launched Archevi this week. Here's what happened:
 
 1/ Monday: Finished last-minute bug fixes. Barely slept.
-   Nervous energy through the roof.
+ Nervous energy through the roof.
 
 2/ Tuesday: Launched on ProductHunt at 12:01 AM.
-   Set 7 alarms. Didn't need them - too excited to sleep.
+ Set 7 alarms. Didn't need them - too excited to sleep.
 
 3/ By noon: #3 product of the day. Mind blown.
-   Your support means everything.
+ Your support means everything.
 
 4/ Wednesday: Posted to Reddit. r/selfhosted loved the
-   technical details. r/privacy loved the isolation.
+ technical details. r/privacy loved the isolation.
 
 5/ Thursday: Hit HackerNews front page. Server held up
-   (barely). Learned a lot from the technical feedback.
+ (barely). Learned a lot from the technical feedback.
 
 6/ Today: 100+ GitHub stars, 100+ trial signups,
-   15 paying customers already.
+ 15 paying customers already.
 
 7/ What surprised me most: People care deeply about
-   family data privacy. This isn't just about tech -
-   it's about protecting what matters most.
+ family data privacy. This isn't just about tech -
+ it's about protecting what matters most.
 
 8/ What's next: Listening to feedback, fixing bugs,
-   adding most-requested features.
+ adding most-requested features.
 
 9/ Thank you to everyone who:
-   - Tried the beta
-   - Upvoted on PH
-   - Starred on GitHub
-   - Spread the word
+ - Tried the beta
+ - Upvoted on PH
+ - Starred on GitHub
+ - Spread the word
 
 10/ This is just the beginning. Building in public has
-    been amazing. More updates soon!
+ been amazing. More updates soon!
 
-🔗 Try Archevi: [link]
+ Try Archevi: [link]
 
-What should I build next? 👇
+What should I build next? 
 ```
 
 **LinkedIn Post** (12:00 PM):
@@ -442,10 +442,10 @@ After 6 months of nights and weekends, I launched Archevi
 this week - a family knowledge base with AI search.
 
 The response has been incredible:
-✓ #3 on ProductHunt
-✓ HackerNews front page
-✓ 100+ GitHub stars
-✓ 100+ families trying it
+ #3 on ProductHunt
+ HackerNews front page
+ 100+ GitHub stars
+ 100+ families trying it
 
 Key lessons from the launch:
 

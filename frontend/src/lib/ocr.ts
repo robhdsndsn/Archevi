@@ -1,4 +1,4 @@
-import { createWorker, Worker, OEM, PSM } from 'tesseract.js';
+import { createWorker, type Worker, OEM, PSM } from 'tesseract.js';
 
 export interface OCRResult {
   success: boolean;
@@ -213,6 +213,7 @@ export async function extractPDFPagesAsImages(
     await page.render({
       canvasContext: context,
       viewport,
+      canvas,
     }).promise;
 
     // Convert to blob

@@ -15,18 +15,18 @@ This project follows Master_Claude_Project_Instructions.md standards:
 
 ```
 FamilySecondBrain/
-├── 00_PROJECT_OVERVIEW.md      # Project details and technical stack
-├── Claude_Session_Log.md       # Active session log (current status)
-├── Claude_Session_Archive.md   # Complete historical record
-├── CLAUDE.md                   # This file (Claude Code instructions)
-├── README.md                   # Project documentation
-├── .claude/                    # Claude Code configuration
-│   ├── agents/                 # Project-specific subagents
-│   └── commands/               # Custom slash commands
-├── 01_Planning/                # Requirements and planning
-├── 02_Development/             # Code notes and development
-├── 03_Learning/                # Key insights and learnings
-└── 04_Output/                  # Deliverables and output
+├── 00_PROJECT_OVERVIEW.md # Project details and technical stack
+├── Claude_Session_Log.md # Active session log (current status)
+├── Claude_Session_Archive.md # Complete historical record
+├── CLAUDE.md # This file (Claude Code instructions)
+├── README.md # Project documentation
+├── .claude/ # Claude Code configuration
+│ ├── agents/ # Project-specific subagents
+│ └── commands/ # Custom slash commands
+├── 01_Planning/ # Requirements and planning
+├── 02_Development/ # Code notes and development
+├── 03_Learning/ # Key insights and learnings
+└── 04_Output/ # Deliverables and output
 ```
 
 ## File Boundaries
@@ -132,23 +132,23 @@ python C:\Users\RHudson\Desktop\Claudius\Scripts\validate_filename.py "filepath"
 ```
 
 ### Forbidden Patterns:
-❌ filename_v2.py       # Version suffixes
-❌ config_new.json      # "new" marker
-❌ script_updated.py    # "updated" marker
-❌ temp_file.txt        # "temp" files
-❌ file_backup.md       # "backup" marker
-❌ file1.py             # Generic numbered names
-❌ data.csv             # Non-descriptive names
+ filename_v2.py # Version suffixes
+ config_new.json # "new" marker
+ script_updated.py # "updated" marker
+ temp_file.txt # "temp" files
+ file_backup.md # "backup" marker
+ file1.py # Generic numbered names
+ data.csv # Non-descriptive names
 
 ### Required Patterns:
-✅ process_bank_statements.py     # Descriptive, specific
-✅ categorization_engine.py       # Clear purpose
-✅ october_2025_transactions.json # Includes date/context
-✅ BankStatementParser.py         # PascalCase for classes
+ process_bank_statements.py # Descriptive, specific
+ categorization_engine.py # Clear purpose
+ october_2025_transactions.json # Includes date/context
+ BankStatementParser.py # PascalCase for classes
 
 ### Version Control Strategy:
 - **USE GIT** for versioning: `git commit`, `git tag v1.0.0`
-- **DON'T USE** filename suffixes: ❌ script_v2.py
+- **DON'T USE** filename suffixes: script_v2.py
 - **USE BRANCHES** for experiments: `git checkout -b experiment/feature-name`
 - **ARCHIVE OLD FILES**: Move to `archive/` folder with git
 
@@ -164,8 +164,8 @@ Before creating [filename]:
 □ If similar file exists, editing that file instead
 □ If replacing old file, archiving old file first
 
-If all checked ✅, proceed with creation.
-If any ❌, STOP and re-evaluate.
+If all checked , proceed with creation.
+If any , STOP and re-evaluate.
 ```
 
 ### When to Archive:
@@ -187,11 +187,28 @@ If you realize you created a duplicate file:
 
 ## Project-Specific Notes
 
+### Windmill Access
+
+**Web UI:**
+- URL: http://localhost
+- Email: admin@familybrain.com
+- Password: FamilyBrain2025!Admin
+
+**Tokens:**
+| Token Type | Token | Use Case |
+|------------|-------|----------|
+| MCP Token | `oCtiDUVTlVfzJWqAyQAb5wseem1Qgmd3` | Claude Code MCP integration (limited scope) |
+| User Token | `t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi` | Script deployment, full admin access |
+
+**MCP URL:** `http://localhost/api/mcp/w/family-brain/sse?token=oCtiDUVTlVfzJWqAyQAb5wseem1Qgmd3`
+
+**Note:** Docker Desktop must be running for Windmill. Start with: `cd windmill-setup && docker compose up -d`
+
 ### Tech Stack
 - **Backend**: Windmill (workflow orchestration), PostgreSQL + pgvector
 - **AI**:
-  - Cohere (Embed v4 for 1024-dim vectors, Command A/R for generation, Rerank v3)
-  - Groq (Whisper large-v3-turbo for voice transcription)
+ - Cohere (Embed v4 for 1024-dim vectors, Command A/R for generation, Rerank v3)
+ - Groq (Whisper large-v3-turbo for voice transcription)
 - **Frontend**: React + Vite + shadcn/ui + Tailwind + Tesseract.js (client-side OCR)
 - **Docs**: VitePress at archevi.ca/guide
 
@@ -233,13 +250,13 @@ If you realize you created a duplicate file:
 
 ### Key Database Tables (Migration 003)
 ```
-tenants              - Families with billing, plans, AI config
-users                - Global user accounts
-tenant_memberships   - Links users to families with roles
-documents            - Tenant-scoped documents with embeddings
-chat_sessions        - Tenant-scoped conversations
-ai_usage             - Per-tenant AI cost tracking
-provisioning_queue   - Async tenant setup tasks
+tenants - Families with billing, plans, AI config
+users - Global user accounts
+tenant_memberships - Links users to families with roles
+documents - Tenant-scoped documents with embeddings
+chat_sessions - Tenant-scoped conversations
+ai_usage - Per-tenant AI cost tracking
+provisioning_queue - Async tenant setup tasks
 ```
 
 ### Windmill Scripts
@@ -286,21 +303,21 @@ Run `f/tenant/test_multi_tenant_system` to create:
 
 ---
 
-## NEXT SESSION TODO (Updated Nov 28, 2025 - Evening)
+## NEXT SESSION TODO (Updated Nov 30, 2025)
 
 ### Immediate (GitHub Polish)
-- [ ] Rewrite GitHub README for public visibility
+- [x] ~~Rewrite GitHub README for public visibility~~ DONE
 - [ ] Add project screenshots or demo GIF
-- [ ] Create marketing-focused feature list highlighting multi-tenant
-- [ ] Document deployment instructions for self-hosting
+- [x] ~~Create marketing-focused feature list highlighting multi-tenant~~ DONE (in README)
+- [x] ~~Document deployment instructions for self-hosting~~ DONE (in README)
 
 ### High Priority Features
 - [x] ~~Tenant creation/editing UI in admin dashboard~~ DONE
 - [x] ~~Advanced search filters (date range, tags)~~ DONE
-- [ ] Member invitation system (email-based)
+- [x] ~~Member invitation system (email-based)~~ DONE (backend + UI complete, email optional via Resend)
 - [ ] Document expiry notification emails
 - [ ] Mobile-responsive improvements
-- [ ] Deploy new Windmill scripts (create_tenant, update_tenant, search_documents_advanced)
+- [x] ~~Deploy new Windmill scripts (create_tenant, update_tenant, search_documents_advanced)~~ DONE
 
 ### Medium Priority
 - [ ] Bulk document import (ZIP upload)

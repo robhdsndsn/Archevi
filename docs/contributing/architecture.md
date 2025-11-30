@@ -5,16 +5,16 @@ Overview of Archevi's technical architecture.
 ## System Overview
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│    Frontend     │────▶│    Windmill     │────▶│   PostgreSQL    │
-│  React + Vite   │     │   (Backend)     │     │   + pgvector    │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
-                        ┌─────────────────┐
-                        │   Cohere API    │
-                        │  (Embed + RAG)  │
-                        └─────────────────┘
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│ Frontend │────│ Windmill │────│ PostgreSQL │
+│ React + Vite │ │ (Backend) │ │ + pgvector │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
+ │
+ ▼
+ ┌─────────────────┐
+ │ Cohere API │
+ │ (Embed + RAG) │
+ └─────────────────┘
 ```
 
 ## Components

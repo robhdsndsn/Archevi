@@ -7,6 +7,7 @@ import { DocumentsView } from '@/components/documents';
 import { AnalyticsView } from '@/components/analytics';
 import { SettingsView } from '@/components/settings';
 import { FamilyMembersView } from '@/components/family';
+import { AdminView } from '@/components/admin';
 import { LoginPage, SetPasswordPage, ForgotPasswordPage } from '@/components/auth';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
@@ -64,7 +65,7 @@ function App() {
 
   const handleNavigate = (view: string) => {
     // Handle actual navigation for implemented views
-    if (view === 'chat' || view === 'history' || view === 'documents' || view === 'analytics' || view === 'settings' || view === 'family') {
+    if (view === 'chat' || view === 'history' || view === 'documents' || view === 'analytics' || view === 'settings' || view === 'family' || view === 'admin') {
       setCurrentView(view);
       return;
     }
@@ -92,6 +93,8 @@ function App() {
         return 'Settings';
       case 'family':
         return 'Family Members';
+      case 'admin':
+        return 'System Admin';
       default:
         return currentView.charAt(0).toUpperCase() + currentView.slice(1);
     }
@@ -167,6 +170,7 @@ function App() {
             <SettingsView isDark={isDark} onToggleTheme={toggleTheme} isEffectiveAdmin={isEffectiveAdmin} />
           )}
           {currentView === 'family' && <FamilyMembersView />}
+          {currentView === 'admin' && <AdminView isEffectiveAdmin={isEffectiveAdmin} />}
         </main>
       </SidebarInset>
       <Toaster richColors position="bottom-right" />

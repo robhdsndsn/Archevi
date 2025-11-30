@@ -45,45 +45,45 @@ Create the following directory structure in `/docs`:
 ```
 docs/
 ├── .vitepress/
-│   ├── config.ts              # VitePress configuration
-│   └── theme/                 # Custom theme (optional)
-├── public/                    # Static assets (images, videos, logos)
-│   ├── logo.svg
-│   ├── screenshots/
-│   └── videos/
+│ ├── config.ts # VitePress configuration
+│ └── theme/ # Custom theme (optional)
+├── public/ # Static assets (images, videos, logos)
+│ ├── logo.svg
+│ ├── screenshots/
+│ └── videos/
 ├── guide/
-│   ├── index.md               # Getting started
-│   ├── installation.md        # Self-hosted setup guide
-│   ├── managed-service.md     # Managed hosting info
-│   ├── usage.md               # How to use Archevi
-│   └── faq.md                 # Frequently asked questions
+│ ├── index.md # Getting started
+│ ├── installation.md # Self-hosted setup guide
+│ ├── managed-service.md # Managed hosting info
+│ ├── usage.md # How to use Archevi
+│ └── faq.md # Frequently asked questions
 ├── comparison/
-│   ├── index.md               # Overview of alternatives
-│   ├── notion.md              # Archevi vs Notion
-│   ├── obsidian.md            # Archevi vs Obsidian
-│   └── google-drive.md        # Archevi vs Google Drive
+│ ├── index.md # Overview of alternatives
+│ ├── notion.md # Archevi vs Notion
+│ ├── obsidian.md # Archevi vs Obsidian
+│ └── google-drive.md # Archevi vs Google Drive
 ├── use-cases/
-│   ├── index.md               # Overview of use cases
-│   ├── medical-records.md     # Medical documentation guide
-│   ├── recipes.md             # Recipe management
-│   ├── estate-planning.md     # Estate planning docs
-│   ├── financial.md           # Financial document management
-│   └── family-history.md      # Preserving family stories
+│ ├── index.md # Overview of use cases
+│ ├── medical-records.md # Medical documentation guide
+│ ├── recipes.md # Recipe management
+│ ├── estate-planning.md # Estate planning docs
+│ ├── financial.md # Financial document management
+│ └── family-history.md # Preserving family stories
 ├── api/
-│   ├── index.md               # API overview
-│   ├── windmill-endpoints.md  # Windmill API reference
-│   ├── frontend-api.md        # Frontend API client
-│   └── components/            # Auto-generated component docs (TypeDoc)
+│ ├── index.md # API overview
+│ ├── windmill-endpoints.md # Windmill API reference
+│ ├── frontend-api.md # Frontend API client
+│ └── components/ # Auto-generated component docs (TypeDoc)
 ├── contributing/
-│   ├── index.md               # How to contribute
-│   ├── architecture.md        # System architecture
-│   ├── development.md         # Development setup
-│   └── code-standards.md      # Code standards and conventions
+│ ├── index.md # How to contribute
+│ ├── architecture.md # System architecture
+│ ├── development.md # Development setup
+│ └── code-standards.md # Code standards and conventions
 ├── pricing/
-│   ├── index.md               # Pricing overview
-│   ├── self-hosted.md         # DIY self-hosted costs
-│   └── managed.md             # Managed service pricing
-└── index.md                   # Homepage
+│ ├── index.md # Pricing overview
+│ ├── self-hosted.md # DIY self-hosted costs
+│ └── managed.md # Managed service pricing
+└── index.md # Homepage
 ```
 
 ### Step 3: Configure VitePress
@@ -94,140 +94,140 @@ Create `docs/.vitepress/config.ts`:
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  title: 'Archevi Documentation',
-  description: 'Your family\'s AI-powered memory - privately stored, instantly accessible, and 90% cheaper than alternatives',
-  base: '/FamilySecondBrain/', // Change this to match your GitHub repo name
-  
-  head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
-    ['meta', { name: 'theme-color', content: '#3eaf7c' }],
-    ['meta', { name: 'og:type', content: 'website' }],
-    ['meta', { name: 'og:locale', content: 'en' }],
-    ['meta', { name: 'og:site_name', content: 'Archevi' }],
-  ],
-  
-  themeConfig: {
-    logo: '/logo.svg',
-    siteTitle: 'Archevi',
-    
-    nav: [
-      { text: 'Guide', link: '/guide/' },
-      { text: 'Use Cases', link: '/use-cases/' },
-      { text: 'Comparison', link: '/comparison/' },
-      { text: 'API', link: '/api/' },
-      { text: 'Pricing', link: '/pricing/' }
-    ],
-    
-    sidebar: {
-      '/guide/': [
-        {
-          text: 'Getting Started',
-          items: [
-            { text: 'Introduction', link: '/guide/' },
-            { text: 'Installation', link: '/guide/installation' },
-            { text: 'Managed Service', link: '/guide/managed-service' },
-            { text: 'Usage', link: '/guide/usage' },
-            { text: 'FAQ', link: '/guide/faq' }
-          ]
-        }
-      ],
-      
-      '/use-cases/': [
-        {
-          text: 'Use Cases',
-          items: [
-            { text: 'Overview', link: '/use-cases/' },
-            { text: 'Medical Records', link: '/use-cases/medical-records' },
-            { text: 'Recipes', link: '/use-cases/recipes' },
-            { text: 'Estate Planning', link: '/use-cases/estate-planning' },
-            { text: 'Financial Documents', link: '/use-cases/financial' },
-            { text: 'Family History', link: '/use-cases/family-history' }
-          ]
-        }
-      ],
-      
-      '/comparison/': [
-        {
-          text: 'Comparisons',
-          items: [
-            { text: 'Overview', link: '/comparison/' },
-            { text: 'vs Notion', link: '/comparison/notion' },
-            { text: 'vs Obsidian', link: '/comparison/obsidian' },
-            { text: 'vs Google Drive', link: '/comparison/google-drive' }
-          ]
-        }
-      ],
-      
-      '/api/': [
-        {
-          text: 'API Reference',
-          items: [
-            { text: 'Overview', link: '/api/' },
-            { text: 'Windmill Endpoints', link: '/api/windmill-endpoints' },
-            { text: 'Frontend API', link: '/api/frontend-api' },
-            { text: 'Component API', link: '/api/components/' }
-          ]
-        }
-      ],
-      
-      '/contributing/': [
-        {
-          text: 'Contributing',
-          items: [
-            { text: 'Getting Started', link: '/contributing/' },
-            { text: 'Architecture', link: '/contributing/architecture' },
-            { text: 'Development Setup', link: '/contributing/development' },
-            { text: 'Code Standards', link: '/contributing/code-standards' }
-          ]
-        }
-      ],
-      
-      '/pricing/': [
-        {
-          text: 'Pricing',
-          items: [
-            { text: 'Overview', link: '/pricing/' },
-            { text: 'Self-Hosted', link: '/pricing/self-hosted' },
-            { text: 'Managed Service', link: '/pricing/managed' }
-          ]
-        }
-      ]
-    },
-    
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/FamilySecondBrain' }
-    ],
-    
-    search: {
-      provider: 'local'
-    },
-    
-    editLink: {
-      pattern: 'https://github.com/yourusername/FamilySecondBrain/edit/main/docs/:path',
-      text: 'Edit this page on GitHub'
-    },
-    
-    footer: {
-      message: 'Released under the Apache 2.0 License.',
-      copyright: 'Copyright © 2025-present Archevi'
-    },
-    
-    lastUpdated: {
-      text: 'Updated at',
-      formatOptions: {
-        dateStyle: 'full',
-        timeStyle: 'medium'
-      }
-    }
-  },
-  
-  markdown: {
-    lineNumbers: true,
-    theme: {
-      light: 'github-light',
-      dark: 'github-dark'
-    }
-  }
+ title: 'Archevi Documentation',
+ description: 'Your family\'s AI-powered memory - privately stored, instantly accessible, and 90% cheaper than alternatives',
+ base: '/FamilySecondBrain/', // Change this to match your GitHub repo name
+
+ head: [
+ ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+ ['meta', { name: 'theme-color', content: '#3eaf7c' }],
+ ['meta', { name: 'og:type', content: 'website' }],
+ ['meta', { name: 'og:locale', content: 'en' }],
+ ['meta', { name: 'og:site_name', content: 'Archevi' }],
+ ],
+
+ themeConfig: {
+ logo: '/logo.svg',
+ siteTitle: 'Archevi',
+
+ nav: [
+ { text: 'Guide', link: '/guide/' },
+ { text: 'Use Cases', link: '/use-cases/' },
+ { text: 'Comparison', link: '/comparison/' },
+ { text: 'API', link: '/api/' },
+ { text: 'Pricing', link: '/pricing/' }
+ ],
+
+ sidebar: {
+ '/guide/': [
+ {
+ text: 'Getting Started',
+ items: [
+ { text: 'Introduction', link: '/guide/' },
+ { text: 'Installation', link: '/guide/installation' },
+ { text: 'Managed Service', link: '/guide/managed-service' },
+ { text: 'Usage', link: '/guide/usage' },
+ { text: 'FAQ', link: '/guide/faq' }
+ ]
+ }
+ ],
+
+ '/use-cases/': [
+ {
+ text: 'Use Cases',
+ items: [
+ { text: 'Overview', link: '/use-cases/' },
+ { text: 'Medical Records', link: '/use-cases/medical-records' },
+ { text: 'Recipes', link: '/use-cases/recipes' },
+ { text: 'Estate Planning', link: '/use-cases/estate-planning' },
+ { text: 'Financial Documents', link: '/use-cases/financial' },
+ { text: 'Family History', link: '/use-cases/family-history' }
+ ]
+ }
+ ],
+
+ '/comparison/': [
+ {
+ text: 'Comparisons',
+ items: [
+ { text: 'Overview', link: '/comparison/' },
+ { text: 'vs Notion', link: '/comparison/notion' },
+ { text: 'vs Obsidian', link: '/comparison/obsidian' },
+ { text: 'vs Google Drive', link: '/comparison/google-drive' }
+ ]
+ }
+ ],
+
+ '/api/': [
+ {
+ text: 'API Reference',
+ items: [
+ { text: 'Overview', link: '/api/' },
+ { text: 'Windmill Endpoints', link: '/api/windmill-endpoints' },
+ { text: 'Frontend API', link: '/api/frontend-api' },
+ { text: 'Component API', link: '/api/components/' }
+ ]
+ }
+ ],
+
+ '/contributing/': [
+ {
+ text: 'Contributing',
+ items: [
+ { text: 'Getting Started', link: '/contributing/' },
+ { text: 'Architecture', link: '/contributing/architecture' },
+ { text: 'Development Setup', link: '/contributing/development' },
+ { text: 'Code Standards', link: '/contributing/code-standards' }
+ ]
+ }
+ ],
+
+ '/pricing/': [
+ {
+ text: 'Pricing',
+ items: [
+ { text: 'Overview', link: '/pricing/' },
+ { text: 'Self-Hosted', link: '/pricing/self-hosted' },
+ { text: 'Managed Service', link: '/pricing/managed' }
+ ]
+ }
+ ]
+ },
+
+ socialLinks: [
+ { icon: 'github', link: 'https://github.com/yourusername/FamilySecondBrain' }
+ ],
+
+ search: {
+ provider: 'local'
+ },
+
+ editLink: {
+ pattern: 'https://github.com/yourusername/FamilySecondBrain/edit/main/docs/:path',
+ text: 'Edit this page on GitHub'
+ },
+
+ footer: {
+ message: 'Released under the Apache 2.0 License.',
+ copyright: 'Copyright © 2025-present Archevi'
+ },
+
+ lastUpdated: {
+ text: 'Updated at',
+ formatOptions: {
+ dateStyle: 'full',
+ timeStyle: 'medium'
+ }
+ }
+ },
+
+ markdown: {
+ lineNumbers: true,
+ theme: {
+ light: 'github-light',
+ dark: 'github-dark'
+ }
+ }
 })
 ```
 
@@ -240,44 +240,44 @@ export default defineConfig({
 layout: home
 
 hero:
-  name: Archevi
-  text: Your Family's AI-Powered Memory
-  tagline: Privately stored, instantly accessible, and 90% cheaper than alternatives
-  image:
-    src: /logo.svg
-    alt: Archevi
-  actions:
-    - theme: brand
-      text: Get Started
-      link: /guide/
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/yourusername/FamilySecondBrain
+ name: Archevi
+ text: Your Family's AI-Powered Memory
+ tagline: Privately stored, instantly accessible, and 90% cheaper than alternatives
+ image:
+ src: /logo.svg
+ alt: Archevi
+ actions:
+ - theme: brand
+ text: Get Started
+ link: /guide/
+ - theme: alt
+ text: View on GitHub
+ link: https://github.com/yourusername/FamilySecondBrain
 
 features:
-  - icon: 🔒
-    title: Privacy First
-    details: Self-hosted means your family data never leaves your control. PIPEDA compliant.
-  
-  - icon: 🤖
-    title: AI-Powered Search
-    details: RAG technology understands your questions, not just keywords. Find anything instantly.
-  
-  - icon: 💰
-    title: 90% Cost Savings
-    details: Self-host for ~$2/month or managed for $15/month vs $20-40/month for alternatives.
-  
-  - icon: 👨‍👩‍👧‍👦
-    title: Built for Families
-    details: Medical records, recipes, insurance, family history - organized and searchable.
-  
-  - icon: 🚀
-    title: Easy to Use
-    details: Chat interface everyone can use. No technical knowledge required.
-  
-  - icon: 🔓
-    title: No Vendor Lock-in
-    details: Open source. Your data, your infrastructure, your control.
+ - icon: 
+ title: Privacy First
+ details: Self-hosted means your family data never leaves your control. PIPEDA compliant.
+
+ - icon: 
+ title: AI-Powered Search
+ details: RAG technology understands your questions, not just keywords. Find anything instantly.
+
+ - icon: 
+ title: 90% Cost Savings
+ details: Self-host for ~$2/month or managed for $15/month vs $20-40/month for alternatives.
+
+ - icon: ‍‍‍
+ title: Built for Families
+ details: Medical records, recipes, insurance, family history - organized and searchable.
+
+ - icon: 
+ title: Easy to Use
+ details: Chat interface everyone can use. No technical knowledge required.
+
+ - icon: 
+ title: No Vendor Lock-in
+ details: Open source. Your data, your infrastructure, your control.
 ---
 
 ## Why Archevi?
@@ -287,7 +287,7 @@ Stop losing important family information. Stop paying $240/year for Notion. Stop
 Archevi is your family's centralized knowledge base powered by AI:
 
 - **"What was grandma's cookie recipe?"** - Instant answers
-- **"Where's the home insurance policy?"** - Found in seconds  
+- **"Where's the home insurance policy?"** - Found in seconds 
 - **"What are dad's allergies?"** - Searchable medical history
 - **"What's the WiFi password?"** - No more asking repeatedly
 
@@ -309,10 +309,10 @@ Sign up for hassle-free hosting at $14.99 CAD/month.
 
 ## What People Are Saying
 
-> "Finally, all our family recipes in one place and actually findable!"  
+> "Finally, all our family recipes in one place and actually findable!" 
 > — *Sarah T., Early Adopter*
 
-> "The elder care use case is brilliant. All my mom's medical info is now accessible to caregivers instantly."  
+> "The elder care use case is brilliant. All my mom's medical info is now accessible to caregivers instantly." 
 > — *Michael R., Beta Tester*
 
 ## Open Source
@@ -378,10 +378,10 @@ Watch this 2-minute video to see Archevi in action:
 
 ## Need Help?
 
-- 📖 [Read the FAQ](/guide/faq)
-- 💬 [Join our Discord](https://discord.gg/archevi)
-- 📧 [Email support](mailto:support@archevi.com)
-- 🐛 [Report a bug](https://github.com/yourusername/FamilySecondBrain/issues)
+- [Read the FAQ](/guide/faq)
+- [Join our Discord](https://discord.gg/archevi)
+- [Email support](mailto:support@archevi.com)
+- [Report a bug](https://github.com/yourusername/FamilySecondBrain/issues)
 ```
 
 #### Installation Guide (`docs/guide/installation.md`)
@@ -495,7 +495,7 @@ Access the app at `http://localhost:5173`
 2. Type a question about your document
 3. Press Enter
 
-🎉 **Congratulations!** You're now running Archevi.
+ **Congratulations!** You're now running Archevi.
 
 ## Troubleshooting
 
@@ -553,79 +553,79 @@ Create `.github/workflows/docs-deploy.yml`:
 name: Deploy Documentation
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - '.github/workflows/docs-deploy.yml'
-  workflow_dispatch: # Allow manual triggers
+ push:
+ branches:
+ - main
+ paths:
+ - 'docs/**'
+ - '.github/workflows/docs-deploy.yml'
+ workflow_dispatch: # Allow manual triggers
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+ contents: read
+ pages: write
+ id-token: write
 
 # Only allow one deployment at a time
 concurrency:
-  group: pages
-  cancel-in-progress: false
+ group: pages
+ cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Needed for git history (lastUpdated)
+ build:
+ runs-on: ubuntu-latest
+ steps:
+ - name: Checkout
+ uses: actions/checkout@v4
+ with:
+ fetch-depth: 0 # Needed for git history (lastUpdated)
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+ - name: Setup Node
+ uses: actions/setup-node@v4
+ with:
+ node-version: 20
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+ - name: Setup pnpm
+ uses: pnpm/action-setup@v2
+ with:
+ version: 8
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+ - name: Get pnpm store directory
+ shell: bash
+ run: |
+ echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+ - name: Setup pnpm cache
+ uses: actions/cache@v3
+ with:
+ path: ${{ env.STORE_PATH }}
+ key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+ restore-keys: |
+ ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ./docs
+ - name: Install dependencies
+ run: pnpm install --frozen-lockfile
+ working-directory: ./docs
 
-      - name: Build documentation
-        run: pnpm vitepress build
-        working-directory: ./docs
+ - name: Build documentation
+ run: pnpm vitepress build
+ working-directory: ./docs
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/.vitepress/dist
+ - name: Upload artifact
+ uses: actions/upload-pages-artifact@v3
+ with:
+ path: docs/.vitepress/dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+ deploy:
+ needs: build
+ runs-on: ubuntu-latest
+ environment:
+ name: github-pages
+ url: ${{ steps.deployment.outputs.page_url }}
+ steps:
+ - name: Deploy to GitHub Pages
+ id: deployment
+ uses: actions/deploy-pages@v4
 ```
 
 Create `.github/workflows/docs-preview.yml`:
@@ -634,46 +634,46 @@ Create `.github/workflows/docs-preview.yml`:
 name: Preview Documentation
 
 on:
-  pull_request:
-    paths:
-      - 'docs/**'
-      - '.github/workflows/docs-preview.yml'
+ pull_request:
+ paths:
+ - 'docs/**'
+ - '.github/workflows/docs-preview.yml'
 
 jobs:
-  preview:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+ preview:
+ runs-on: ubuntu-latest
+ steps:
+ - name: Checkout
+ uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+ - name: Setup Node
+ uses: actions/setup-node@v4
+ with:
+ node-version: 20
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+ - name: Setup pnpm
+ uses: pnpm/action-setup@v2
+ with:
+ version: 8
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ./docs
+ - name: Install dependencies
+ run: pnpm install --frozen-lockfile
+ working-directory: ./docs
 
-      - name: Build documentation
-        run: pnpm vitepress build
-        working-directory: ./docs
+ - name: Build documentation
+ run: pnpm vitepress build
+ working-directory: ./docs
 
-      - name: Comment preview instructions
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '📚 **Documentation Preview**\n\nTo preview the documentation changes locally:\n\n```bash\ncd docs\npnpm install\npnpm vitepress dev\n```\n\nOnce merged, docs will be deployed to GitHub Pages automatically.'
-            })
+ - name: Comment preview instructions
+ uses: actions/github-script@v7
+ with:
+ script: |
+ github.rest.issues.createComment({
+ issue_number: context.issue.number,
+ owner: context.repo.owner,
+ repo: context.repo.repo,
+ body: ' **Documentation Preview**\n\nTo preview the documentation changes locally:\n\n```bash\ncd docs\npnpm install\npnpm vitepress dev\n```\n\nOnce merged, docs will be deployed to GitHub Pages automatically.'
+ })
 ```
 
 ### Step 6: Enable GitHub Pages
@@ -681,7 +681,7 @@ jobs:
 1. Go to your GitHub repository
 2. Navigate to **Settings** → **Pages**
 3. Under "Build and deployment":
-   - Source: Select **"GitHub Actions"**
+ - Source: Select **"GitHub Actions"**
 4. Save changes
 
 Your documentation will now be available at:
@@ -693,17 +693,17 @@ Update your root `package.json` (or create one if it doesn't exist):
 
 ```json
 {
-  "name": "archevi",
-  "version": "2.1.0",
-  "private": true,
-  "scripts": {
-    "docs:dev": "cd docs && pnpm vitepress dev",
-    "docs:build": "cd docs && pnpm vitepress build",
-    "docs:preview": "cd docs && pnpm vitepress preview"
-  },
-  "devDependencies": {
-    "vitepress": "^1.0.0"
-  }
+ "name": "archevi",
+ "version": "2.1.0",
+ "private": true,
+ "scripts": {
+ "docs:dev": "cd docs && pnpm vitepress dev",
+ "docs:build": "cd docs && pnpm vitepress build",
+ "docs:preview": "cd docs && pnpm vitepress preview"
+ },
+ "devDependencies": {
+ "vitepress": "^1.0.0"
+ }
 }
 ```
 
@@ -724,20 +724,20 @@ Create `frontend/typedoc.json`:
 
 ```json
 {
-  "entryPoints": [
-    "src/components",
-    "src/api",
-    "src/store",
-    "src/hooks"
-  ],
-  "out": "../docs/api/components",
-  "plugin": ["typedoc-plugin-markdown"],
-  "readme": "none",
-  "excludePrivate": true,
-  "excludeProtected": true,
-  "excludeExternals": true,
-  "hideGenerator": true,
-  "gitRevision": "main"
+ "entryPoints": [
+ "src/components",
+ "src/api",
+ "src/store",
+ "src/hooks"
+ ],
+ "out": "../docs/api/components",
+ "plugin": ["typedoc-plugin-markdown"],
+ "readme": "none",
+ "excludePrivate": true,
+ "excludeProtected": true,
+ "excludeExternals": true,
+ "hideGenerator": true,
+ "gitRevision": "main"
 }
 ```
 
@@ -747,10 +747,10 @@ Update `frontend/package.json`:
 
 ```json
 {
-  "scripts": {
-    "docs:api": "typedoc",
-    "docs:api:watch": "typedoc --watch"
-  }
+ "scripts": {
+ "docs:api": "typedoc",
+ "docs:api:watch": "typedoc --watch"
+ }
 }
 ```
 
@@ -766,17 +766,17 @@ pnpm run docs:api
 Modify `.github/workflows/docs-deploy.yml` to include API doc generation:
 
 ```yaml
-      - name: Install frontend dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ./frontend
+ - name: Install frontend dependencies
+ run: pnpm install --frozen-lockfile
+ working-directory: ./frontend
 
-      - name: Generate API documentation
-        run: pnpm run docs:api
-        working-directory: ./frontend
+ - name: Generate API documentation
+ run: pnpm run docs:api
+ working-directory: ./frontend
 
-      - name: Install docs dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ./docs
+ - name: Install docs dependencies
+ run: pnpm install --frozen-lockfile
+ working-directory: ./docs
 ```
 
 ### Step 6: Create API Reference Index
@@ -836,24 +836,24 @@ Create `.commitlintrc.json` in project root:
 
 ```json
 {
-  "extends": ["@commitlint/config-conventional"],
-  "rules": {
-    "type-enum": [
-      2,
-      "always",
-      [
-        "feat",
-        "fix",
-        "docs",
-        "style",
-        "refactor",
-        "perf",
-        "test",
-        "chore",
-        "revert"
-      ]
-    ]
-  }
+ "extends": ["@commitlint/config-conventional"],
+ "rules": {
+ "type-enum": [
+ 2,
+ "always",
+ [
+ "feat",
+ "fix",
+ "docs",
+ "style",
+ "refactor",
+ "perf",
+ "test",
+ "chore",
+ "revert"
+ ]
+ ]
+ }
 }
 ```
 
@@ -876,45 +876,45 @@ Create `.github/workflows/release.yml`:
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+ push:
+ tags:
+ - 'v*.*.*'
 
 permissions:
-  contents: write
+ contents: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+ release:
+ runs-on: ubuntu-latest
+ steps:
+ - name: Checkout
+ uses: actions/checkout@v4
+ with:
+ fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+ - name: Setup Node
+ uses: actions/setup-node@v4
+ with:
+ node-version: 20
 
-      - name: Generate changelog
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-file: 'CHANGELOG.md'
-          skip-version-file: true
-          skip-commit: true
-          git-push: false
+ - name: Generate changelog
+ id: changelog
+ uses: TriPSs/conventional-changelog-action@v5
+ with:
+ github-token: ${{ secrets.GITHUB_TOKEN }}
+ output-file: 'CHANGELOG.md'
+ skip-version-file: true
+ skip-commit: true
+ git-push: false
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          body: ${{ steps.changelog.outputs.clean_changelog }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ - name: Create GitHub Release
+ uses: softprops/action-gh-release@v1
+ with:
+ body: ${{ steps.changelog.outputs.clean_changelog }}
+ draft: false
+ prerelease: false
+ env:
+ GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ### Step 5: Commit Message Guidelines
@@ -1074,9 +1074,9 @@ pnpm add -D markdown-link-check
 Add to `package.json`:
 ```json
 {
-  "scripts": {
-    "docs:check-links": "find docs -name '*.md' -exec markdown-link-check {} \\;"
-  }
+ "scripts": {
+ "docs:check-links": "find docs -name '*.md' -exec markdown-link-check {} \\;"
+ }
 }
 ```
 
@@ -1090,30 +1090,30 @@ pnpm add -D cspell
 Create `.cspell.json`:
 ```json
 {
-  "version": "0.2",
-  "language": "en",
-  "words": [
-    "Archevi",
-    "Windmill",
-    "pgvector",
-    "Cohere",
-    "TypeDoc",
-    "VitePress"
-  ],
-  "ignorePaths": [
-    "node_modules/**",
-    "*.log",
-    "dist/**"
-  ]
+ "version": "0.2",
+ "language": "en",
+ "words": [
+ "Archevi",
+ "Windmill",
+ "pgvector",
+ "Cohere",
+ "TypeDoc",
+ "VitePress"
+ ],
+ "ignorePaths": [
+ "node_modules/**",
+ "*.log",
+ "dist/**"
+ ]
 }
 ```
 
 Add to `package.json`:
 ```json
 {
-  "scripts": {
-    "docs:spell-check": "cspell 'docs/**/*.md'"
-  }
+ "scripts": {
+ "docs:spell-check": "cspell 'docs/**/*.md'"
+ }
 }
 ```
 
@@ -1209,16 +1209,16 @@ pnpm vitepress dev
 
 Your documentation automation is successful when:
 
-- ✅ Docs automatically deploy on every push to main
-- ✅ PR previews show documentation changes before merge
-- ✅ Component API reference auto-generates from TypeScript
-- ✅ Changelog auto-generates from conventional commits
-- ✅ Local preview works smoothly for development
-- ✅ Documentation is searchable (VitePress local search)
-- ✅ Mobile-responsive and accessible
-- ✅ Fast load times (<2s)
-- ✅ No broken links
-- ✅ Professional appearance matching brand
+- Docs automatically deploy on every push to main
+- PR previews show documentation changes before merge
+- Component API reference auto-generates from TypeScript
+- Changelog auto-generates from conventional commits
+- Local preview works smoothly for development
+- Documentation is searchable (VitePress local search)
+- Mobile-responsive and accessible
+- Fast load times (<2s)
+- No broken links
+- Professional appearance matching brand
 
 ---
 
@@ -1235,6 +1235,6 @@ Your documentation automation is successful when:
 
 ---
 
-**Last Updated**: 2025-11-27  
-**Implementation Time Estimate**: 2-4 weeks (depending on content depth)  
+**Last Updated**: 2025-11-27 
+**Implementation Time Estimate**: 2-4 weeks (depending on content depth) 
 **Maintenance Effort**: ~2 hours/week after initial setup

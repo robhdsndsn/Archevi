@@ -1,0 +1,58 @@
+JOHNSON FAMILY HEALTH INSURANCE
+Group Policy Number: BC-3C2D-4901-2024
+Employer: Hamilton Manufacturing Inc.
+Plan: Blue Cross Blue Shield Family Plan
+Coverage Period: January 1, 2024 - December 31, 2024
+
+COVERED FAMILY MEMBERS:
+Primary: David Johnson (Employee #HAM-4901)
+Spouse: Maria Johnson
+Dependent: Alex Johnson (DOB: 08/15/2012)
+Dependent: Emma Johnson (DOB: 03/22/2015)
+
+COVERAGE DETAILS:
+Annual Deductible: $2,500 family / $1,250 individual
+Out-of-Pocket Maximum: $8,000 family / $4,000 individual
+Primary Care Copay: $25
+Specialist Copay: $50
+Emergency Room: $150 copay (waived if admitted)
+Prescription Drugs: $10/$30/$60 (generic/preferred/non-preferred)
+
+MEDICAL PROVIDERS:
+Primary Care Network: Hamilton Health Partners
+Preferred Hospital: Hamilton General Hospital
+Pediatrician: Dr. Sarah Chen (Alex & Emma)
+Family Doctor: Dr. Michael Roberts (David & Maria)
+
+MEMBER ID CARDS:
+David: BC-3C2D-4901-01
+Maria: BC-3C2D-4901-02
+Alex: BC-3C2D-4901-03
+Emma: BC-3C2D-4901-04
+
+PREMIUM INFORMATION:
+Employee Contribution: $347.82/month (pre-tax deduction)
+Employer Contribution: $892.18/month
+Total Premium: $1,240/month
+
+OPEN ENROLLMENT: November 1-30, 2024
+POLICY EXPIRATION: December 31, 2024
+RENEWAL: Automatic unless changes made during open enrollment
+
+SPECIAL COVERAGE:
+- Mental Health: Covered at 90% after deductible
+- Maternity/Pregnancy: 100% covered after deductible
+- Vision: Annual eye exam covered, frames/lenses 50% up to $200
+- Dental: Separate policy (see dental-insurance.txt)
+
+IMPORTANT PHONE NUMBERS:
+Member Services: 1-800-BCBS-HELP
+Nurse Hotline: 1-800-NURSES
+Prior Authorization: 1-800-PRIOR-AUTH
+Pharmacy Benefits: 1-800-RX-BCBS
+
+RECENT MEDICAL ACTIVITY:
+- Alex: Annual physical (September 2024) - Normal
+- Emma: School immunizations (August 2024) - Complete
+- Maria: Preventive care (October 2024) - Mammogram scheduled
+- David: Diabetes management (Quarterly visits with Dr. Roberts)

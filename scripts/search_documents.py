@@ -10,13 +10,19 @@
 #   - requests
 
 """
-Semantic search for documents in the Family Second Brain knowledge base.
+Semantic search for documents in the Archevi knowledge base.
+
+Multi-Tenant Architecture:
+- Each search is scoped to a specific tenant_id
+- Documents from other tenants are NEVER visible or searchable
+- Complete data isolation at the database level
 
 This script is primarily for testing and debugging the RAG pipeline.
 It performs semantic search without the generation step.
 
 Args:
     search_term (str): Search query text
+    tenant_id (str): UUID of the tenant (family) - REQUIRED for isolation
     category (str, optional): Filter by document category
     limit (int): Maximum number of results (default: 5)
 
@@ -32,6 +38,7 @@ Returns:
 Example:
     results = await f.chatbot.search_documents(
         search_term="apple pie ingredients",
+        tenant_id="5302d94d-4c08-459d-b49f-d211abdb4047",
         category="recipes",
         limit=5
     )
@@ -47,11 +54,12 @@ import wmill
 
 def main(
     search_term: str,
+    tenant_id: str,
     category: Optional[str] = None,
     limit: int = 5,
 ) -> List[dict]:
     """
-    Perform semantic search for documents in the knowledge base.
+    Perform semantic search for documents in the knowledge base (tenant-scoped).
     """
     # Get credentials from Windmill
     postgres_db = wmill.get_resource("f/chatbot/postgres_db")
@@ -60,11 +68,14 @@ def main(
     # Validate input
     if not search_term or not search_term.strip():
         raise ValueError("Search term cannot be empty")
+    if not tenant_id or not tenant_id.strip():
+        raise ValueError("tenant_id is required for data isolation")
 
     search_term = search_term.strip()
+    tenant_id = tenant_id.strip()
 
     # Validate category if provided
-    valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general', 'insurance', 'invoices']
+    valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general', 'insurance', 'invoices', 'legal', 'education', 'personal']
     if category and category not in valid_categories:
         raise ValueError(f"Category must be one of: {valid_categories}")
 
@@ -107,23 +118,25 @@ def main(
         register_vector(conn)
         cursor = conn.cursor()
 
+        # TENANT ISOLATED - Only searches documents belonging to this specific tenant
         if category:
             cursor.execute("""
                 SELECT id, title, content, category, created_at,
                        1 - (embedding <=> %s::vector) AS relevance_score
-                FROM family_documents
-                WHERE category = %s
+                FROM documents
+                WHERE tenant_id = %s::uuid AND category = %s
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
-            """, (query_embedding, category, query_embedding, limit))
+            """, (query_embedding, tenant_id, category, query_embedding, limit))
         else:
             cursor.execute("""
                 SELECT id, title, content, category, created_at,
                        1 - (embedding <=> %s::vector) AS relevance_score
-                FROM family_documents
+                FROM documents
+                WHERE tenant_id = %s::uuid
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
-            """, (query_embedding, query_embedding, limit))
+            """, (query_embedding, tenant_id, query_embedding, limit))
 
         results = cursor.fetchall()
         cursor.close()

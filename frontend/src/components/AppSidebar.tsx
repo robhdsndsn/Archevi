@@ -16,7 +16,9 @@ import {
   Search,
   ChevronDown,
   BarChart3,
+  Building2,
 } from 'lucide-react';
+import { useAuthStore } from '@/store/auth-store';
 import {
   Sidebar,
   SidebarContent,
@@ -57,6 +59,10 @@ const categories = [
 
 export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin', onViewAsChange }: AppSidebarProps) {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const { user } = useAuthStore();
+
+  // Show admin menu only to system admins
+  const isSystemAdmin = user?.role === 'admin' && viewAs === 'admin';
 
   const handleNavigate = (view: string) => {
     onNavigate?.(view);
@@ -163,6 +169,18 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
                   <span>Analytics</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {isSystemAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={currentView === 'admin'}
+                    tooltip="System Admin"
+                    onClick={() => handleNavigate('admin')}
+                  >
+                    <Building2 />
+                    <span>System Admin</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

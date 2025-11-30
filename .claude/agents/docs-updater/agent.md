@@ -1,3 +1,8 @@
+---
+name: docs-updater
+description: Automatically update VitePress documentation based on code changes in the FamilySecondBrain/Archevi project. Use after implementing features, modifying APIs, or changing component interfaces.
+---
+
 # Documentation Updater Agent
 
 ## Purpose

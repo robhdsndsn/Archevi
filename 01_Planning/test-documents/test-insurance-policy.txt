@@ -1,0 +1,26 @@
+Hudson Family Insurance Policy
+
+Policy Number: HUD-INS-2024-001
+Policy Holder: Robert Hudson
+Coverage Type: Auto Insurance
+Vehicle: 2023 Toyota Camry
+Policy Start Date: January 1, 2024
+Policy End Date: December 31, 2024
+Premium: $1,200 annually
+
+Coverage Details:
+- Liability Coverage: $300,000
+- Collision Coverage: $50,000 deductible
+- Comprehensive Coverage: $25,000 deductible
+
+Important Dates:
+- Policy expires on December 31, 2024
+- Premium payment due quarterly
+- Next payment due: October 1, 2024
+
+Contact Information:
+Insurance Agent: Sarah Miller
+Phone: (555) 123-4567
+Email: sarah.miller@insurance.com
+
+Emergency Claims Hotline: 1-800-CLAIMS-1

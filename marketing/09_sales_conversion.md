@@ -4,19 +4,19 @@
 
 ```
 Awareness (Top of Funnel)
-   ↓
+ ↓
 Blog/Social Post → Website Visit
-   ↓
+ ↓
 Landing Page → Email Signup (15-25% conversion)
-   ↓
+ ↓
 Nurture Emails (5 emails over 14 days)
-   ↓
+ ↓
 Start Free Trial (10-15% conversion)
-   ↓
+ ↓
 Trial Experience (14 days)
-   ↓
+ ↓
 Convert to Paid (25-35% conversion)
-   ↓
+ ↓
 Retention (Monthly/Annual)
 ```
 
@@ -29,7 +29,7 @@ Retention (Monthly/Annual)
 ```
 Headline: Your family's AI-powered memory
 Subheadline: Privately stored, instantly accessible, and 90%
-             cheaper than alternatives
+ cheaper than alternatives
 
 [Hero image or demo video]
 
@@ -44,12 +44,12 @@ Secondary CTA: See How It Works (demo video)
 - GitHub stars count
 
 ### Features Section (Icon + Short Description)
-- 🔒 Privacy First
-- 🤖 AI-Powered Search
-- 💰 90% Cost Savings
-- 👨‍👩‍👧‍👦 Built for Families
-- 🚀 Easy to Use
-- 🔓 No Vendor Lock-in
+- Privacy First
+- AI-Powered Search
+- 90% Cost Savings
+- ‍‍‍ Built for Families
+- Easy to Use
+- No Vendor Lock-in
 
 ### Use Cases Section (3 columns)
 - Medical Records (grandma image)

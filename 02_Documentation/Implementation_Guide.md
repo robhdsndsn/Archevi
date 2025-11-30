@@ -31,55 +31,55 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Windmill App (Frontend)                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌─────────────────┐  │
-│  │ Text Input   │→ │ Button       │→ │ Rich Text       │  │
-│  │ (user_query) │  │ (Ask/Submit) │  │ (AI Response)   │  │
-│  └──────────────┘  └──────────────┘  └─────────────────┘  │
-│                           ↓                                  │
+│ Windmill App (Frontend) │
+│ ┌──────────────┐ ┌──────────────┐ ┌─────────────────┐ │
+│ │ Text Input │→ │ Button │→ │ Rich Text │ │
+│ │ (user_query) │ │ (Ask/Submit) │ │ (AI Response) │ │
+│ └──────────────┘ └──────────────┘ └─────────────────┘ │
+│ ↓ │
 └───────────────────────────┼──────────────────────────────────┘
-                            ↓
+ ↓
 ┌───────────────────────────┼──────────────────────────────────┐
-│              Windmill Backend Scripts (Python)               │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │  f/chatbot/rag_query.py                                │ │
-│  │  1. Embed query (Cohere)                               │ │
-│  │  2. Vector search (pgvector)                           │ │
-│  │  3. Rerank results (Cohere)                            │ │
-│  │  4. Generate answer (Cohere Command-R)                 │ │
-│  │  5. Store conversation                                 │ │
-│  └────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │  f/chatbot/embed_document.py                           │ │
-│  │  - Ingests family documents                            │ │
-│  │  - Generates embeddings                                │ │
-│  │  - Stores in pgvector                                  │ │
-│  └────────────────────────────────────────────────────────┘ │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │  f/chatbot/get_conversation_history.py                 │ │
-│  │  - Retrieves recent conversations                      │ │
-│  └────────────────────────────────────────────────────────┘ │
+│ Windmill Backend Scripts (Python) │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ f/chatbot/rag_query.py │ │
+│ │ 1. Embed query (Cohere) │ │
+│ │ 2. Vector search (pgvector) │ │
+│ │ 3. Rerank results (Cohere) │ │
+│ │ 4. Generate answer (Cohere Command-R) │ │
+│ │ 5. Store conversation │ │
+│ └────────────────────────────────────────────────────────┘ │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ f/chatbot/embed_document.py │ │
+│ │ - Ingests family documents │ │
+│ │ - Generates embeddings │ │
+│ │ - Stores in pgvector │ │
+│ └────────────────────────────────────────────────────────┘ │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ f/chatbot/get_conversation_history.py │ │
+│ │ - Retrieves recent conversations │ │
+│ └────────────────────────────────────────────────────────┘ │
 └───────────────────────────┼──────────────────────────────────┘
-                            ↓
+ ↓
 ┌───────────────────────────┼──────────────────────────────────┐
-│               PostgreSQL with pgvector Extension             │
-│  ┌─────────────────────┐  ┌──────────────────────────────┐  │
-│  │ family_documents    │  │ conversations                │  │
-│  │ - id (PK)           │  │ - id (PK)                    │  │
-│  │ - title             │  │ - session_id                 │  │
-│  │ - content           │  │ - role (user/assistant)      │  │
-│  │ - category          │  │ - content                    │  │
-│  │ - embedding (1024d) │  │ - sources (JSONB)            │  │
-│  │ - created_at        │  │ - created_at                 │  │
-│  └─────────────────────┘  └──────────────────────────────┘  │
+│ PostgreSQL with pgvector Extension │
+│ ┌─────────────────────┐ ┌──────────────────────────────┐ │
+│ │ family_documents │ │ conversations │ │
+│ │ - id (PK) │ │ - id (PK) │ │
+│ │ - title │ │ - session_id │ │
+│ │ - content │ │ - role (user/assistant) │ │
+│ │ - category │ │ - content │ │
+│ │ - embedding (1024d) │ │ - sources (JSONB) │ │
+│ │ - created_at │ │ - created_at │ │
+│ └─────────────────────┘ └──────────────────────────────┘ │
 └───────────────────────────┼──────────────────────────────────┘
-                            ↓
-                  ┌─────────────────────┐
-                  │   Cohere API        │
-                  │ - Embeddings        │
-                  │ - Reranking         │
-                  │ - Generation        │
-                  └─────────────────────┘
+ ↓
+ ┌─────────────────────┐
+ │ Cohere API │
+ │ - Embeddings │
+ │ - Reranking │
+ │ - Generation │
+ └─────────────────────┘
 ```
 
 ### Data Flow
@@ -87,12 +87,12 @@
 1. **User submits query** → React frontend chat interface
 2. **API call triggers** → `f/chatbot/rag_query` script via Windmill
 3. **Script workflow:**
-   - Embed query with Cohere (`embed-v4.0`, 1024 dimensions)
-   - Search pgvector for top 10 similar documents (cosine similarity)
-   - Rerank top 10 using Cohere Rerank v3.5 with YAML-formatted docs
-   - Generate answer with Command A (111B params) using retrieved context
-   - Calculate weighted confidence score (50% top, 30% second, 20% third)
-   - Return `{answer, sources, confidence, session_id}`
+ - Embed query with Cohere (`embed-v4.0`, 1024 dimensions)
+ - Search pgvector for top 10 similar documents (cosine similarity)
+ - Rerank top 10 using Cohere Rerank v3.5 with YAML-formatted docs
+ - Generate answer with Command A (111B params) using retrieved context
+ - Calculate weighted confidence score (50% top, 30% second, 20% third)
+ - Return `{answer, sources, confidence, session_id}`
 4. **Response displays** → React chat UI with relevance percentages
 5. **Conversation stored** → PostgreSQL for history
 
@@ -134,23 +134,23 @@ We upgraded to the latest Cohere models for improved performance:
 ### Required Accounts & Setup
 
 1. **Windmill Instance**
-   - Self-hosted (recommended): Follow setup in Phase 1
-   - Cloud trial: https://app.windmill.dev/user/login
+ - Self-hosted (recommended): Follow setup in Phase 1
+ - Cloud trial: https://app.windmill.dev/user/login
 
 2. **Cohere Account**
-   - Sign up: https://cohere.com/
-   - Get API key: Dashboard → API Keys
-   - **CRITICAL**: Use production keys (trial keys prohibit personal data)
-   - Consider ZDR (Zero Data Retention) for maximum privacy
+ - Sign up: https://cohere.com/
+ - Get API key: Dashboard → API Keys
+ - **CRITICAL**: Use production keys (trial keys prohibit personal data)
+ - Consider ZDR (Zero Data Retention) for maximum privacy
 
 3. **PostgreSQL Database**
-   - Version 14+ with pgvector extension
-   - Can be on same server as Windmill
-   - Minimum 2GB RAM, 10GB storage
+ - Version 14+ with pgvector extension
+ - Can be on same server as Windmill
+ - Minimum 2GB RAM, 10GB storage
 
 4. **Claude Code** (for development)
-   - Install: https://claude.ai/download
-   - MCP setup covered in Phase 1
+ - Install: https://claude.ai/download
+ - MCP setup covered in Phase 1
 
 ### Local Development Environment
 
@@ -214,20 +214,20 @@ SELECT * FROM pg_extension WHERE extname = 'vector';
 ```yaml
 # Add to docker-compose.yml
 services:
-  family-brain-db:
-    image: pgvector/pgvector:pg16
-    restart: always
-    environment:
-      POSTGRES_DB: family_brain
-      POSTGRES_USER: familyuser
-      POSTGRES_PASSWORD: CHANGE_THIS_PASSWORD
-    volumes:
-      - family_brain_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
+ family-brain-db:
+ image: pgvector/pgvector:pg16
+ restart: always
+ environment:
+ POSTGRES_DB: family_brain
+ POSTGRES_USER: familyuser
+ POSTGRES_PASSWORD: CHANGE_THIS_PASSWORD
+ volumes:
+ - family_brain_data:/var/lib/postgresql/data
+ ports:
+ - "5433:5432"
 
 volumes:
-  family_brain_data:
+ family_brain_data:
 ```
 
 ```bash
@@ -269,15 +269,15 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Family documents table with vector embeddings
 CREATE TABLE family_documents (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    category TEXT NOT NULL, -- 'recipes', 'medical', 'financial', 'family_history', 'general'
-    source_file TEXT,        -- Original filename if uploaded
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    created_by TEXT,         -- User who added it
-    embedding vector(1024)   -- Cohere embed-english-v3.0 dimension
+ id SERIAL PRIMARY KEY,
+ title TEXT NOT NULL,
+ content TEXT NOT NULL,
+ category TEXT NOT NULL, -- 'recipes', 'medical', 'financial', 'family_history', 'general'
+ source_file TEXT, -- Original filename if uploaded
+ created_at TIMESTAMP DEFAULT NOW(),
+ updated_at TIMESTAMP DEFAULT NOW(),
+ created_by TEXT, -- User who added it
+ embedding vector(1024) -- Cohere embed-english-v3.0 dimension
 );
 
 -- Create HNSW index for fast similarity search
@@ -290,13 +290,13 @@ CREATE INDEX idx_documents_created_at ON family_documents(created_at DESC);
 
 -- Conversation history table
 CREATE TABLE conversations (
-    id SERIAL PRIMARY KEY,
-    session_id UUID NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
-    content TEXT NOT NULL,
-    sources JSONB,           -- Array of source document IDs and snippets
-    created_at TIMESTAMP DEFAULT NOW(),
-    user_email TEXT
+ id SERIAL PRIMARY KEY,
+ session_id UUID NOT NULL,
+ role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+ content TEXT NOT NULL,
+ sources JSONB, -- Array of source document IDs and snippets
+ created_at TIMESTAMP DEFAULT NOW(),
+ user_email TEXT
 );
 
 -- Indexes for conversation retrieval
@@ -305,20 +305,20 @@ CREATE INDEX idx_conversations_user ON conversations(user_email, created_at DESC
 
 -- Document metadata for tracking uploads
 CREATE TABLE document_metadata (
-    id SERIAL PRIMARY KEY,
-    document_id INTEGER REFERENCES family_documents(id) ON DELETE CASCADE,
-    key TEXT NOT NULL,
-    value TEXT,
-    UNIQUE(document_id, key)
+ id SERIAL PRIMARY KEY,
+ document_id INTEGER REFERENCES family_documents(id) ON DELETE CASCADE,
+ key TEXT NOT NULL,
+ value TEXT,
+ UNIQUE(document_id, key)
 );
 
 -- Usage tracking (optional, for monitoring costs)
 CREATE TABLE api_usage_log (
-    id SERIAL PRIMARY KEY,
-    operation TEXT NOT NULL, -- 'embed', 'rerank', 'generate'
-    tokens_used INTEGER,
-    cost_usd DECIMAL(10, 6),
-    created_at TIMESTAMP DEFAULT NOW()
+ id SERIAL PRIMARY KEY,
+ operation TEXT NOT NULL, -- 'embed', 'rerank', 'generate'
+ tokens_used INTEGER,
+ cost_usd DECIMAL(10, 6),
+ created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -340,16 +340,16 @@ docker exec -i family-brain-db psql -U familyuser -d family_brain < schema.sql
 2. Select **PostgreSQL**
 3. Name it: `f/chatbot/postgres_db`
 4. Configure:
-   ```json
-   {
-     "host": "family-brain-db",
-     "port": 5432,
-     "dbname": "family_brain",
-     "user": "familyuser",
-     "password": "YOUR_PASSWORD",
-     "sslmode": "disable"
-   }
-   ```
+ ```json
+ {
+ "host": "family-brain-db",
+ "port": 5432,
+ "dbname": "family_brain",
+ "user": "familyuser",
+ "password": "YOUR_PASSWORD",
+ "sslmode": "disable"
+ }
+ ```
 5. Test connection → Save
 
 ### 2.3 Create Windmill Variable for Cohere API Key
@@ -359,7 +359,7 @@ docker exec -i family-brain-db psql -U familyuser -d family_brain < schema.sql
 1. Go to **Variables** → **+ Add Variable**
 2. Name: `f/chatbot/cohere_api_key`
 3. Value: `your-cohere-api-key-here`
-4. Mark as **Secret** (🔒)
+4. Mark as **Secret** ()
 5. Save
 
 ---
@@ -415,10 +415,10 @@ WORKFLOW:
 TECHNICAL DETAILS:
 - Use Windmill resource "f/chatbot/postgres_db" and variable "f/chatbot/cohere_api_key"
 - Vector search SQL: 
-  SELECT id, title, content, category, embedding <=> %s::vector AS distance
-  FROM family_documents
-  ORDER BY distance
-  LIMIT 10
+ SELECT id, title, content, category, embedding <=> %s::vector AS distance
+ FROM family_documents
+ ORDER BY distance
+ LIMIT 10
 - Rerank call: co.rerank(query=query, documents=[...], top_n=3, model="rerank-english-v3.0")
 - Generation call: co.chat(model="command-r", message=query, documents=[...])
 - Log all API calls to api_usage_log with token counts and estimated costs
@@ -449,9 +449,9 @@ REQUIREMENTS:
 
 SQL LOGIC:
 - With session_id: 
-  SELECT * FROM conversations WHERE session_id = %s ORDER BY created_at DESC LIMIT %s
+ SELECT * FROM conversations WHERE session_id = %s ORDER BY created_at DESC LIMIT %s
 - Without session_id:
-  SELECT * FROM conversations ORDER BY created_at DESC LIMIT %s
+ SELECT * FROM conversations ORDER BY created_at DESC LIMIT %s
 
 Include docstring with usage examples.
 ```
@@ -506,28 +506,28 @@ After Claude Code generates and deploys each script:
 **In Windmill UI:**
 1. Navigate to **Scripts** → **f/chatbot**
 2. Verify all 5 scripts are present:
-   - `embed_document`
-   - `rag_query`
-   - `get_conversation_history`
-   - `bulk_upload_documents`
-   - `search_documents`
+ - `embed_document`
+ - `rag_query`
+ - `get_conversation_history`
+ - `bulk_upload_documents`
+ - `search_documents`
 3. Click each script → Test with sample inputs
 
 **Example Test for embed_document:**
 ```json
 {
-  "title": "Grandma's Apple Pie Recipe",
-  "content": "Preheat oven to 425°F. Mix 6 cups sliced apples with 3/4 cup sugar, 2 tbsp flour, 1 tsp cinnamon. Fill pie crust, dot with butter, cover with top crust. Bake 40-50 minutes until golden.",
-  "category": "recipes",
-  "source_file": "recipes.txt"
+ "title": "Grandma's Apple Pie Recipe",
+ "content": "Preheat oven to 425°F. Mix 6 cups sliced apples with 3/4 cup sugar, 2 tbsp flour, 1 tsp cinnamon. Fill pie crust, dot with butter, cover with top crust. Bake 40-50 minutes until golden.",
+ "category": "recipes",
+ "source_file": "recipes.txt"
 }
 ```
 
 Expected output:
 ```json
 {
-  "document_id": 1,
-  "message": "Document 'Grandma's Apple Pie Recipe' successfully embedded and stored"
+ "document_id": 1,
+ "message": "Document 'Grandma's Apple Pie Recipe' successfully embedded and stored"
 }
 ```
 
@@ -552,38 +552,38 @@ Expected output:
 ```
 Row 1 (Height: 40px):
 ┌────────────────────────────────────────────────────────┐
-│  [Text Component - Title]                             │
-│  "Family Second Brain"                                 │
-│  (Span: 12 cols, Font: 24px, Bold)                    │
+│ [Text Component - Title] │
+│ "Family Second Brain" │
+│ (Span: 12 cols, Font: 24px, Bold) │
 └────────────────────────────────────────────────────────┘
 
 Row 2 (Height: 400px):
 ┌────────────────────────────────────────────────────────┐
-│  [Container - Chat History]                           │
-│  └─ [List Component] (id: chat_history)               │
-│     └─ [Card Component per message]                   │
-│        ├─ [Badge] role (user/assistant)                │
-│        ├─ [Rich Text] content                          │
-│        └─ [Collapse] sources (if assistant)           │
-│  (Span: 12 cols)                                       │
+│ [Container - Chat History] │
+│ └─ [List Component] (id: chat_history) │
+│ └─ [Card Component per message] │
+│ ├─ [Badge] role (user/assistant) │
+│ ├─ [Rich Text] content │
+│ └─ [Collapse] sources (if assistant) │
+│ (Span: 12 cols) │
 └────────────────────────────────────────────────────────┘
 
 Row 3 (Height: 120px):
 ┌────────────────────────────────────────────────────────┐
-│  [Textarea Input] (id: user_query)                    │
-│  Placeholder: "Ask about family knowledge..."          │
-│  (Span: 10 cols)                                       │
+│ [Textarea Input] (id: user_query) │
+│ Placeholder: "Ask about family knowledge..." │
+│ (Span: 10 cols) │
 └────────────────────────────────────────────────────────┘
-│  [Button] "Ask"                                        │
-│  (Span: 2 cols)                                        │
+│ [Button] "Ask" │
+│ (Span: 2 cols) │
 └────────────────────────────────────────────────────────┘
 
 Row 4 (Height: 60px):
 ┌────────────────────────────────────────────────────────┐
-│  [Button] "Upload Document"                            │
-│  (Span: 6 cols, Opens modal)                           │
-│  [Button] "Clear Conversation"                         │
-│  (Span: 6 cols)                                        │
+│ [Button] "Upload Document" │
+│ (Span: 6 cols, Opens modal) │
+│ [Button] "Clear Conversation" │
+│ (Span: 6 cols) │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -593,10 +593,10 @@ Row 4 (Height: 60px):
 
 1. From **Component Library** (right panel) → Drag **Text** component
 2. Configure:
-   - **Text**: "Family Second Brain 🧠"
-   - **Style** → Font Size: `24px`
-   - **Style** → Font Weight: `Bold`
-   - **Style** → Alignment: `Center`
+ - **Text**: "Family Second Brain "
+ - **Style** → Font Size: `24px`
+ - **Style** → Font Weight: `Bold`
+ - **Style** → Alignment: `Center`
 
 #### Step 2: Add Chat History Container
 
@@ -604,40 +604,40 @@ Row 4 (Height: 60px):
 2. ID: `chat_history_container`
 3. Inside container, drag **List** component
 4. Configure List:
-   - **ID**: `chat_history`
-   - **Data Source** → Connect to Background Runnable (create later)
+ - **ID**: `chat_history`
+ - **Data Source** → Connect to Background Runnable (create later)
 
 #### Step 3: Add Message Card Template
 
 1. Inside List component, drag **Card** component
 2. Configure Card:
-   - **ID**: `message_card`
+ - **ID**: `message_card`
 3. Inside Card, add:
-   - **Badge** component:
-     - ID: `role_badge`
-     - Text: `{{chat_history.result[$index].role}}`
-     - Color: User: Blue, Assistant: Green (conditional)
-   - **Rich Text** component:
-     - ID: `message_content`
-     - Content: `{{chat_history.result[$index].content}}`
+ - **Badge** component:
+ - ID: `role_badge`
+ - Text: `{{chat_history.result[$index].role}}`
+ - Color: User: Blue, Assistant: Green (conditional)
+ - **Rich Text** component:
+ - ID: `message_content`
+ - Content: `{{chat_history.result[$index].content}}`
 
 #### Step 4: Add Query Input
 
 1. Drag **Textarea** component
 2. Configure:
-   - **ID**: `user_query`
-   - **Placeholder**: "Ask me anything about our family knowledge..."
-   - **Rows**: 3
-   - **On Enter**: Run script (configure later)
+ - **ID**: `user_query`
+ - **Placeholder**: "Ask me anything about our family knowledge..."
+ - **Rows**: 3
+ - **On Enter**: Run script (configure later)
 
 #### Step 5: Add Submit Button
 
 1. Drag **Button** component
 2. Configure:
-   - **Label**: "Ask"
-   - **Color**: Primary
-   - **On Click** → **Run Script**
-   - Select script: `f/chatbot/rag_query`
+ - **Label**: "Ask"
+ - **Color**: Primary
+ - **On Click** → **Run Script**
+ - Select script: `f/chatbot/rag_query`
 
 ### 4.4 Connect Components to Scripts
 
@@ -646,15 +646,15 @@ Row 4 (Height: 60px):
 1. Click **Runnables** panel (bottom)
 2. Click **+ Background Runnable**
 3. Configure:
-   - **Type**: Script
-   - **Script**: `f/chatbot/get_conversation_history`
-   - **Trigger**: On App Load
-   - **Inputs**: 
-     ```json
-     {
-       "limit": 50
-     }
-     ```
+ - **Type**: Script
+ - **Script**: `f/chatbot/get_conversation_history`
+ - **Trigger**: On App Load
+ - **Inputs**: 
+ ```json
+ {
+ "limit": 50
+ }
+ ```
 4. **Output ID**: `conversation_history`
 
 #### Connect List to Background Runnable
@@ -670,23 +670,23 @@ Row 4 (Height: 60px):
 2. **Settings** → **On Click**
 3. Select **Run Script** → `f/chatbot/rag_query`
 4. **Input Mapping**:
-   ```javascript
-   {
-     "query": user_query.result,
-     "session_id": state.current_session_id || null
-   }
-   ```
+ ```javascript
+ {
+ "query": user_query.result,
+ "session_id": state.current_session_id || null
+ }
+ ```
 5. **After Success** → **Frontend Script**:
-   ```javascript
-   // Clear input
-   user_query.setValue("");
-   
-   // Refresh history
-   conversation_history.refresh();
-   
-   // Store session ID for continuity
-   state.current_session_id = rag_query_result.session_id;
-   ```
+ ```javascript
+ // Clear input
+ user_query.setValue("");
+
+ // Refresh history
+ conversation_history.refresh();
+
+ // Store session ID for continuity
+ state.current_session_id = rag_query_result.session_id;
+ ```
 
 ### 4.5 Add Document Upload Modal
 
@@ -694,47 +694,47 @@ Row 4 (Height: 60px):
 
 1. Drag **Modal** component
 2. Configure:
-   - **ID**: `upload_modal`
-   - **Trigger Button Text**: "Upload Document"
+ - **ID**: `upload_modal`
+ - **Trigger Button Text**: "Upload Document"
 
 #### Inside Modal, Add:
 
 1. **Text Input** (ID: `doc_title`)
-   - Label: "Title"
-   - Placeholder: "e.g., Mom's Lasagna Recipe"
+ - Label: "Title"
+ - Placeholder: "e.g., Mom's Lasagna Recipe"
 
 2. **Select** (ID: `doc_category`)
-   - Label: "Category"
-   - Options: `["recipes", "medical", "financial", "family_history", "general"]`
+ - Label: "Category"
+ - Options: `["recipes", "medical", "financial", "family_history", "general"]`
 
 3. **Textarea** (ID: `doc_content`)
-   - Label: "Content"
-   - Rows: 10
+ - Label: "Content"
+ - Rows: 10
 
 4. **Button** (ID: `upload_btn`)
-   - Label: "Upload"
-   - On Click → Run Script: `f/chatbot/embed_document`
-   - Input Mapping:
-     ```javascript
-     {
-       "title": doc_title.result,
-       "content": doc_content.result,
-       "category": doc_category.result,
-       "source_file": null
-     }
-     ```
-   - After Success:
-     ```javascript
-     // Show success message
-     toast.success("Document uploaded successfully!");
-     
-     // Clear form
-     doc_title.setValue("");
-     doc_content.setValue("");
-     
-     // Close modal
-     upload_modal.close();
-     ```
+ - Label: "Upload"
+ - On Click → Run Script: `f/chatbot/embed_document`
+ - Input Mapping:
+ ```javascript
+ {
+ "title": doc_title.result,
+ "content": doc_content.result,
+ "category": doc_category.result,
+ "source_file": null
+ }
+ ```
+ - After Success:
+ ```javascript
+ // Show success message
+ toast.success("Document uploaded successfully!");
+
+ // Clear form
+ doc_title.setValue("");
+ doc_content.setValue("");
+
+ // Close modal
+ upload_modal.close();
+ ```
 
 ### 4.6 Styling (Optional)
 
@@ -746,42 +746,42 @@ Row 4 (Height: 60px):
 ```css
 /* Chat message styling */
 .message-card {
-  margin-bottom: 12px;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+ margin-bottom: 12px;
+ padding: 16px;
+ border-radius: 8px;
+ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .user-message {
-  background-color: #e3f2fd;
-  margin-left: 20%;
+ background-color: #e3f2fd;
+ margin-left: 20%;
 }
 
 .assistant-message {
-  background-color: #f5f5f5;
-  margin-right: 20%;
+ background-color: #f5f5f5;
+ margin-right: 20%;
 }
 
 /* Source citations */
 .source-citation {
-  font-size: 12px;
-  color: #666;
-  margin-top: 8px;
-  padding: 8px;
-  background: #fff;
-  border-left: 3px solid #4caf50;
+ font-size: 12px;
+ color: #666;
+ margin-top: 8px;
+ padding: 8px;
+ background: #fff;
+ border-left: 3px solid #4caf50;
 }
 
 /* Input area */
 #user_query {
-  border: 2px solid #2196f3;
-  border-radius: 8px;
-  font-size: 14px;
+ border: 2px solid #2196f3;
+ border-radius: 8px;
+ font-size: 14px;
 }
 
 #user_query:focus {
-  border-color: #1976d2;
-  outline: none;
+ border-color: #1976d2;
+ outline: none;
 }
 ```
 
@@ -800,33 +800,33 @@ Use the bulk upload script to add initial family documents:
 
 ```json
 {
-  "documents": [
-    {
-      "title": "Family Emergency Contacts",
-      "content": "Emergency contacts: Dad - 555-0100, Mom - 555-0101, Dr. Smith (Family Doctor) - 555-0200, Hospital - 555-9999",
-      "category": "general"
-    },
-    {
-      "title": "Grandma's Chocolate Chip Cookie Recipe",
-      "content": "Cream 1 cup butter with 3/4 cup sugar and 3/4 cup brown sugar. Add 2 eggs and 1 tsp vanilla. Mix in 2 1/4 cups flour, 1 tsp baking soda, 1 tsp salt. Fold in 2 cups chocolate chips. Bake at 375°F for 9-11 minutes.",
-      "category": "recipes"
-    },
-    {
-      "title": "Home WiFi Password",
-      "content": "Home WiFi Network: FamilyNet5G, Password: SecureFamily2024!, Router location: Living room shelf",
-      "category": "general"
-    },
-    {
-      "title": "Dad's Medical History",
-      "content": "Allergies: Penicillin. Medications: Lisinopril 10mg daily for blood pressure. Last checkup: January 2025, all clear. Blood type: O+",
-      "category": "medical"
-    },
-    {
-      "title": "Family Vacation Planning Notes",
-      "content": "Favorite destinations: Beach trips in summer (San Diego), skiing in winter (Tahoe). Preferred airlines: Southwest. Hotel loyalty: Marriott Bonvoy. Kids love theme parks and museums.",
-      "category": "family_history"
-    }
-  ]
+ "documents": [
+ {
+ "title": "Family Emergency Contacts",
+ "content": "Emergency contacts: Dad - 555-0100, Mom - 555-0101, Dr. Smith (Family Doctor) - 555-0200, Hospital - 555-9999",
+ "category": "general"
+ },
+ {
+ "title": "Grandma's Chocolate Chip Cookie Recipe",
+ "content": "Cream 1 cup butter with 3/4 cup sugar and 3/4 cup brown sugar. Add 2 eggs and 1 tsp vanilla. Mix in 2 1/4 cups flour, 1 tsp baking soda, 1 tsp salt. Fold in 2 cups chocolate chips. Bake at 375°F for 9-11 minutes.",
+ "category": "recipes"
+ },
+ {
+ "title": "Home WiFi Password",
+ "content": "Home WiFi Network: FamilyNet5G, Password: SecureFamily2024!, Router location: Living room shelf",
+ "category": "general"
+ },
+ {
+ "title": "Dad's Medical History",
+ "content": "Allergies: Penicillin. Medications: Lisinopril 10mg daily for blood pressure. Last checkup: January 2025, all clear. Blood type: O+",
+ "category": "medical"
+ },
+ {
+ "title": "Family Vacation Planning Notes",
+ "content": "Favorite destinations: Beach trips in summer (San Diego), skiing in winter (Tahoe). Preferred airlines: Southwest. Hotel loyalty: Marriott Bonvoy. Kids love theme parks and museums.",
+ "category": "family_history"
+ }
+ ]
 }
 ```
 
@@ -874,8 +874,8 @@ LIMIT 10;
 1. **Save Draft** (bottom left in App Editor)
 2. **Deploy** → Confirm
 3. Share app URL with family:
-   - Format: `https://app.windmill.dev/apps/get/f/chatbot/main_app`
-   - Or use **Public URL** feature for unauthenticated access
+ - Format: `https://app.windmill.dev/apps/get/f/chatbot/main_app`
+ - Or use **Public URL** feature for unauthenticated access
 
 ---
 
@@ -999,9 +999,9 @@ GRANT SELECT ON family_documents, conversations TO family_app_reader;
 ```yaml
 # docker-compose.yml - restrict database exposure
 services:
-  family-brain-db:
-    ports:
-      - "127.0.0.1:5433:5432"  # Only localhost access
+ family-brain-db:
+ ports:
+ - "127.0.0.1:5433:5432" # Only localhost access
 ```
 
 **5. App Access Control**
@@ -1024,7 +1024,7 @@ UPDATE family_documents SET is_sensitive = TRUE WHERE category IN ('medical', 'f
 ```python
 # Only admins can query sensitive docs
 if user_role != 'admin' and search_sensitive:
-    return {"error": "Insufficient permissions"}
+ return {"error": "Insufficient permissions"}
 ```
 
 ### Backup Strategy
@@ -1156,10 +1156,10 @@ claude mcp add --transport http windmill YOUR_MCP_URL
 import cohere
 co = cohere.Client("your-key")
 try:
-    co.embed(texts=["test"], model="embed-english-v3.0")
-    print("✓ API key valid")
+ co.embed(texts=["test"], model="embed-english-v3.0")
+ print(" API key valid")
 except cohere.CohereAPIError as e:
-    print(f"✗ Error: {e}")
+ print(f" Error: {e}")
 
 # Check rate limits (trial keys: 100 calls/min)
 # Production keys: 10,000 calls/min
@@ -1233,10 +1233,10 @@ docker exec windmill-db-1 tail -f /var/lib/postgresql/data/log/postgresql-*.log
 # Or pre-process with OCR (pytesseract, pdf2text)
 
 def extract_pdf_text(file_path: str) -> str:
-    import PyPDF2
-    with open(file_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        return "\n".join([page.extract_text() for page in reader.pages])
+ import PyPDF2
+ with open(file_path, 'rb') as file:
+ reader = PyPDF2.PdfReader(file)
+ return "\n".join([page.extract_text() for page in reader.pages])
 ```
 
 **2. Document Versioning**
@@ -1246,11 +1246,11 @@ ALTER TABLE family_documents ADD COLUMN supersedes_id INTEGER REFERENCES family_
 
 -- Track changes over time
 CREATE TABLE document_versions (
-    id SERIAL PRIMARY KEY,
-    document_id INTEGER REFERENCES family_documents(id),
-    version INTEGER,
-    content TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+ id SERIAL PRIMARY KEY,
+ document_id INTEGER REFERENCES family_documents(id),
+ version INTEGER,
+ content TEXT,
+ created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -1260,21 +1260,21 @@ CREATE TABLE document_versions (
 import hashlib
 
 def get_cached_embedding(query: str):
-    query_hash = hashlib.md5(query.encode()).hexdigest()
-    # Check cache table
-    cached = db.execute("SELECT embedding FROM query_cache WHERE hash = %s", (query_hash,))
-    return cached[0] if cached else None
+ query_hash = hashlib.md5(query.encode()).hexdigest()
+ # Check cache table
+ cached = db.execute("SELECT embedding FROM query_cache WHERE hash = %s", (query_hash,))
+ return cached[0] if cached else None
 ```
 
 **4. Feedback Loop**
 ```sql
 CREATE TABLE query_feedback (
-    id SERIAL PRIMARY KEY,
-    query TEXT,
-    answer TEXT,
-    rating INTEGER CHECK (rating BETWEEN 1 AND 5),
-    feedback_text TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+ id SERIAL PRIMARY KEY,
+ query TEXT,
+ answer TEXT,
+ rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+ feedback_text TEXT,
+ created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Add thumbs up/down buttons in UI
@@ -1290,16 +1290,16 @@ CREATE TABLE query_feedback (
 # "Send family digest of new documents added this week"
 
 def send_weekly_digest():
-    new_docs = db.execute("""
-        SELECT title, category FROM family_documents 
-        WHERE created_at > NOW() - INTERVAL '7 days'
-    """)
-    
-    # Format email
-    email_body = f"New documents this week:\n{new_docs}"
-    
-    # Send via SMTP
-    send_email(to="family@example.com", subject="Weekly Digest", body=email_body)
+ new_docs = db.execute("""
+ SELECT title, category FROM family_documents 
+ WHERE created_at > NOW() - INTERVAL '7 days'
+ """)
+
+ # Format email
+ email_body = f"New documents this week:\n{new_docs}"
+
+ # Send via SMTP
+ send_email(to="family@example.com", subject="Weekly Digest", body=email_body)
 ```
 
 ---
@@ -1357,18 +1357,18 @@ def send_weekly_digest():
 
 ```
 family-second-brain/
-├── docker-compose.yml          # Infrastructure setup
-├── .env                        # Environment variables
-├── schema.sql                  # Database schema
-├── backups/                    # Database backups (auto-generated)
-├── scripts/                    # Windmill scripts (auto-generated by Claude Code)
-│   ├── embed_document.py
-│   ├── rag_query.py
-│   ├── get_conversation_history.py
-│   ├── bulk_upload_documents.py
-│   └── search_documents.py
+├── docker-compose.yml # Infrastructure setup
+├── .env # Environment variables
+├── schema.sql # Database schema
+├── backups/ # Database backups (auto-generated)
+├── scripts/ # Windmill scripts (auto-generated by Claude Code)
+│ ├── embed_document.py
+│ ├── rag_query.py
+│ ├── get_conversation_history.py
+│ ├── bulk_upload_documents.py
+│ └── search_documents.py
 └── docs/
-    └── family-second-brain-complete-guide.md  # This file
+ └── family-second-brain-complete-guide.md # This file
 ```
 
 ### Quick Start Commands Reference
@@ -1420,16 +1420,16 @@ The human will handle UI construction in Phase 4 manually, as Claude Code cannot
 
 **Backend Improvements:**
 - Upgraded embedding model from `embed-english-v3.0` to `embed-v4.0`
-  - Multimodal support (text + images)
-  - 128K context window (can process 200-page documents)
-  - Matryoshka embeddings (variable dimensions: 256, 512, 1024, 1536)
+ - Multimodal support (text + images)
+ - 128K context window (can process 200-page documents)
+ - Matryoshka embeddings (variable dimensions: 256, 512, 1024, 1536)
 - Upgraded generation model from `command-r` to `command-a-03-2025`
-  - 111B parameters (vs Command R's smaller size)
-  - 256K context window
-  - 150% higher throughput
+ - 111B parameters (vs Command R's smaller size)
+ - 256K context window
+ - 150% higher throughput
 - Upgraded rerank model from `rerank-english-v3.0` to `rerank-v3.5`
-  - State-of-the-art multilingual retrieval
-  - YAML-formatted document input for better ranking
+ - State-of-the-art multilingual retrieval
+ - YAML-formatted document input for better ranking
 
 **Scoring Improvements:**
 - Implemented weighted confidence calculation (50% top, 30% second, 20% third result)

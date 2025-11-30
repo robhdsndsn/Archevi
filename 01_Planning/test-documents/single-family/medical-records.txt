@@ -1,0 +1,43 @@
+MILLER FAMILY MEDICAL SUMMARY
+Patient: Sarah Miller (Mother), Emma Miller (Daughter - Age 8)
+
+SARAH MILLER - PRIMARY PATIENT
+Date of Birth: March 15, 1985
+Medical Record #: MM-5542-2024
+Primary Care Physician: Dr. Jennifer Walsh, MD
+Hospital: Hamilton General Hospital
+
+CURRENT MEDICATIONS:
+- Metformin 500mg (Diabetes management) - Daily
+- Lisinopril 10mg (Blood pressure) - Daily  
+- Multivitamin - Daily
+
+ALLERGIES:
+- Penicillin (severe reaction)
+- Shellfish (moderate)
+
+RECENT MEDICAL HISTORY:
+- Annual physical: October 12, 2024 (Normal)
+- Mammogram: September 5, 2024 (Clear)
+- Diabetes check: Every 3 months (Next: January 15, 2025)
+
+INSURANCE: Blue Cross Blue Shield
+Policy #: BCBS-5542-E3C9
+Group #: HAMILTON-WORKS-2024
+
+EMMA MILLER - DEPENDENT
+Date of Birth: June 22, 2016
+Medical Record #: EM-5542-2024
+Pediatrician: Dr. Michael Chen, MD
+
+IMMUNIZATIONS: Up to date (Last updated: August 2024)
+ALLERGIES: None known
+SCHOOL NURSE CONTACT: Hamilton Elementary (905) 555-0123
+
+EMERGENCY MEDICAL CONTACTS:
+1. Grandmother - Patricia Miller: (905) 555-0187
+2. Best Friend - Lisa Thompson: (905) 555-0299
+3. Pediatrician On-Call: (905) 555-PEDS
+
+MEDICAL INSURANCE EXPIRES: December 31, 2024
+RENEWAL REQUIRED: Open enrollment November 1-30, 2024
