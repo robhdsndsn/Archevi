@@ -9,10 +9,10 @@
 </p>
 
 <p align="center">
+  <a href="https://archevi.ca">Website</a> |
   <a href="#features">Features</a> |
-  <a href="#quick-start">Quick Start</a> |
-  <a href="#self-hosting">Self-Hosting</a> |
-  <a href="#tech-stack">Tech Stack</a> |
+  <a href="#how-it-works">How It Works</a> |
+  <a href="#pricing">Pricing</a> |
   <a href="#roadmap">Roadmap</a>
 </p>
 
@@ -41,244 +41,129 @@ No more hunting through PDFs. No more forgotten expiration dates. Your documents
 
 ### Document Management
 - **PDF upload** with automatic text extraction
-- **OCR support** for scanned documents (client-side Tesseract.js)
+- **OCR support** for scanned documents
 - **Expiry tracking** with dashboard alerts (urgent/soon/upcoming)
 - **Tag cloud** for browsing by topic
 
 ### Voice Notes
 - **Browser recording** - Capture thoughts directly in the app
-- **Fast transcription** - Groq Whisper for 80+ languages
+- **Fast transcription** - 80+ languages supported
 - **Searchable** - Voice notes become part of your knowledge base
 
-### Multi-User & Multi-Tenant
+### Family Collaboration
 - **Family accounts** - Each household gets isolated, private storage
 - **Member management** - Invite family members via email
 - **Role-based access** - Admin and member permissions
-- **Tenant switching** - Manage multiple family vaults
 
 ### Analytics & Insights
-- **Usage tracking** - Monitor queries and API costs
+- **Usage tracking** - Monitor queries and document activity
 - **Document statistics** - See your knowledge base at a glance
-- **Cost transparency** - Know exactly what you're spending
+- **Expiry dashboard** - Never miss an important renewal date
 
 ---
 
-## Quick Start
+## How It Works
 
-### Prerequisites
+1. **Upload your documents** - PDFs, scanned images, or type directly
+2. **AI processes everything** - Automatic categorization, tagging, and expiry detection
+3. **Ask questions naturally** - "When does my car insurance expire?"
+4. **Get cited answers** - Responses reference your actual documents
 
-- Node.js 18+
-- **Docker Desktop** (must be running for backend services)
-- API keys: [Cohere](https://cohere.com/) (embeddings/chat), [Groq](https://groq.com/) (voice)
-
-> **Note:** Windmill and PostgreSQL run in Docker containers. Start Docker Desktop before running the backend.
-
-### 1. Clone and Configure
-
-```bash
-git clone https://github.com/robhdsndsn/Archevi.git
-cd Archevi
-
-# Start backend services
-docker compose up -d
-
-# Configure frontend
-cd frontend
-cp .env.example .env.local
-# Edit .env.local with your Windmill URL and token
-```
-
-### 2. Install and Run
-
-```bash
-pnpm install
-pnpm dev
-```
-
-### 3. Configure Windmill
-
-1. Access Windmill at `http://localhost:8000`
-2. Add your API keys as variables:
-   - `f/chatbot/cohere_api_key` - Cohere API key
-   - `f/chatbot/groq_api_key` - Groq API key
-3. Deploy scripts from the `scripts/` folder
-
-### 4. Run Migrations
-
-```bash
-docker exec -it family-brain-db psql -U familyuser -d family_brain
-
-\i Infrastructure/migrations/001_initial_schema.sql
-\i Infrastructure/migrations/002_conversation_history.sql
-\i Infrastructure/migrations/003_multi_tenant.sql
-\i Infrastructure/migrations/004_enhanced_document_features.sql
-```
+Your documents are encrypted and stored securely. Each family's data is completely isolated.
 
 ---
 
-## Self-Hosting
+## Pricing
 
-Archevi is designed to be self-hosted. Your documents stay on your infrastructure.
+| Plan | Price | Features |
+|------|-------|----------|
+| **Starter** | $5/month | 5 members, 10GB storage, 100 queries/month |
+| **Family** | $12/month | 10 members, 50GB storage, unlimited queries |
+| **Family Office** | Custom | Unlimited members & storage, priority support |
 
-### Production Deployment
-
-```yaml
-# docker-compose.prod.yml (example)
-services:
-  db:
-    image: pgvector/pgvector:pg16
-    environment:
-      POSTGRES_DB: family_brain
-      POSTGRES_USER: familyuser
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  windmill:
-    image: ghcr.io/windmill-labs/windmill:main
-    environment:
-      DATABASE_URL: postgres://familyuser:${DB_PASSWORD}@db/family_brain
-    ports:
-      - "8000:8000"
-
-  frontend:
-    build: ./frontend
-    environment:
-      VITE_WINDMILL_URL: ${WINDMILL_URL}
-    ports:
-      - "3000:80"
-
-volumes:
-  pgdata:
-```
-
-### Cost Estimates
-
-| Component | Monthly Cost |
-|-----------|--------------|
-| Cohere API (typical family) | $2-5 |
-| Groq Whisper (30 min voice) | $0.10 |
-| Self-hosted infrastructure | Your choice |
-| **Total** | **~$3-6/month** |
+All plans include:
+- AI-powered document search
+- Automatic expiry tracking
+- Voice note transcription
+- Mobile-friendly interface
 
 ---
 
-## Tech Stack
+## Security & Privacy
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React 18 + TypeScript + Vite |
-| **UI Components** | shadcn/ui + Tailwind CSS |
-| **State** | Zustand |
-| **Backend** | Windmill (workflow orchestration) |
-| **Database** | PostgreSQL + pgvector |
-| **AI - Embeddings** | Cohere Embed v4 (1024-dim) |
-| **AI - Generation** | Cohere Command A/R |
-| **AI - Reranking** | Cohere Rerank v3 |
-| **AI - Voice** | Groq Whisper large-v3-turbo |
-| **OCR** | Tesseract.js (client-side) |
-
----
-
-## Project Structure
-
-```
-Archevi/
-├── frontend/                 # React application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── admin/       # Tenant & user management
-│   │   │   ├── analytics/   # Usage statistics
-│   │   │   ├── auth/        # Login, password reset
-│   │   │   ├── chat/        # RAG chat interface
-│   │   │   ├── documents/   # Upload, browser, expiry
-│   │   │   ├── family/      # Member management
-│   │   │   └── ui/          # shadcn/ui components
-│   │   ├── api/             # Windmill API client
-│   │   ├── lib/             # OCR, utilities
-│   │   └── store/           # Zustand stores
-│   └── package.json
-├── scripts/                  # Windmill Python scripts
-│   ├── rag_query.py         # Main RAG pipeline
-│   ├── embed_document*.py   # Document processing
-│   ├── auth_*.py            # Authentication
-│   ├── *_tenant.py          # Multi-tenant ops
-│   └── transcribe_*.py      # Voice processing
-├── Infrastructure/
-│   └── migrations/          # PostgreSQL migrations
-└── docs/                    # VitePress documentation
-```
-
----
-
-## API Reference
-
-### Core Endpoints (Windmill)
-
-| Endpoint | Description |
-|----------|-------------|
-| `f/chatbot/rag_query` | RAG query pipeline |
-| `f/chatbot/embed_document_enhanced` | AI-enhanced document embedding |
-| `f/chatbot/transcribe_voice_note` | Voice note transcription |
-| `f/chatbot/search_documents_advanced` | Advanced document search |
-
-### Authentication
-
-| Endpoint | Description |
-|----------|-------------|
-| `f/chatbot/auth_login` | User login |
-| `f/chatbot/auth_verify` | Token verification |
-| `f/chatbot/auth_refresh` | Token refresh |
-| `f/chatbot/auth_set_password` | Set/reset password |
-
-### Multi-Tenant
-
-| Endpoint | Description |
-|----------|-------------|
-| `f/chatbot/create_tenant` | Create new tenant |
-| `f/chatbot/invite_to_tenant` | Invite family member |
-| `f/chatbot/switch_tenant` | Switch active tenant |
-| `f/chatbot/manage_family_members` | Member management |
+- **Tenant isolation** - Each family's data is completely separate
+- **Encrypted storage** - Documents encrypted at rest
+- **Secure authentication** - JWT tokens with refresh rotation
+- **No training on your data** - Your documents are never used to train AI models
+- **Data portability** - Export your documents anytime
 
 ---
 
 ## Roadmap
 
-### Completed
-- [x] Core RAG pipeline with source citations
-- [x] Document upload, search, and management
-- [x] Voice note recording and transcription
-- [x] AI-enhanced embedding (tags, categories, expiry detection)
-- [x] OCR for scanned documents
-- [x] Expiry alerts dashboard
-- [x] Multi-tenant architecture
-- [x] Member invitation system
-- [x] Analytics and usage tracking
+### Now Available
+- Core RAG pipeline with source citations
+- Document upload, search, and management
+- Voice note recording and transcription
+- AI-enhanced document processing
+- OCR for scanned documents
+- Expiry alerts dashboard
+- Multi-tenant family accounts
+- Member invitation system
+- Analytics and usage tracking
 
-### In Progress
-- [ ] Email notifications for expiring documents
-- [ ] Mobile-responsive improvements
-- [ ] Production Docker Compose config
-
-### Planned
-- [ ] Bulk document import (ZIP upload)
-- [ ] Document sharing between members
-- [ ] Export chat history as PDF
-- [ ] Deep Search mode (multi-step RAG)
-- [ ] Mobile PWA with camera scanning
+### Coming Soon
+- Email notifications for expiring documents
+- Bulk document import (ZIP upload)
+- Document sharing between members
+- Export chat history as PDF
+- Mobile app with camera scanning
+- Deep Search mode (multi-step research)
 
 ---
 
-## Contributing
+## Tech Stack
 
-Contributions are welcome! Please open an issue to discuss proposed changes before submitting a PR.
+Built with modern, reliable technologies:
 
-## License
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React + TypeScript + Vite |
+| **UI** | shadcn/ui + Tailwind CSS |
+| **Backend** | Windmill (workflow orchestration) |
+| **Database** | PostgreSQL + pgvector |
+| **AI** | Cohere (embeddings, generation, reranking) |
+| **Voice** | Groq Whisper |
 
-MIT License - see [LICENSE](LICENSE) for details.
+---
+
+## Enterprise
+
+For organizations managing documents across multiple families or requiring custom deployment:
+
+- **White-label options** - Your branding, your domain
+- **On-premise deployment** - Keep data on your infrastructure
+- **Custom integrations** - Connect to existing systems
+- **SLA guarantees** - 99.9% uptime commitment
+- **Dedicated support** - Direct access to engineering team
+
+[Contact us for enterprise pricing](mailto:enterprise@archevi.ca)
+
+---
+
+## Support
+
+- **Documentation**: [docs.archevi.ca](https://docs.archevi.ca)
+- **Email**: support@archevi.ca
+- **Status**: [status.archevi.ca](https://status.archevi.ca)
 
 ---
 
 <p align="center">
-  Built with <a href="https://claude.ai/claude-code">Claude Code</a> and <a href="https://windmill.dev">Windmill</a>
+  <a href="https://archevi.ca">Get Started</a> |
+  <a href="https://archevi.ca/demo">Try the Demo</a>
+</p>
+
+<p align="center">
+  <sub>Built in Canada</sub>
 </p>
