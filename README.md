@@ -77,15 +77,16 @@ Your documents are encrypted and stored securely. Each family's data is complete
 
 | Plan | Price | Features |
 |------|-------|----------|
-| **Starter** | $5/month | 5 members, 10GB storage, 100 queries/month |
-| **Family** | $12/month | 10 members, 50GB storage, unlimited queries |
-| **Family Office** | Custom | Unlimited members & storage, priority support |
+| **Starter** | $14.99 CAD/month | 5 members, 10GB storage, ~150 queries/month included |
+| **Family** | $24.99 CAD/month | Unlimited members, 50GB storage, ~400 queries/month included |
+| **Family Office** | Custom | Dedicated infrastructure, unlimited everything, priority support |
 
 All plans include:
-- AI-powered document search
+- AI-powered document search (AI cost included)
 - Automatic expiry tracking
 - Voice note transcription
 - Mobile-friendly interface
+- 14-day free trial
 
 ---
 

@@ -85,18 +85,6 @@ export default defineConfig({
         }
       ],
 
-      '/contributing/': [
-        {
-          text: 'Contributing',
-          items: [
-            { text: 'Getting Started', link: '/contributing/' },
-            { text: 'Architecture', link: '/contributing/architecture' },
-            { text: 'Development Setup', link: '/contributing/development' },
-            { text: 'Code Standards', link: '/contributing/code-standards' }
-          ]
-        }
-      ],
-
       '/pricing/': [
         {
           text: 'Pricing',
@@ -113,11 +101,6 @@ export default defineConfig({
 
     search: {
       provider: 'local'
-    },
-
-    editLink: {
-      pattern: 'https://github.com/robhdsndsn/Archevi/edit/main/docs/:path',
-      text: 'Edit this page on GitHub'
     },
 
     footer: {
