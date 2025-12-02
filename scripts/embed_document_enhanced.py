@@ -7,6 +7,16 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
+#   - sniffio
+#   - httpx
+#   - httpx-sse
+#   - pydantic
+#   - pydantic-core
+#   - fastavro
+#   - requests
+#   - tokenizers
+#   - types-requests
+#   - typing_extensions
 
 """
 Enhanced document embedding with AI-powered features:
