@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - resend
 
 """
 Manage family members: list, add, update, remove, generate_invite.
@@ -213,14 +214,72 @@ def main(
             cursor.close()
             conn.close()
 
+            member_email = row[1]
+            member_name = row[2]
+            email_sent = False
+            email_error = None
+
+            # Try to send invite email via Resend
+            try:
+                import resend
+                resend_api_key = wmill.get_variable("u/admin/resend_api_key")
+                if resend_api_key:
+                    resend.api_key = resend_api_key
+
+                    # Build invite URL - frontend handles the token
+                    invite_url = f"https://archevi.ca?token={invite_token}&email={member_email}"
+
+                    # Using verified archevi.com domain
+                    from_email = "Archevi <hello@archevi.com>"
+
+                    resend.Emails.send({
+                        "from": from_email,
+                        "to": member_email,
+                        "subject": "You're invited to join Archevi",
+                        "html": f"""
+                        <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <h1 style="color: #111;">You're Invited!</h1>
+
+                            <p>Hi {member_name},</p>
+
+                            <p>You've been invited to join <strong>Archevi</strong> - your family's private, AI-powered knowledge base.</p>
+
+                            <p>Click the button below to set your password and get started:</p>
+
+                            <p style="margin: 24px 0;">
+                                <a href="{invite_url}"
+                                   style="background: #000; color: #fff; padding: 12px 24px;
+                                          text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    Accept Invitation
+                                </a>
+                            </p>
+
+                            <p style="color: #666; font-size: 14px;">
+                                This invitation expires in 7 days.
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+
+                            <p style="color: #999; font-size: 12px;">
+                                If you didn't expect this invitation, you can safely ignore this email.
+                            </p>
+                        </div>
+                        """
+                    })
+                    email_sent = True
+            except Exception as e:
+                email_error = str(e)
+
             return {
                 "success": True,
                 "member_id": row[0],
-                "email": row[1],
-                "name": row[2],
+                "email": member_email,
+                "name": member_name,
                 "invite_token": row[3],
                 "expires_at": invite_expires.isoformat(),
-                "message": f"Invite link generated for {row[2]}"
+                "email_sent": email_sent,
+                "email_error": email_error,
+                "message": f"Invite link generated for {member_name}" + (" (email sent)" if email_sent else " (copy link to share)")
             }
 
         elif action == "get_by_invite_token":

@@ -104,9 +104,10 @@ def main(
             try:
                 response = co.embed(
                     texts=[content],
-                    model="embed-english-v3.0",
+                    model="embed-v4.0",
                     input_type="search_document",
-                    embedding_types=["float"]
+                    embedding_types=["float"],
+                    output_dimension=1024  # Match document embedding dimensions
                 )
                 embedding = response.embeddings.float_[0]
                 tokens_used = response.meta.billed_units.input_tokens if response.meta and response.meta.billed_units else len(content.split())

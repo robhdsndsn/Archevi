@@ -60,9 +60,20 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
+  HelpCircle,
 } from 'lucide-react';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { windmill, DOCUMENT_CATEGORIES, type Document, type DocumentCategory, type FullDocument } from '@/api/windmill';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
+
+// Default tenant for MVP - The Hudson Family
+// TODO: Remove this when auth properly returns tenant_id
+const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
 
 const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
   recipes: <ChefHat className="h-4 w-4" />,
@@ -103,44 +114,13 @@ function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps)
               {document.title}
             </CardTitle>
           </div>
-          <div className="flex items-center gap-1">
-            <Badge variant="secondary" className="shrink-0">
-              {categoryLabel}
-            </Badge>
-            <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => onView(document.id)}
-                title="View document"
-              >
-                <Eye className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => onEdit(document.id)}
-                title="Edit document"
-              >
-                <Pencil className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-destructive hover:text-destructive"
-                onClick={() => onDelete(document.id, document.title)}
-                title="Delete document"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
+          <Badge variant="secondary" className="shrink-0">
+            {categoryLabel}
+          </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <CardDescription className="text-xs line-clamp-3 mb-3">
+      <CardContent className="space-y-3">
+        <CardDescription className="text-xs line-clamp-3">
           {document.content_preview}
         </CardDescription>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -149,11 +129,59 @@ function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps)
             {formattedDate}
           </span>
           {document.relevance_score > 0 && (
-            <span className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              {relevancePercent}% match
-            </span>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <span className="flex items-center gap-1 cursor-help">
+                  <TrendingUp className="h-3 w-3" />
+                  {relevancePercent}% match
+                  <HelpCircle className="h-3 w-3 opacity-50" />
+                </span>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-64">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Relevance Score</h4>
+                  <p className="text-sm text-muted-foreground">
+                    This indicates how closely this document matches your search query using AI semantic similarity.
+                  </p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p><strong>80%+</strong> - Highly relevant match</p>
+                    <p><strong>50-79%</strong> - Moderately relevant</p>
+                    <p><strong>Below 50%</strong> - Loosely related</p>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           )}
+        </div>
+        {/* Action buttons - always visible on mobile, hover on desktop */}
+        <div className="flex gap-1 pt-1 border-t opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 flex-1 sm:flex-none sm:h-8"
+            onClick={() => onView(document.id)}
+          >
+            <Eye className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">View</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 flex-1 sm:flex-none sm:h-8"
+            onClick={() => onEdit(document.id)}
+          >
+            <Pencil className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Edit</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 flex-1 sm:flex-none sm:h-8 text-destructive hover:text-destructive"
+            onClick={() => onDelete(document.id, document.title)}
+          >
+            <Trash2 className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Delete</span>
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -161,6 +189,10 @@ function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps)
 }
 
 export function DocumentBrowser() {
+  const { user } = useAuthStore();
+  // Use tenant_id from auth context, fall back to default for MVP
+  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState<DocumentCategory | 'all'>('all');
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -228,6 +260,7 @@ export function DocumentBrowser() {
       if (hasActiveFilters) {
         const result = await windmill.advancedSearchDocuments({
           search_term: searchTerm.trim() || undefined,
+          tenant_id: tenantId,
           category: category === 'all' ? undefined : category,
           date_from: dateFrom || undefined,
           date_to: dateTo || undefined,
@@ -239,6 +272,7 @@ export function DocumentBrowser() {
         // Use simple search for basic queries
         const results = await windmill.searchDocuments({
           search_term: searchTerm.trim(),
+          tenant_id: tenantId,
           category: category === 'all' ? undefined : category,
           limit: 20,
         });
@@ -356,8 +390,24 @@ export function DocumentBrowser() {
                 <Search className="h-5 w-5" />
                 Search Documents
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="flex items-center gap-1">
                 Find documents in the knowledge base using semantic search
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-72">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Semantic Search</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Unlike traditional keyword search, semantic search understands the meaning of your query. It can find documents that are conceptually related even if they don't contain the exact words you typed.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        For example, searching "car insurance" will also find documents about "auto coverage" or "vehicle policy".
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               </CardDescription>
             </div>
             <Button
@@ -534,7 +584,7 @@ export function DocumentBrowser() {
             </Card>
           ) : (
             <ScrollArea className="h-[calc(100vh-24rem)]">
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {documents.map((doc) => (
                   <DocumentCard
                     key={doc.id}

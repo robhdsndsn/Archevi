@@ -11,15 +11,19 @@ import { AdminView } from '@/components/admin';
 import { LoginPage, SetPasswordPage, ForgotPasswordPage } from '@/components/auth';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
+import { PWAInstallPrompt, PWAReloadPrompt } from '@/components/pwa';
 import { useChatStore } from '@/store/chat-store';
 import { useAuthStore } from '@/store/auth-store';
 import { Loader2 } from 'lucide-react';
 
 export type ViewAsRole = 'admin' | 'user';
 
+export type DocumentsTab = 'overview' | 'browse' | 'search' | 'upload' | 'voice';
+
 function App() {
   const [isDark, setIsDark] = useState(false);
   const [currentView, setCurrentView] = useState('chat');
+  const [documentsTab, setDocumentsTab] = useState<DocumentsTab>('overview');
   const [viewAs, setViewAs] = useState<ViewAsRole>('admin');
   const [showSetPassword, setShowSetPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -63,9 +67,18 @@ function App() {
     });
   };
 
-  const handleNavigate = (view: string) => {
+  const handleNavigate = (view: string, options?: { tab?: DocumentsTab }) => {
+    // Handle documents with optional tab
+    if (view === 'documents') {
+      setCurrentView('documents');
+      if (options?.tab) {
+        setDocumentsTab(options.tab);
+      }
+      return;
+    }
+
     // Handle actual navigation for implemented views
-    if (view === 'chat' || view === 'history' || view === 'documents' || view === 'analytics' || view === 'settings' || view === 'family' || view === 'admin') {
+    if (view === 'chat' || view === 'history' || view === 'analytics' || view === 'settings' || view === 'family' || view === 'admin') {
       setCurrentView(view);
       return;
     }
@@ -164,7 +177,7 @@ function App() {
           {currentView === 'history' && (
             <ChatHistory onSelectSession={handleSelectSession} />
           )}
-          {currentView === 'documents' && <DocumentsView />}
+          {currentView === 'documents' && <DocumentsView activeTab={documentsTab} onTabChange={setDocumentsTab} />}
           {currentView === 'analytics' && <AnalyticsView isEffectiveAdmin={isEffectiveAdmin} />}
           {currentView === 'settings' && (
             <SettingsView isDark={isDark} onToggleTheme={toggleTheme} isEffectiveAdmin={isEffectiveAdmin} />
@@ -174,6 +187,8 @@ function App() {
         </main>
       </SidebarInset>
       <Toaster richColors position="bottom-right" />
+      <PWAInstallPrompt />
+      <PWAReloadPrompt />
     </SidebarProvider>
   );
 }

@@ -1,12 +1,19 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FolderOpen, Upload, Search, Mic, LayoutDashboard } from 'lucide-react';
+import { FolderOpen, Upload, Search, Mic, LayoutDashboard, List } from 'lucide-react';
 import { DocumentUpload } from './DocumentUpload';
 import { DocumentBrowser } from './DocumentBrowser';
+import { FamilyDocumentsList } from './FamilyDocumentsList';
 import { VoiceNoteRecorder } from './VoiceNoteRecorder';
 import { ExpiryAlerts } from './ExpiryAlerts';
 import { TagCloud } from './TagCloud';
+import type { DocumentsTab } from '@/App';
 
-export function DocumentsView() {
+interface DocumentsViewProps {
+  activeTab?: DocumentsTab;
+  onTabChange?: (tab: DocumentsTab) => void;
+}
+
+export function DocumentsView({ activeTab = 'overview', onTabChange }: DocumentsViewProps) {
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] max-w-5xl mx-auto p-4">
       <div className="mb-4">
@@ -19,11 +26,15 @@ export function DocumentsView() {
         </p>
       </div>
 
-      <Tabs defaultValue="overview" className="flex-1">
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+      <Tabs value={activeTab} onValueChange={(v) => onTabChange?.(v as DocumentsTab)} className="flex-1">
+        <TabsList className="grid w-full grid-cols-5 max-w-3xl">
           <TabsTrigger value="overview" className="gap-2">
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="browse" className="gap-2">
+            <List className="h-4 w-4" />
+            <span className="hidden sm:inline">Browse</span>
           </TabsTrigger>
           <TabsTrigger value="search" className="gap-2">
             <Search className="h-4 w-4" />
@@ -44,6 +55,10 @@ export function DocumentsView() {
             <ExpiryAlerts />
             <TagCloud />
           </div>
+        </TabsContent>
+
+        <TabsContent value="browse" className="mt-4">
+          <FamilyDocumentsList />
         </TabsContent>
 
         <TabsContent value="search" className="mt-4">

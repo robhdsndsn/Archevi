@@ -1,7 +1,12 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import type { Source } from '@/api/windmill';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +40,29 @@ export function SourcesList({ sources, confidence }: SourcesListProps) {
           </span>
         )}
       </Button>
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex items-center ml-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-help" />
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-72">
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">About Sources</h4>
+            <p className="text-sm text-muted-foreground">
+              These are documents from your archive that Archevi used to generate this answer.
+            </p>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p><strong>Match %</strong> - How relevant each document is to your question</p>
+              <p><strong>Confidence</strong> - Overall certainty of the answer based on available sources</p>
+            </div>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
 
       {isExpanded && (
         <div className="mt-2 space-y-2">

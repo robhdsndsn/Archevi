@@ -10,6 +10,10 @@
 
 {$BASE_URL} {
         bind {$ADDRESS}
+
+        # Note: Windmill handles CORS headers itself, so we don't add them here
+        # to avoid duplicate 'Access-Control-Allow-Origin' headers
+
         reverse_proxy /ws/* http://lsp:3001
         # reverse_proxy /ws_mp/* http://multiplayer:3002
         # reverse_proxy /api/srch/* http://windmill_indexer:8002

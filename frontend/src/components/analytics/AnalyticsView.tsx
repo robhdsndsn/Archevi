@@ -38,7 +38,13 @@ import {
   XCircle,
   Cpu,
   PiggyBank,
+  HelpCircle,
 } from 'lucide-react';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import {
   BarChart,
   Bar,
@@ -78,13 +84,32 @@ interface StatCardProps {
   description?: string;
   icon: React.ReactNode;
   trend?: string;
+  tooltip?: {
+    title: string;
+    content: string;
+  };
 }
 
-function StatCard({ title, value, description, icon, trend }: StatCardProps) {
+function StatCard({ title, value, description, icon, trend, tooltip }: StatCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium flex items-center gap-1">
+          {title}
+          {tooltip && (
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+              </HoverCardTrigger>
+              <HoverCardContent className="w-64">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">{tooltip.title}</h4>
+                  <p className="text-sm text-muted-foreground">{tooltip.content}</p>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          )}
+        </CardTitle>
         {icon}
       </CardHeader>
       <CardContent>
@@ -132,20 +157,35 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
     setError(null);
     try {
       if (isAdmin) {
-        // Admin sees full analytics
+        // Admin sees full analytics (all tenants)
         const result = await windmill.getAnalytics(period);
         setData(result);
       } else {
-        // Regular users see simplified stats
-        // For now, use mock data since we'd need a user-specific endpoint
-        // In production, this would call windmill.getUserStats(user.id)
-        setUserStats({
-          totalQueries: 12,
-          totalDocuments: 3,
-          lastActive: new Date().toISOString(),
-          queriesThisWeek: 5,
-          documentsThisMonth: 1,
-        });
+        // Regular users see tenant-scoped analytics
+        // Pass tenant_id to filter data to just their family
+        const tenantId = user?.tenant_id;
+        if (tenantId) {
+          const result = await windmill.getAnalytics(period, tenantId);
+          // Convert full analytics to user-friendly stats
+          setUserStats({
+            totalQueries: result.usage?.totals?.requests ?? 0,
+            totalDocuments: result.documents?.total ?? 0,
+            lastActive: new Date().toISOString(),
+            queriesThisWeek: period === 'week' ? (result.usage?.totals?.requests ?? 0) : 0,
+            documentsThisMonth: period === 'month' ? (result.documents?.total ?? 0) : 0,
+          });
+          // Also store full data for potential future use
+          setData(result);
+        } else {
+          // Fallback if no tenant_id (shouldn't happen in normal flow)
+          setUserStats({
+            totalQueries: 0,
+            totalDocuments: 0,
+            lastActive: new Date().toISOString(),
+            queriesThisWeek: 0,
+            documentsThisMonth: 0,
+          });
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch analytics');
@@ -206,24 +246,40 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
                 value={userStats?.totalQueries ?? 0}
                 description="Total questions asked"
                 icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />}
+                tooltip={{
+                  title: "Chat Queries",
+                  content: "The total number of questions you've asked Archevi. Each query searches your family's document archive using AI."
+                }}
               />
               <StatCard
                 title="This Week"
                 value={userStats?.queriesThisWeek ?? 0}
                 description="Queries in the last 7 days"
                 icon={<Zap className="h-4 w-4 text-muted-foreground" />}
+                tooltip={{
+                  title: "Recent Activity",
+                  content: "Questions asked in the last 7 days. Regular usage helps you get the most out of your family archive."
+                }}
               />
               <StatCard
                 title="Documents Added"
                 value={userStats?.totalDocuments ?? 0}
                 description="Uploaded to archive"
                 icon={<Upload className="h-4 w-4 text-muted-foreground" />}
+                tooltip={{
+                  title: "Your Contributions",
+                  content: "Documents you've uploaded to the family archive. More documents means better answers from Archevi."
+                }}
               />
               <StatCard
                 title="This Month"
                 value={userStats?.documentsThisMonth ?? 0}
                 description="Documents added recently"
                 icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+                tooltip={{
+                  title: "Monthly Uploads",
+                  content: "Documents added in the current month. Keep adding important family documents to build your knowledge base."
+                }}
               />
             </div>
 
@@ -331,24 +387,40 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
               value={formatNumber(data.usage.totals.requests)}
               description={`${period === 'day' ? 'Today' : `This ${period}`}`}
               icon={<Zap className="h-4 w-4 text-muted-foreground" />}
+              tooltip={{
+                title: "API Requests",
+                content: "The number of API calls made to Cohere for RAG queries, embeddings, and document processing. Each chat message typically generates 1-2 requests."
+              }}
             />
             <StatCard
               title="Tokens Used"
               value={formatNumber(data.usage.totals.tokens)}
               description="API token consumption"
               icon={<Activity className="h-4 w-4 text-muted-foreground" />}
+              tooltip={{
+                title: "Token Usage",
+                content: "Tokens are how AI models measure text. Roughly 1 token = 4 characters. Both your questions and the AI's responses count toward token usage."
+              }}
             />
             <StatCard
               title="Total Cost"
               value={formatCost(data.usage.totals.cost)}
               description={`Est. monthly: ${formatCost(data.projections.monthly_estimate)}`}
               icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+              tooltip={{
+                title: "API Costs",
+                content: "Estimated cost based on Cohere's pricing. Command A (powerful) costs more than Command R (fast). Archevi uses adaptive model selection to optimize costs."
+              }}
             />
             <StatCard
               title="Documents"
               value={data.documents.total}
               description="In knowledge base"
               icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+              tooltip={{
+                title: "Knowledge Base",
+                content: "Total documents stored and indexed for semantic search. Each document is converted to embeddings for AI-powered retrieval."
+              }}
             />
           </div>
 
@@ -532,6 +604,22 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
                   <CardTitle className="text-base flex items-center gap-2">
                     <Cpu className="h-4 w-4" />
                     Model Usage
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">AI Models</h4>
+                          <p className="text-sm text-muted-foreground">
+                            <strong>Command A (Powerful)</strong> - Best for complex questions, multi-step reasoning, and detailed analysis.
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            <strong>Command R (Fast)</strong> - Optimized for quick lookups, simple questions, and high-volume queries.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </CardTitle>
                   <CardDescription>Adaptive model selection breakdown</CardDescription>
                 </CardHeader>
@@ -589,6 +677,22 @@ export function AnalyticsView({ isEffectiveAdmin }: AnalyticsViewProps) {
                   <CardTitle className="text-base flex items-center gap-2">
                     <PiggyBank className="h-4 w-4" />
                     Cost Savings
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Adaptive Model Selection</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Archevi automatically chooses between Command A (powerful, expensive) and Command R (fast, cheaper) based on query complexity.
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Simple questions use the faster model, complex queries get the powerful one. This saves money without sacrificing quality.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </CardTitle>
                   <CardDescription>Adaptive selection impact</CardDescription>
                 </CardHeader>

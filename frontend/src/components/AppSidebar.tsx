@@ -1,20 +1,12 @@
-import { useState } from 'react';
 import {
   Archive,
   MessageSquare,
   FolderOpen,
   History,
   Users,
-  CreditCard,
-  Stethoscope,
-  Scale,
-  Shield,
-  GraduationCap,
-  Heart,
   HelpCircle,
   Upload,
   Search,
-  ChevronDown,
   BarChart3,
   Building2,
 } from 'lucide-react';
@@ -33,39 +25,24 @@ import {
   SidebarSeparator,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { NavUser } from '@/components/nav-user';
-import type { ViewAsRole } from '@/App';
+import type { ViewAsRole, DocumentsTab } from '@/App';
 
 interface AppSidebarProps {
-  onNavigate?: (view: string) => void;
+  onNavigate?: (view: string, options?: { tab?: DocumentsTab }) => void;
   currentView?: string;
   viewAs?: ViewAsRole;
   onViewAsChange?: (role: ViewAsRole) => void;
 }
 
-const categories = [
-  { id: 'financial', label: 'Financial', icon: CreditCard },
-  { id: 'medical', label: 'Medical', icon: Stethoscope },
-  { id: 'legal', label: 'Legal', icon: Scale },
-  { id: 'insurance', label: 'Insurance', icon: Shield },
-  { id: 'education', label: 'Education', icon: GraduationCap },
-  { id: 'personal', label: 'Personal', icon: Heart },
-];
-
 export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin', onViewAsChange }: AppSidebarProps) {
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const { user } = useAuthStore();
 
   // Show admin menu only to system admins
   const isSystemAdmin = user?.role === 'admin' && viewAs === 'admin';
 
-  const handleNavigate = (view: string) => {
-    onNavigate?.(view);
+  const handleNavigate = (view: string, options?: { tab?: DocumentsTab }) => {
+    onNavigate?.(view, options);
   };
 
   return (
@@ -93,7 +70,7 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Upload Document"
-                  onClick={() => handleNavigate('documents')}
+                  onClick={() => handleNavigate('documents', { tab: 'upload' })}
                 >
                   <Upload />
                   <span>Upload Document</span>
@@ -102,7 +79,7 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
               <SidebarMenuItem>
                 <SidebarMenuButton
                   tooltip="Search"
-                  onClick={() => handleNavigate('documents')}
+                  onClick={() => handleNavigate('documents', { tab: 'search' })}
                 >
                   <Search />
                   <span>Search Documents</span>
@@ -185,41 +162,6 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
-
-        {/* Categories - hidden when sidebar collapsed to icons */}
-        <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen} className="group-data-[collapsible=icon]:hidden">
-          <SidebarGroup>
-            <SidebarGroupLabel asChild>
-              <CollapsibleTrigger className="flex w-full items-center justify-between">
-                Categories
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    categoriesOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </CollapsibleTrigger>
-            </SidebarGroupLabel>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {categories.map((category) => (
-                    <SidebarMenuItem key={category.id}>
-                      <SidebarMenuButton
-                        isActive={currentView === `category-${category.id}`}
-                        tooltip={category.label}
-                        onClick={() => handleNavigate(`category-${category.id}`)}
-                      >
-                        <category.icon />
-                        <span>{category.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
       </SidebarContent>
 
       <SidebarFooter className="border-t">

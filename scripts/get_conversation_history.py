@@ -40,11 +40,12 @@ def main(
     session_id: Optional[str] = None,
     limit: int = 20,
     user_email: Optional[str] = None,
-    postgres_db: dict = None,  # Windmill resource: f/chatbot/postgres_db
 ) -> List[dict]:
     """
     Retrieve conversation history from the database.
     """
+    import wmill
+
     # Validate limit
     if limit < 1:
         limit = 1
@@ -52,6 +53,8 @@ def main(
         limit = 100
 
     try:
+        # Get database resource
+        postgres_db = wmill.get_resource("f/chatbot/postgres_db")
         conn = psycopg2.connect(
             host=postgres_db['host'],
             port=postgres_db['port'],

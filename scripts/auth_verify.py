@@ -53,7 +53,8 @@ def main(token: str) -> dict:
                 "id": payload.get("sub"),
                 "email": payload.get("email"),
                 "name": payload.get("name"),
-                "role": payload.get("role")
+                "role": payload.get("role"),
+                "tenant_id": payload.get("tenant_id")
             }
         }
 

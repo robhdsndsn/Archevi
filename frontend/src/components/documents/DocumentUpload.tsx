@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,20 +24,35 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { Upload, FileText, Loader2, CheckCircle2, FileUp, X, Sparkles, ScanText, ChevronDown, Tag, Calendar, Brain } from 'lucide-react';
-import { windmill, DOCUMENT_CATEGORIES, type DocumentCategory } from '@/api/windmill';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { Upload, FileText, Loader2, CheckCircle2, FileUp, X, Sparkles, ScanText, ChevronDown, Tag, Calendar, Brain, Camera, HelpCircle, User } from 'lucide-react';
+import { windmill, DOCUMENT_CATEGORIES, type DocumentCategory, type FamilyMember } from '@/api/windmill';
 import type { EmbedDocumentEnhancedResult, ExpiryDate } from '@/api/windmill/types';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { parsePDF } from '@/lib/pdf-parser';
 import { performOCR, extractPDFPagesAsImages, isPDFLikelyScanned, type OCRProgress } from '@/lib/ocr';
+import { CameraCapture, useHasCamera } from './CameraCapture';
 
 interface DocumentUploadProps {
   onSuccess?: () => void;
 }
 
+// Default tenant for MVP - The Hudson Family
+// TODO: Remove this when auth properly returns tenant_id
+const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
+
 export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
+  const { user } = useAuthStore();
+  // Use tenant_id from auth context, fall back to default for MVP
+  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<DocumentCategory | ''>('');
@@ -65,6 +80,34 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     expiryDates?: ExpiryDate[];
     aiFeatures?: string[];
   } | null>(null);
+
+  // Camera capture state
+  const [showCamera, setShowCamera] = useState(false);
+  const { hasCamera } = useHasCamera();
+
+  // Family member assignment
+  const [assignedTo, setAssignedTo] = useState<number | null>(null);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  // Fetch family members on mount
+  useEffect(() => {
+    const fetchFamilyMembers = async () => {
+      setLoadingMembers(true);
+      try {
+        const result = await windmill.listFamilyMembers();
+        if (result.success && result.members) {
+          // Only show active members
+          setFamilyMembers(result.members.filter(m => m.is_active));
+        }
+      } catch (err) {
+        console.error('Failed to fetch family members:', err);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+    fetchFamilyMembers();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,11 +138,23 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         const result: EmbedDocumentEnhancedResult = await windmill.embedDocumentEnhanced({
           title: title.trim(),
           content: content.trim(),
+          tenant_id: tenantId,
           category: category as DocumentCategory || undefined,
+          assigned_to: assignedTo || undefined,
           auto_categorize_enabled: autoCategorizaion,
           extract_tags_enabled: extractTags,
           extract_dates_enabled: extractDates,
         });
+
+        // Check if this is a duplicate
+        if (result.is_duplicate && result.existing_document) {
+          setError(`Duplicate detected: This document already exists as "${result.existing_document.title}" (ID: ${result.existing_document.id})`);
+          toast.error('Duplicate document', {
+            description: `This content matches an existing document: "${result.existing_document.title}"`,
+          });
+          setIsUploading(false);
+          return;
+        }
 
         setEnhancedResult({
           suggestedCategory: result.suggested_category,
@@ -135,6 +190,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
       setTitle('');
       setContent('');
       setCategory('');
+      setAssignedTo(null);
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -302,6 +358,25 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     }
   };
 
+  // Handle camera capture
+  const handleCameraCapture = async (file: File) => {
+    setSelectedFile({ name: file.name, type: 'camera scan' });
+    if (!title) {
+      const timestamp = new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      setTitle(`Document scan - ${timestamp}`);
+    }
+    // Run OCR on the captured image
+    await handleOCR(file);
+    toast.success('Photo captured', {
+      description: 'Running OCR to extract text...',
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -326,7 +401,33 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <div>
-                <Label htmlFor="enhanced-mode" className="font-medium">AI Enhanced Mode</Label>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="enhanced-mode" className="font-medium">AI Enhanced Mode</Label>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          AI Enhanced Mode
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          When enabled, your document is processed by Archevi's AI to automatically:
+                        </p>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Categorize the document type</li>
+                          <li>Extract relevant tags for better search</li>
+                          <li>Detect expiry dates and deadlines</li>
+                        </ul>
+                        <p className="text-xs text-muted-foreground pt-1 border-t">
+                          Click "Advanced AI Options" to customize which features are used.
+                        </p>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                </div>
                 <p className="text-xs text-muted-foreground">Auto-categorize, extract tags & dates</p>
               </div>
             </div>
@@ -351,6 +452,19 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                   <div className="flex items-center gap-2">
                     <Brain className="h-4 w-4 text-muted-foreground" />
                     <Label htmlFor="auto-cat">Auto-categorization</Label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Auto-categorization</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Uses AI to analyze your document and automatically assign it to the most appropriate category (insurance, medical, financial, etc.) with a confidence score.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </div>
                   <Switch id="auto-cat" checked={autoCategorizaion} onCheckedChange={setAutoCategorization} />
                 </div>
@@ -358,6 +472,19 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                   <div className="flex items-center gap-2">
                     <Tag className="h-4 w-4 text-muted-foreground" />
                     <Label htmlFor="extract-tags">Smart tag extraction</Label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Smart Tag Extraction</h4>
+                          <p className="text-sm text-muted-foreground">
+                            AI scans your document for key topics, people, companies, and concepts, then generates relevant tags to make searching easier later.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </div>
                   <Switch id="extract-tags" checked={extractTags} onCheckedChange={setExtractTags} />
                 </div>
@@ -365,6 +492,19 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <Label htmlFor="extract-dates">Expiry date detection</Label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Expiry Date Detection</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Finds important dates in your document like policy expirations, renewal deadlines, and due dates. You'll get email reminders before they expire.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </div>
                   <Switch id="extract-dates" checked={extractDates} onCheckedChange={setExtractDates} />
                 </div>
@@ -457,6 +597,63 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             </Select>
           </div>
 
+          {/* Family Member Assignment */}
+          {familyMembers.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="assigned-to">
+                  Assign to Family Member
+                  <span className="text-xs text-muted-foreground ml-2">(optional)</span>
+                </Label>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-72">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Family Member Assignment
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Assign this document to a specific family member for better organization.
+                        Useful for medical records, school documents, or personal IDs.
+                      </p>
+                      <p className="text-xs text-muted-foreground pt-1 border-t">
+                        You can filter documents by person in the Browse tab.
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </div>
+              <Select
+                value={assignedTo?.toString() || 'none'}
+                onValueChange={(v) => setAssignedTo(v === 'none' ? null : parseInt(v, 10))}
+                disabled={isUploading || loadingMembers}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingMembers ? "Loading members..." : "Select a family member..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">No assignment (general family document)</span>
+                  </SelectItem>
+                  {familyMembers.map((member) => (
+                    <SelectItem key={member.id} value={member.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        {member.name}
+                        {member.role === 'admin' && (
+                          <Badge variant="outline" className="text-xs ml-1">Admin</Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>
             <Textarea
@@ -488,6 +685,20 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                 disabled={isUploading || isParsing || isOCRing}
                 className="hidden"
               />
+              {/* Camera capture button - shown when device has camera */}
+              {hasCamera && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCamera(true)}
+                  disabled={isUploading || isParsing || isOCRing}
+                  className="gap-1"
+                >
+                  <Camera className="h-4 w-4" />
+                  <span className="hidden sm:inline">Scan</span>
+                </Button>
+              )}
             </div>
 
             {/* OCR Progress */}
@@ -559,6 +770,13 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           </Button>
         </CardFooter>
       </form>
+
+      {/* Camera capture dialog */}
+      <CameraCapture
+        open={showCamera}
+        onOpenChange={setShowCamera}
+        onCapture={handleCameraCapture}
+      />
     </Card>
   );
 }

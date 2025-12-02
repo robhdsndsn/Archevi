@@ -111,6 +111,7 @@ export function FamilyMembersView() {
   const [inviteExpires, setInviteExpires] = useState<string | null>(null);
   const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [inviteEmailSent, setInviteEmailSent] = useState(false);
 
   const fetchMembers = async () => {
     setIsLoading(true);
@@ -278,6 +279,7 @@ export function FamilyMembersView() {
     setInviteLink(null);
     setInviteExpires(null);
     setInviteCopied(false);
+    setInviteEmailSent(false);
     setIsGeneratingInvite(true);
 
     try {
@@ -288,7 +290,14 @@ export function FamilyMembersView() {
         const inviteUrl = `${baseUrl}?token=${result.invite_token}&email=${encodeURIComponent(result.email || member.email)}`;
         setInviteLink(inviteUrl);
         setInviteExpires(result.expires_at || null);
+        setInviteEmailSent(result.email_sent || false);
         fetchMembers(); // Refresh to show invite_pending status
+
+        if (result.email_sent) {
+          toast.success('Invitation sent!', {
+            description: `An email has been sent to ${member.email}`,
+          });
+        }
       } else {
         toast.error('Failed to generate invite', {
           description: result.error || 'Please try again.',
@@ -778,8 +787,14 @@ export function FamilyMembersView() {
             </div>
           ) : inviteLink ? (
             <div className="space-y-4 py-4">
+              {inviteEmailSent && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 text-green-700 dark:text-green-400 text-sm">
+                  <Mail className="h-4 w-4" />
+                  <span>Email sent to {inviteDialogMember?.email}</span>
+                </div>
+              )}
               <div className="space-y-2">
-                <Label>Invite Link</Label>
+                <Label>{inviteEmailSent ? 'Or share this link directly' : 'Invite Link'}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={inviteLink}
@@ -805,15 +820,17 @@ export function FamilyMembersView() {
                   This link expires on {formatDate(inviteExpires)}
                 </p>
               )}
-              <div className="bg-muted/50 rounded-lg p-3 text-sm">
-                <p className="font-medium mb-1">How to use:</p>
-                <ol className="list-decimal list-inside text-muted-foreground space-y-1 text-xs">
-                  <li>Copy the invite link above</li>
-                  <li>Share it with {inviteDialogMember?.name}</li>
-                  <li>They'll be prompted to set their password</li>
-                  <li>Once set, they can sign in normally</li>
-                </ol>
-              </div>
+              {!inviteEmailSent && (
+                <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                  <p className="font-medium mb-1">How to use:</p>
+                  <ol className="list-decimal list-inside text-muted-foreground space-y-1 text-xs">
+                    <li>Copy the invite link above</li>
+                    <li>Share it with {inviteDialogMember?.name}</li>
+                    <li>They'll be prompted to set their password</li>
+                    <li>Once set, they can sign in normally</li>
+                  </ol>
+                </div>
+              )}
             </div>
           ) : null}
           <DialogFooter>

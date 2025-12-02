@@ -11,6 +11,10 @@ import wmill
 import jwt
 from datetime import datetime, timedelta
 
+# JWT secret - matches auth_login.py, auth_verify.py, auth_refresh.py
+JWT_SECRET = "archevi-jwt-secret-2026-change-in-production"
+JWT_ALGORITHM = "HS256"
+
 
 def main(user_id: str, tenant_id: str) -> dict:
     """
@@ -24,13 +28,23 @@ def main(user_id: str, tenant_id: str) -> dict:
         dict with new JWT token and tenant info
     """
 
-    db_resource = wmill.get_resource("u/admin/archevi_postgres")
-    jwt_secret = wmill.get_variable("u/admin/jwt_secret")
-
     import psycopg2
     import psycopg2.extras
 
-    conn = psycopg2.connect(db_resource["connection_string"])
+    # Try new resource first, fall back to old
+    try:
+        db_resource = wmill.get_resource("u/admin/archevi_postgres")
+        conn = psycopg2.connect(db_resource["connection_string"])
+    except:
+        postgres_db = wmill.get_resource("f/chatbot/postgres_db")
+        conn = psycopg2.connect(
+            host=postgres_db["host"],
+            port=postgres_db["port"],
+            dbname=postgres_db["dbname"],
+            user=postgres_db["user"],
+            password=postgres_db["password"],
+            sslmode=postgres_db.get("sslmode", "disable")
+        )
 
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -92,7 +106,7 @@ def main(user_id: str, tenant_id: str) -> dict:
                 "exp": datetime.utcnow() + timedelta(hours=24)
             }
 
-            access_token = jwt.encode(token_payload, jwt_secret, algorithm="HS256")
+            access_token = jwt.encode(token_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
             return {
                 "success": True,

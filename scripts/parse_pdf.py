@@ -3,7 +3,7 @@
 # Path: f/chatbot/parse_pdf
 #
 # requirements:
-#   - pymupdf
+#   - pypdf
 #   - wmill
 
 """
@@ -24,8 +24,8 @@ Returns:
 """
 
 import base64
-import fitz  # PyMuPDF
 import io
+from pypdf import PdfReader
 
 
 def main(file_content: str, filename: str = "document.pdf") -> dict:
@@ -45,18 +45,16 @@ def main(file_content: str, filename: str = "document.pdf") -> dict:
         pdf_bytes = base64.b64decode(file_content)
 
         # Open PDF from bytes
-        pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+        pdf_reader = PdfReader(io.BytesIO(pdf_bytes))
 
         # Extract text from all pages
         text_parts = []
-        for page_num in range(len(pdf_document)):
-            page = pdf_document[page_num]
-            text = page.get_text()
-            if text.strip():
+        for page_num, page in enumerate(pdf_reader.pages):
+            text = page.extract_text()
+            if text and text.strip():
                 text_parts.append(f"--- Page {page_num + 1} ---\n{text}")
 
-        page_count = len(pdf_document)
-        pdf_document.close()
+        page_count = len(pdf_reader.pages)
 
         full_text = "\n\n".join(text_parts)
 
@@ -78,7 +76,5 @@ def main(file_content: str, filename: str = "document.pdf") -> dict:
 
     except base64.binascii.Error as e:
         return {"success": False, "error": f"Invalid base64 encoding: {str(e)}", "text": "", "page_count": 0, "filename": filename}
-    except fitz.FileDataError as e:
-        return {"success": False, "error": f"Invalid or corrupted PDF file: {str(e)}", "text": "", "page_count": 0, "filename": filename}
     except Exception as e:
         return {"success": False, "error": f"Failed to parse PDF: {str(e)}", "text": "", "page_count": 0, "filename": filename}

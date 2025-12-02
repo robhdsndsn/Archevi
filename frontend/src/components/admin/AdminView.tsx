@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { windmill, type Tenant, type TenantDetails, type TenantPlan, TENANT_PLANS } from '@/api/windmill';
+import { windmill, type Tenant, type TenantDetails, type TenantPlan, type Document, TENANT_PLANS } from '@/api/windmill';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,20 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -36,8 +50,17 @@ import {
   Loader2,
   Plus,
   Pencil,
+  HelpCircle,
+  AlertTriangle,
+  Copy,
 } from 'lucide-react';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { toast } from 'sonner';
+import { AdminDocumentsView } from './AdminDocumentsView';
 
 interface AdminViewProps {
   isEffectiveAdmin: boolean;
@@ -247,147 +270,196 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Tenant Management</h2>
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Shield className="h-6 w-6" />
+            Admin Dashboard
+          </h2>
           <p className="text-muted-foreground">
-            View and manage all tenants in the system
+            Manage tenants and view all documents across the system
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Tenant
-          </Button>
-          <Button variant="outline" onClick={loadTenants} disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Refresh
-          </Button>
-        </div>
       </div>
 
-      {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive">{error}</p>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="tenants" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="tenants" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Tenants
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            All Documents
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tenants</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{tenants.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {tenants.reduce((sum, t) => sum + t.member_count, 0)}
+        <TabsContent value="tenants" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                Tenant Management
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-72">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">What is a Tenant?</h4>
+                      <p className="text-sm text-muted-foreground">
+                        A tenant represents a family or organization using Archevi. Each tenant has their own isolated document archive, members, and usage limits.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Tenants cannot see each other's data, ensuring complete privacy.
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                View and manage all tenants in the system
+              </p>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {tenants.reduce((sum, t) => sum + t.document_count, 0)}
+            <div className="flex gap-2">
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Tenant
+              </Button>
+              <Button variant="outline" onClick={loadTenants} disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Refresh
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Tenants</CardTitle>
-          <CardDescription>
-            Click on a tenant to view detailed information
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded-lg" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-3 w-[150px]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-2">
-                {tenants.map((tenant) => (
-                  <div
-                    key={tenant.id}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => loadTenantDetails(tenant.id)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">{tenant.name}</h4>
-                        <p className="text-sm text-muted-foreground">@{tenant.slug}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right text-sm">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Users className="h-3 w-3" />
-                          {tenant.member_count}
-                        </div>
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <FileText className="h-3 w-3" />
-                          {tenant.document_count}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Badge variant={getPlanBadgeVariant(tenant.plan)}>
-                          {formatPlanName(tenant.plan)}
-                        </Badge>
-                        <Badge variant={getStatusBadgeVariant(tenant.status)}>
-                          {tenant.status}
-                        </Badge>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditDialog(tenant);
-                        }}
-                        title="Edit tenant"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      {detailsLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+          {error && (
+            <Card className="border-destructive">
+              <CardContent className="pt-6">
+                <p className="text-destructive">{error}</p>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Tenants</CardTitle>
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{tenants.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tenants.reduce((sum, t) => sum + t.member_count, 0)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {tenants.reduce((sum, t) => sum + t.document_count, 0)}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>All Tenants</CardTitle>
+              <CardDescription>
+                Click on a tenant to view detailed information
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-lg" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-4 w-[200px]" />
+                        <Skeleton className="h-3 w-[150px]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-2">
+                    {tenants.map((tenant) => (
+                      <div
+                        key={tenant.id}
+                        className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => loadTenantDetails(tenant.id)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Building2 className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{tenant.name}</h4>
+                            <p className="text-sm text-muted-foreground">@{tenant.slug}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right text-sm">
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Users className="h-3 w-3" />
+                              {tenant.member_count}
+                            </div>
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <FileText className="h-3 w-3" />
+                              {tenant.document_count}
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant={getPlanBadgeVariant(tenant.plan)}>
+                              {formatPlanName(tenant.plan)}
+                            </Badge>
+                            <Badge variant={getStatusBadgeVariant(tenant.status)}>
+                              {tenant.status}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditDialog(tenant);
+                            }}
+                            title="Edit tenant"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          {detailsLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="documents">
+          <AdminDocumentsView />
+        </TabsContent>
+      </Tabs>
 
       {/* Create Tenant Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -427,7 +499,28 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="tenant-plan">Plan</Label>
+              <Label htmlFor="tenant-plan" className="flex items-center gap-1">
+                Plan
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-72">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Subscription Plans</h4>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Starter</strong> - For individuals or small families. Limited AI usage and storage.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Family</strong> - For most families. More AI budget, members, and storage.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Family Office</strong> - For large families or organizations with premium needs.
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              </Label>
               <Select
                 value={newTenant.plan}
                 onValueChange={(v) => setNewTenant({ ...newTenant, plan: v as TenantPlan })}
@@ -523,9 +616,24 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-ai">AI Budget ($)</Label>
+                  <Label htmlFor="edit-ai" className="flex items-center gap-1">
+                    AI Budget ($)
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-64">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">AI Allowance</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Monthly spending limit for AI operations (embeddings, queries, document processing). Usage resets monthly.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </Label>
                   <Input
                     id="edit-ai"
                     type="number"
@@ -535,7 +643,22 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-members">Max Members</Label>
+                  <Label htmlFor="edit-members" className="flex items-center gap-1">
+                    Max Members
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-64">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Member Limit</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Maximum number of family members who can access this tenant. Owner counts as one member.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </Label>
                   <Input
                     id="edit-members"
                     type="number"
@@ -544,7 +667,22 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-storage">Storage (GB)</Label>
+                  <Label htmlFor="edit-storage" className="flex items-center gap-1">
+                    Storage (GB)
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-64">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Storage Limit</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Maximum storage for documents and embeddings. Includes both original files and AI-generated vectors.
+                          </p>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </Label>
                   <Input
                     id="edit-storage"
                     type="number"
@@ -576,6 +714,36 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
   );
 }
 
+// Interface for documents with content hash for duplicate detection
+interface DocumentWithHash extends Document {
+  content_hash?: string;
+}
+
+// Group documents by content hash to find duplicates
+function findDuplicates(documents: Document[]): Map<string, Document[]> {
+  const contentMap = new Map<string, Document[]>();
+
+  // Group by content preview (approximate duplicate detection)
+  // In production, you'd use actual content hash from the database
+  documents.forEach(doc => {
+    // Use title + first 100 chars of content as a simple fingerprint
+    const fingerprint = `${doc.title.toLowerCase().trim()}_${doc.content_preview.substring(0, 100).toLowerCase().trim()}`;
+    const existing = contentMap.get(fingerprint) || [];
+    existing.push(doc);
+    contentMap.set(fingerprint, existing);
+  });
+
+  // Only keep groups with more than one document (actual duplicates)
+  const duplicates = new Map<string, Document[]>();
+  contentMap.forEach((docs, key) => {
+    if (docs.length > 1) {
+      duplicates.set(key, docs);
+    }
+  });
+
+  return duplicates;
+}
+
 function TenantDetailsView({
   details,
   onBack,
@@ -584,6 +752,47 @@ function TenantDetailsView({
   onBack: () => void;
 }) {
   const { tenant, members, document_stats, usage, recent_chats } = details;
+
+  // Document list state
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [duplicateGroups, setDuplicateGroups] = useState<Map<string, Document[]>>(new Map());
+
+  // Load documents when section is expanded
+  const loadDocuments = async () => {
+    if (documents.length > 0) return; // Already loaded
+
+    setDocumentsLoading(true);
+    setDocumentsError(null);
+
+    try {
+      const result = await windmill.advancedSearchDocuments({
+        tenant_id: tenant.id,
+        limit: 100, // Get up to 100 documents
+      });
+      setDocuments(result.documents);
+
+      // Find duplicates
+      const dupes = findDuplicates(result.documents);
+      setDuplicateGroups(dupes);
+    } catch (err) {
+      setDocumentsError(err instanceof Error ? err.message : 'Failed to load documents');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  // Check if a document is a duplicate
+  const isDuplicate = (doc: Document): boolean => {
+    for (const [_, docs] of duplicateGroups) {
+      if (docs.some(d => d.id === doc.id)) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   return (
     <div className="flex-1 p-6 space-y-6">
@@ -605,7 +814,7 @@ function TenantDetailsView({
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">AI Budget</CardTitle>
@@ -656,7 +865,7 @@ function TenantDetailsView({
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Members</CardTitle>
@@ -706,12 +915,112 @@ function TenantDetailsView({
         </Card>
       </div>
 
+      {/* All Documents Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                All Documents
+                {duplicateGroups.size > 0 && (
+                  <Badge variant="destructive" className="flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    {duplicateGroups.size} duplicate{duplicateGroups.size !== 1 ? 's' : ''} found
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                View and manage all documents for this tenant
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDocuments(!showDocuments);
+                if (!showDocuments) loadDocuments();
+              }}
+            >
+              {showDocuments ? 'Hide Documents' : 'Show Documents'}
+            </Button>
+          </div>
+        </CardHeader>
+        {showDocuments && (
+          <CardContent>
+            {documentsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : documentsError ? (
+              <div className="text-center py-8 text-destructive">
+                {documentsError}
+              </div>
+            ) : documents.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No documents uploaded yet
+              </div>
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">ID</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead className="w-[100px]">Category</TableHead>
+                      <TableHead className="w-[150px]">Created</TableHead>
+                      <TableHead className="w-[80px]">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documents.map((doc) => (
+                      <TableRow
+                        key={doc.id}
+                        className={isDuplicate(doc) ? 'bg-destructive/10' : ''}
+                      >
+                        <TableCell className="font-mono text-xs">{doc.id}</TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium truncate max-w-[300px]">{doc.title}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[300px]">
+                              {doc.content_preview}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {doc.category.replace(/_/g, ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {doc.created_at
+                            ? new Date(doc.created_at).toLocaleDateString()
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          {isDuplicate(doc) ? (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <Copy className="h-3 w-3" />
+                              Dup
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">OK</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            )}
+          </CardContent>
+        )}
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Tenant Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tenant ID</span>

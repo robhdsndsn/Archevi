@@ -191,7 +191,11 @@ If you realize you created a duplicate file:
 
 **Web UI:**
 - URL: http://localhost
-- Email: admin@familybrain.com
+- Email: admin@familybrain.com (Windmill admin)
+- Password: FamilyBrain2025!Admin
+
+**App Login (Frontend at localhost:5173):**
+- Email: admin@family.local
 - Password: FamilyBrain2025!Admin
 
 **Tokens:**
@@ -338,6 +342,91 @@ Run `f/tenant/test_multi_tenant_system` to create:
 - [ ] Custom AI model selection per query
 - [ ] Usage alerts and notifications
 - [ ] Admin audit logging
+
+---
+
+## Local Network Testing (PWA/Mobile)
+
+### How It Works
+
+The frontend dynamically detects the Windmill API URL at runtime using `window.location.hostname`. This allows testing from any device on the local network without configuration changes.
+
+**Key files:**
+- `frontend/src/api/windmill/client.ts` - `getBaseUrl()` method auto-detects host
+- `frontend/.env.local` - Does NOT set `VITE_WINDMILL_URL` for local dev (intentional)
+- `windmill-setup/Caddyfile` - Reverse proxy config (no CORS headers - Windmill handles them)
+
+### To Test on Phone/Tablet
+
+1. **Start the dev server with network binding:**
+   ```bash
+   cd frontend
+   pnpm run dev --host 0.0.0.0
+   ```
+
+2. **Find your PC's IP address:**
+   ```bash
+   ipconfig | findstr "IPv4"
+   # Example: 192.168.40.72
+   ```
+
+3. **Access from phone:**
+   - Frontend: `http://192.168.40.72:5173`
+   - The API calls automatically use the same IP
+
+4. **Login credentials:**
+   - Email: `admin@family.local`
+   - Password: `FamilyBrain2025!Admin`
+
+### Troubleshooting
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| "Failed to fetch" | Duplicate CORS headers | Ensure Caddyfile has NO CORS headers (Windmill handles them) |
+| "Failed to fetch" | Wrong API URL | Check browser console - URL should match your access IP |
+| Phone can't connect | Firewall | Add Windows Firewall rule for ports 80 and 5173 |
+| Login works on localhost but not IP | CORS duplicate | Restart Caddy after Caddyfile changes |
+
+### Security Notes for Production
+
+**Local development uses permissive settings that MUST be changed for production:**
+
+1. **CORS:** Windmill's default `Access-Control-Allow-Origin: *` is fine for dev but should be restricted in production:
+   - Set specific allowed origins in Windmill config
+   - Or configure Caddy to add proper CORS headers with specific domains
+
+2. **API URL:** For production, set `VITE_WINDMILL_URL` in `.env.production`:
+   ```
+   VITE_WINDMILL_URL=https://api.archevi.ca
+   ```
+
+3. **Tokens:** The `VITE_WINDMILL_TOKEN` in `.env.local` is for dev only. Production should use proper auth flow.
+
+4. **HTTPS:** Production MUST use HTTPS. Update Caddyfile:
+   ```
+   archevi.ca {
+       reverse_proxy /* http://windmill_server:8000
+       # Caddy auto-provisions TLS
+   }
+   ```
+
+---
+
+## Recent Session Summary (Nov 30, 2025 - Late Night)
+
+### Completed This Session
+1. Fixed local network testing for PWA/mobile
+2. Made API URL dynamic (auto-detects from browser location)
+3. Fixed duplicate CORS headers in Caddyfile
+4. Documented local testing setup and production security notes
+
+### Key Changes
+- `frontend/src/api/windmill/client.ts` - Dynamic `getBaseUrl()` instead of static URL
+- `frontend/.env.local` - Removed hardcoded `VITE_WINDMILL_URL`
+- `windmill-setup/Caddyfile` - Removed CORS headers (Windmill handles them)
+
+### Root Cause
+Caddy was adding CORS headers AND Windmill was adding them, resulting in duplicate `Access-Control-Allow-Origin: *, *` which browsers reject.
 
 ---
 

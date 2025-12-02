@@ -36,28 +36,50 @@ import type {
   UpdateTenantResult,
   AdvancedSearchArgs,
   AdvancedSearchResult,
+  SuggestTagsArgs,
+  SuggestTagsResult,
+  AdminListDocumentsArgs,
+  AdminListDocumentsResult,
 } from './types';
 
-const WINDMILL_URL = import.meta.env.VITE_WINDMILL_URL || 'http://localhost';
 const WINDMILL_TOKEN = import.meta.env.VITE_WINDMILL_TOKEN || '';
 const WORKSPACE = import.meta.env.VITE_WINDMILL_WORKSPACE || 'archevi';
 
 export class WindmillClient {
-  private baseUrl: string;
   private token: string;
   private workspace: string;
 
   constructor() {
-    this.baseUrl = WINDMILL_URL;
     this.token = WINDMILL_TOKEN;
     this.workspace = WORKSPACE;
+  }
+
+  /**
+   * Get the Windmill base URL dynamically at request time.
+   * This allows the app to work from any device on the network (phone, tablet, etc.)
+   * by using the same hostname the browser used to access the frontend.
+   */
+  private getBaseUrl(): string {
+    // If explicitly set in env, use that (for production deployments)
+    if (import.meta.env.VITE_WINDMILL_URL) {
+      return import.meta.env.VITE_WINDMILL_URL;
+    }
+
+    // For local development, use the same host as the frontend but on port 80
+    // This works whether accessing from localhost, 192.168.x.x, or any other address
+    const protocol = window.location.protocol; // http: or https:
+    const hostname = window.location.hostname; // localhost, 192.168.40.72, etc.
+
+    // Windmill runs on port 80, so no port suffix needed for http
+    return `${protocol}//${hostname}`;
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}/api/w/${this.workspace}${endpoint}`;
+    const baseUrl = this.getBaseUrl();
+    const url = `${baseUrl}/api/w/${this.workspace}${endpoint}`;
 
     const response = await fetch(url, {
       ...options,
@@ -143,13 +165,15 @@ export class WindmillClient {
 
   /**
    * Get analytics and usage data
+   * @param period - Time period for analytics
+   * @param tenant_id - Optional tenant ID to filter analytics (for user-level access)
    */
-  async getAnalytics(period: AnalyticsPeriod = 'week'): Promise<AnalyticsData> {
+  async getAnalytics(period: AnalyticsPeriod = 'week', tenant_id?: string): Promise<AnalyticsData> {
     return this.request<AnalyticsData>(
       '/jobs/run_wait_result/p/f/chatbot/get_analytics',
       {
         method: 'POST',
-        body: JSON.stringify({ period }),
+        body: JSON.stringify({ period, tenant_id }),
       }
     );
   }
@@ -475,6 +499,36 @@ export class WindmillClient {
   async advancedSearchDocuments(args: AdvancedSearchArgs): Promise<AdvancedSearchResult> {
     return this.request<AdvancedSearchResult>(
       '/jobs/run_wait_result/p/f/chatbot/search_documents_advanced',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  /**
+   * Get AI suggestions for tags and category before document upload
+   */
+  async suggestTags(args: SuggestTagsArgs): Promise<SuggestTagsResult> {
+    return this.request<SuggestTagsResult>(
+      '/jobs/run_wait_result/p/f/chatbot/suggest_tags',
+      {
+        method: 'POST',
+        body: JSON.stringify(args),
+      }
+    );
+  }
+
+  // ============================================
+  // Admin Document Management
+  // ============================================
+
+  /**
+   * List all documents across all tenants (admin only)
+   */
+  async adminListDocuments(args: AdminListDocumentsArgs): Promise<AdminListDocumentsResult> {
+    return this.request<AdminListDocumentsResult>(
+      '/jobs/run_wait_result/p/f/chatbot/admin_list_documents',
       {
         method: 'POST',
         body: JSON.stringify(args),

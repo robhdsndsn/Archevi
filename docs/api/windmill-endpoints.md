@@ -2,8 +2,10 @@
 
 Complete reference for all Windmill-based API endpoints.
 
-::: info Version 0.3.0
+::: info Version 2.4.0
 This documentation reflects the multi-tenant architecture. All endpoints now require `tenant_id` for data isolation.
+
+**Embedding Model:** Cohere Embed v4 (embed-v4.0) with 1024-dimension Matryoshka embeddings.
 :::
 
 ## embed_document
@@ -904,6 +906,62 @@ Invite a new member to a tenant.
 ```http
 POST /api/w/archevi/jobs/run/p/f/tenant/invite_to_tenant
 ```
+
+---
+
+## suggest_tags
+
+Get AI-powered tag and category suggestions before document upload.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/suggest_tags
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `content` | string | Yes | Document text content (first 3000 chars used) |
+| `title` | string | No | Document title for context |
+| `tenant_id` | string | Yes | Tenant UUID for fetching existing tags |
+| `include_existing_tags` | boolean | No | Include existing tenant tags (default: true) |
+
+### Example Request
+
+```json
+{
+  "content": "Home Insurance Policy\nPolicy Number: HI-2024...",
+  "title": "Home Insurance Policy 2024",
+  "tenant_id": "5302d94d-4c08-459d-b49f-d211abdb4047"
+}
+```
+
+### Response
+
+```json
+{
+  "suggested_category": "insurance",
+  "category_confidence": 0.95,
+  "suggested_tags": ["insurance", "policy-2024", "home-insurance", "property"],
+  "existing_tags_matched": ["insurance"],
+  "new_tags_suggested": ["policy-2024", "home-insurance", "property"],
+  "expiry_dates": [
+    {"date": "2024-12-15", "type": "renewal", "confidence": 0.85}
+  ],
+  "tokens_used": 450
+}
+```
+
+### Notes
+
+- Call this endpoint before `embed_document_enhanced` to get suggestions
+- Frontend can display suggestions for user confirmation
+- `existing_tags_matched` shows tags already in the tenant's collection
+- `new_tags_suggested` shows AI-generated tags not yet in collection
 
 ---
 

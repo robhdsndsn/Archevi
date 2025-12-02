@@ -149,7 +149,7 @@ def main(
             user_id = str(uuid.uuid4())
             cursor.execute("""
                 INSERT INTO users (
-                    id, email, name, is_active, created_at, updated_at
+                    id, email, name, email_verified, created_at, updated_at
                 ) VALUES (
                     %s, %s, %s, true, %s, %s
                 )
@@ -158,7 +158,7 @@ def main(
         # Create tenant membership with owner role
         cursor.execute("""
             INSERT INTO tenant_memberships (
-                tenant_id, user_id, role, status, joined_at
+                tenant_id, user_id, role, status, invite_accepted_at
             ) VALUES (
                 %s, %s, 'owner', 'active', %s
             )

@@ -85,13 +85,51 @@ def main(refresh_token: str) -> dict:
         if not is_active:
             return {"success": False, "error": "Account is deactivated"}
 
-        # Generate new access token
+        # Get user's tenant information (same logic as auth_login)
+        tenant_id = None
+        tenant_name = None
+        tenant_role = role
+
+        # Try to get from users table (multi-tenant system)
+        cursor.execute("""
+            SELECT u.default_tenant_id, t.name, tm.role
+            FROM users u
+            LEFT JOIN tenants t ON u.default_tenant_id = t.id
+            LEFT JOIN tenant_memberships tm ON u.id = tm.user_id AND tm.tenant_id = u.default_tenant_id
+            WHERE u.email = %s
+        """, (email,))
+        tenant_result = cursor.fetchone()
+
+        if tenant_result and tenant_result[0]:
+            tenant_id = str(tenant_result[0])
+            tenant_name = tenant_result[1]
+            if tenant_result[2]:
+                tenant_role = tenant_result[2]
+        else:
+            # Fall back: get first active tenant membership
+            cursor.execute("""
+                SELECT tm.tenant_id, t.name, tm.role
+                FROM tenant_memberships tm
+                JOIN tenants t ON tm.tenant_id = t.id
+                JOIN users u ON tm.user_id = u.id
+                WHERE u.email = %s AND tm.status = 'active' AND t.status = 'active'
+                ORDER BY tm.created_at ASC NULLS LAST
+                LIMIT 1
+            """, (email,))
+            fallback_result = cursor.fetchone()
+            if fallback_result:
+                tenant_id = str(fallback_result[0])
+                tenant_name = fallback_result[1]
+                tenant_role = fallback_result[2]
+
+        # Generate new access token with tenant context
         now = datetime.utcnow()
         access_payload = {
             "sub": member_id,
             "email": email,
             "name": name,
-            "role": role,
+            "role": tenant_role,
+            "tenant_id": tenant_id,
             "type": "access",
             "iat": now,
             "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRY)
@@ -115,7 +153,9 @@ def main(refresh_token: str) -> dict:
                 "id": member_id,
                 "email": email,
                 "name": name,
-                "role": role
+                "role": tenant_role,
+                "tenant_id": tenant_id,
+                "tenant_name": tenant_name
             }
         }
 

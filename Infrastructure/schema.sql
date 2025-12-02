@@ -7,6 +7,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- Family documents table with vector embeddings
 CREATE TABLE family_documents (
     id SERIAL PRIMARY KEY,
+    tenant_id UUID,          -- Multi-tenant isolation
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     category TEXT NOT NULL, -- 'recipes', 'medical', 'financial', 'family_history', 'general'
@@ -24,6 +25,7 @@ USING hnsw (embedding vector_cosine_ops);
 -- Create regular indexes
 CREATE INDEX idx_documents_category ON family_documents(category);
 CREATE INDEX idx_documents_created_at ON family_documents(created_at DESC);
+CREATE INDEX idx_family_documents_tenant ON family_documents(tenant_id);
 
 -- Conversation history table
 CREATE TABLE conversations (
@@ -103,6 +105,20 @@ CREATE TABLE refresh_tokens (
 -- Index for token lookup
 CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id, revoked_at);
 CREATE INDEX idx_refresh_tokens_hash ON refresh_tokens(token_hash) WHERE revoked_at IS NULL;
+
+-- User sessions table for auth scripts (legacy compatibility)
+CREATE TABLE user_sessions (
+    id SERIAL PRIMARY KEY,
+    member_id INTEGER REFERENCES family_members(id) ON DELETE CASCADE,
+    refresh_token TEXT UNIQUE NOT NULL,
+    device_info TEXT,
+    expires_at TIMESTAMP NOT NULL,
+    revoked BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_sessions_member ON user_sessions(member_id);
+CREATE INDEX idx_user_sessions_token ON user_sessions(refresh_token) WHERE revoked = false;
 
 -- ============================================
 -- ANALYTICS & MONITORING TABLES (May 2025)

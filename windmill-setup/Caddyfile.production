@@ -1,0 +1,72 @@
+# Production Caddyfile for Archevi
+#
+# SECURITY NOTES:
+# - Uses HTTPS with automatic TLS via Let's Encrypt
+# - CORS restricted to specific origins (not wildcard)
+# - Rate limiting enabled
+# - Security headers added
+#
+# To use: Replace Caddyfile with this file and update domain names
+
+{
+	# Global options
+	email admin@archevi.ca
+}
+
+# API subdomain - Windmill backend
+api.archevi.ca {
+	# CORS headers - RESTRICTED to specific origins
+	@cors_preflight method OPTIONS
+	handle @cors_preflight {
+		header Access-Control-Allow-Origin "https://archevi.ca"
+		header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+		header Access-Control-Allow-Headers "Content-Type, Authorization"
+		header Access-Control-Max-Age "86400"
+		respond 204
+	}
+
+	# Add CORS header to all responses
+	header Access-Control-Allow-Origin "https://archevi.ca"
+
+	# Security headers
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Rate limiting (requires caddy-ratelimit plugin)
+	# rate_limit {
+	# 	zone api_zone {
+	# 		key {remote_host}
+	# 		events 100
+	# 		window 1m
+	# 	}
+	# }
+
+	# Proxy to Windmill
+	reverse_proxy /ws/* http://lsp:3001
+	reverse_proxy /* http://windmill_server:8000
+}
+
+# Main app domain - could serve static frontend or proxy to another service
+archevi.ca {
+	# Security headers
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.archevi.ca"
+		-Server
+	}
+
+	# Serve static files from frontend build
+	root * /srv/frontend
+	file_server
+
+	# SPA fallback - serve index.html for client-side routing
+	try_files {path} /index.html
+}

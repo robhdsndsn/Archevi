@@ -54,7 +54,7 @@ export function ChatInput({ onSubmit, isLoading, placeholder = 'Ask Archevi...' 
             'ring-offset-background placeholder:text-muted-foreground',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            'min-h-[40px] max-h-[200px]'
+            'min-h-[44px] max-h-[200px]'
           )}
         />
       </div>
@@ -62,12 +62,12 @@ export function ChatInput({ onSubmit, isLoading, placeholder = 'Ask Archevi...' 
         onClick={handleSubmit}
         disabled={!input.trim() || isLoading}
         size="icon"
-        className="shrink-0"
+        className="shrink-0 h-11 w-11 sm:h-10 sm:w-10"
       >
         {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-5 w-5 sm:h-4 sm:w-4 animate-spin" />
         ) : (
-          <Send className="h-4 w-4" />
+          <Send className="h-5 w-5 sm:h-4 sm:w-4" />
         )}
       </Button>
     </div>

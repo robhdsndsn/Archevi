@@ -62,8 +62,18 @@ from pgvector.psycopg2 import register_vector
 import uuid
 import json
 import time
+import re
 from typing import Optional
 import wmill
+
+# UUID validation regex
+UUID_REGEX = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', re.IGNORECASE)
+
+def is_valid_uuid(value: Optional[str]) -> bool:
+    """Check if a string is a valid UUID format."""
+    if not value or not isinstance(value, str):
+        return False
+    return bool(UUID_REGEX.match(value))
 
 
 def main(
@@ -135,9 +145,10 @@ def main(
         # Search for top 10 similar documents - TENANT ISOLATED
         # Only searches documents belonging to this specific tenant
         # Filter out documents without embeddings (NULL embedding returns NULL distance)
+        # Note: Uses family_documents table (legacy) which has tenant_id column added
         cursor.execute("""
             SELECT id, title, content, category, embedding <=> %s::vector AS distance
-            FROM documents
+            FROM family_documents
             WHERE tenant_id = %s::uuid AND embedding IS NOT NULL
             ORDER BY distance
             LIMIT 10
@@ -169,13 +180,18 @@ def main(
     try:
         # Prepare documents with structured data for better ranking
         # Format as YAML-like strings for optimal rerank performance
+        # Use larger content window (8000 chars) for reranking to capture more context
+        # Command-A model supports 256K context so we can be generous
+        RERANK_CONTENT_LIMIT = 8000
+        GENERATION_CONTENT_LIMIT = 12000  # Even more for generation
+
         documents_for_rerank = []
         for r in search_results:
-            doc_text = f"title: {r[1]}\ncategory: {r[3]}\ncontent: {r[2][:2000]}"
+            doc_text = f"title: {r[1]}\ncategory: {r[3]}\ncontent: {r[2][:RERANK_CONTENT_LIMIT]}"
             documents_for_rerank.append({
                 "id": str(r[0]),
                 "title": r[1],
-                "content": r[2][:2000],
+                "content": r[2][:GENERATION_CONTENT_LIMIT],  # Store more for generation
                 "category": r[3],
                 "rerank_text": doc_text
             })
@@ -212,6 +228,7 @@ def main(
         # Fallback: use vector search results with distance-to-similarity conversion
         # Cosine distance ranges from 0 (identical) to 2 (opposite)
         # Convert to similarity score: 1 - (distance / 2) gives 0-1 range
+        GENERATION_CONTENT_LIMIT = 12000  # Match the limit above
         top_docs = []
         for r in search_results[:3]:
             distance = float(r[4])
@@ -221,7 +238,7 @@ def main(
             top_docs.append({
                 "id": str(r[0]),
                 "title": r[1],
-                "content": r[2][:2000],
+                "content": r[2][:GENERATION_CONTENT_LIMIT],
                 "category": r[3],
                 "relevance_score": similarity
             })
@@ -323,10 +340,12 @@ def main(
     _store_conversation(cursor, conn, tenant_id, session_id, user_id, query, answer, sources)
 
     # Log API usage (tenant-scoped for billing)
+    # Only cast user_id to UUID if it's valid, otherwise use NULL
+    valid_user_id = user_id if is_valid_uuid(user_id) else None
     cursor.execute("""
         INSERT INTO ai_usage (tenant_id, user_id, operation, model, input_tokens, output_tokens, cost_usd)
-        VALUES (%s::uuid, %s::uuid, 'generate', %s, %s, %s, %s)
-    """, (tenant_id, user_id, selected_model, gen_input_tokens, gen_output_tokens, total_cost))
+        VALUES (%s::uuid, %s, 'generate', %s, %s, %s, %s)
+    """, (tenant_id, valid_user_id, selected_model, gen_input_tokens, gen_output_tokens, total_cost))
 
     # Log model selection for analytics and threshold tuning
     latency_ms = int((time.time() - start_time) * 1000)
@@ -371,12 +390,16 @@ def main(
 def _store_conversation(cursor, conn, tenant_id: str, session_id: str, user_id: Optional[str],
                         query: str, answer: str, sources: list):
     """Store user query and assistant response in conversation history (tenant-scoped)."""
+    # Validate user_id - only use if it's a valid UUID, otherwise NULL
+    # This handles legacy tokens that may have integer IDs from family_members table
+    valid_user_id = user_id if is_valid_uuid(user_id) else None
+
     # Ensure chat session exists for this tenant
     cursor.execute("""
         INSERT INTO chat_sessions (id, tenant_id, user_id, title)
-        VALUES (%s::uuid, %s::uuid, %s::uuid, %s)
+        VALUES (%s::uuid, %s::uuid, %s, %s)
         ON CONFLICT (id) DO NOTHING
-    """, (session_id, tenant_id, user_id, query[:100] if query else "New Chat"))
+    """, (session_id, tenant_id, valid_user_id, query[:100] if query else "New Chat"))
 
     # Store user message
     cursor.execute("""

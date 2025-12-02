@@ -9,6 +9,8 @@ export interface Source {
 
 export interface RAGQueryArgs {
   query: string;
+  tenant_id: string;
+  user_id?: string;
   session_id?: string;
   user_email?: string;
 }
@@ -64,6 +66,7 @@ export interface EmbedDocumentResult {
 
 export interface SearchDocumentsArgs {
   search_term: string;
+  tenant_id: string;
   category?: DocumentCategory;
   limit?: number;
 }
@@ -209,10 +212,12 @@ export interface FamilyMembersResult {
 
 // Auth types
 export interface AuthUser {
-  id: number;
+  id: string;  // UUID from users table
   email: string;
   name: string;
   role: MemberRole;
+  tenant_id?: string;
+  tenant_name?: string;
 }
 
 export interface LoginResult {
@@ -252,6 +257,8 @@ export interface InviteResult {
   name?: string;
   invite_token?: string;
   expires_at?: string;
+  email_sent?: boolean;
+  email_error?: string;
   message?: string;
   error?: string;
 }
@@ -340,17 +347,28 @@ export interface ExpiryDate {
 export interface EmbedDocumentEnhancedArgs {
   title: string;
   content: string;
+  tenant_id: string;
   category?: DocumentCategory;
   source_file?: string;
   created_by?: string;
+  assigned_to?: number;  // Family member ID to assign this document to
   auto_categorize_enabled?: boolean;
   extract_tags_enabled?: boolean;
   extract_dates_enabled?: boolean;
 }
 
+export interface ExistingDocument {
+  id: number;
+  title: string;
+  category: DocumentCategory;
+  created_at: string | null;
+}
+
 export interface EmbedDocumentEnhancedResult {
-  document_id: number;
+  document_id: number | null;
   message: string;
+  is_duplicate: boolean;
+  existing_document: ExistingDocument | null;
   tokens_used: number;
   category: DocumentCategory;
   suggested_category?: DocumentCategory;
@@ -534,10 +552,12 @@ export const TENANT_PLANS: { value: TenantPlan; label: string; description: stri
 // Advanced search types
 export interface AdvancedSearchArgs {
   search_term?: string;
+  tenant_id: string;
   category?: DocumentCategory;
   date_from?: string;
   date_to?: string;
   created_by?: string;
+  assigned_to?: number;  // Filter by family member ID
   tags?: string[];
   limit?: number;
   offset?: number;
@@ -547,4 +567,58 @@ export interface AdvancedSearchResult {
   documents: Document[];
   total: number;
   has_more: boolean;
+}
+
+// Tag suggestion types
+export interface SuggestTagsArgs {
+  content: string;
+  title?: string;
+  include_existing_tags?: boolean;
+}
+
+export interface SuggestTagsResult {
+  suggested_category: string;
+  category_confidence: number;
+  suggested_tags: string[];
+  existing_tags_matched: string[];
+  new_tags_suggested: string[];
+  expiry_dates: ExpiryDate[];
+  tokens_used: number;
+  error?: string;
+}
+
+// Admin document listing types
+export interface AdminDocument {
+  id: number;
+  title: string;
+  content_preview: string;
+  category: DocumentCategory;
+  tenant_id: string;
+  tenant_name: string;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface TenantOption {
+  id: string;
+  name: string;
+}
+
+export interface AdminListDocumentsArgs {
+  search_term?: string;
+  category?: DocumentCategory;
+  tenant_id?: string;
+  date_from?: string;
+  date_to?: string;
+  limit?: number;
+  offset?: number;
+  sort_by?: 'created_at' | 'title' | 'tenant' | 'category';
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface AdminListDocumentsResult {
+  documents: AdminDocument[];
+  total: number;
+  has_more: boolean;
+  tenants: TenantOption[];
 }

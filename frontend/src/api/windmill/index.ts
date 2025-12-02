@@ -36,5 +36,9 @@ export type {
   UpdateTenantResult,
   AdvancedSearchArgs,
   AdvancedSearchResult,
+  AdminDocument,
+  TenantOption,
+  AdminListDocumentsArgs,
+  AdminListDocumentsResult,
 } from './types';
 export { DOCUMENT_CATEGORIES, TENANT_PLANS } from './types';

@@ -39,7 +39,13 @@ import {
   LogOut,
   Loader2,
   Shield,
+  HelpCircle,
 } from 'lucide-react';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
@@ -281,6 +287,19 @@ export function SettingsView({ isDark, onToggleTheme, isEffectiveAdmin }: Settin
               <CardTitle className="text-base flex items-center gap-2">
                 <Palette className="h-4 w-4" />
                 Appearance
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-64">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Theme Settings</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Choose your preferred color scheme. "System" will automatically match your device's dark/light mode preference.
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               </CardTitle>
               <CardDescription>
                 Customize how Archevi looks on your device
@@ -329,6 +348,19 @@ export function SettingsView({ isDark, onToggleTheme, isEffectiveAdmin }: Settin
               <CardTitle className="text-base flex items-center gap-2">
                 <Bell className="h-4 w-4" />
                 Notifications
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-72">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Browser Notifications</h4>
+                      <p className="text-sm text-muted-foreground">
+                        These settings control in-app toast notifications that appear in the corner of your screen. They don't send emails or push notifications to your phone.
+                      </p>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               </CardTitle>
               <CardDescription>
                 Configure when you receive notifications
@@ -386,6 +418,19 @@ export function SettingsView({ isDark, onToggleTheme, isEffectiveAdmin }: Settin
                 <CardTitle className="text-base flex items-center gap-2">
                   <Database className="h-4 w-4" />
                   Data & Storage
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-72">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm">Local Data Management</h4>
+                        <p className="text-sm text-muted-foreground">
+                          These settings control data stored in your browser. Documents in the knowledge base are stored on the server and not affected by these settings.
+                        </p>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
                   <Badge variant="outline" className="ml-auto text-xs">Admin</Badge>
                 </CardTitle>
                 <CardDescription>
@@ -451,6 +496,19 @@ export function SettingsView({ isDark, onToggleTheme, isEffectiveAdmin }: Settin
                 <CardTitle className="text-base flex items-center gap-2">
                   <Key className="h-4 w-4" />
                   API Configuration
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-72">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm">Backend Connection</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Windmill is the backend that powers Archevi's AI features, document storage, and user management. Only change these if you know what you're doing.
+                        </p>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
                   <Badge variant="outline" className="ml-auto text-xs">Admin</Badge>
                 </CardTitle>
                 <CardDescription>

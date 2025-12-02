@@ -7,7 +7,6 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
-#   - requests
 
 """
 Semantic search for documents in the Archevi knowledge base.
@@ -44,7 +43,7 @@ Example:
     )
 """
 
-import requests
+import cohere
 import psycopg2
 from pgvector.psycopg2 import register_vector
 from typing import Optional, List
@@ -85,24 +84,18 @@ def main(
     elif limit > 20:
         limit = 20
 
-    # Generate embedding using Cohere API directly (like embed_document)
-    embed_url = "https://api.cohere.ai/v1/embed"
-    headers = {
-        "Authorization": f"Bearer {cohere_api_key}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "texts": [search_term],
-        "model": "embed-english-v3.0",
-        "input_type": "search_query"
-    }
-
+    # Generate embedding using Cohere SDK with Embed v4
     try:
-        response = requests.post(embed_url, headers=headers, json=payload, timeout=60)
-        response.raise_for_status()
-        data = response.json()
-        query_embedding = data["embeddings"][0]
-    except requests.exceptions.RequestException as e:
+        co = cohere.ClientV2(api_key=cohere_api_key)
+        response = co.embed(
+            texts=[search_term],
+            model="embed-v4.0",
+            input_type="search_query",
+            embedding_types=["float"],
+            output_dimension=1024  # Match document embedding dimensions
+        )
+        query_embedding = response.embeddings.float_[0]
+    except cohere.errors.CohereAPIError as e:
         raise RuntimeError(f"Cohere API error: {str(e)}")
 
     # Search PostgreSQL
@@ -119,12 +112,13 @@ def main(
         cursor = conn.cursor()
 
         # TENANT ISOLATED - Only searches documents belonging to this specific tenant
+        # Note: Uses family_documents table (legacy) which has tenant_id column added
         if category:
             cursor.execute("""
                 SELECT id, title, content, category, created_at,
                        1 - (embedding <=> %s::vector) AS relevance_score
-                FROM documents
-                WHERE tenant_id = %s::uuid AND category = %s
+                FROM family_documents
+                WHERE tenant_id = %s::uuid AND category = %s AND embedding IS NOT NULL
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
             """, (query_embedding, tenant_id, category, query_embedding, limit))
@@ -132,8 +126,8 @@ def main(
             cursor.execute("""
                 SELECT id, title, content, category, created_at,
                        1 - (embedding <=> %s::vector) AS relevance_score
-                FROM documents
-                WHERE tenant_id = %s::uuid
+                FROM family_documents
+                WHERE tenant_id = %s::uuid AND embedding IS NOT NULL
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
             """, (query_embedding, tenant_id, query_embedding, limit))

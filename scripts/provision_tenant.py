@@ -64,10 +64,21 @@ def main(
         dict with tenant_id, slug, and provisioning status
     """
 
-    # Get database connection
-    db_resource = wmill.get_resource("u/admin/archevi_postgres")
+    # Get database connection - try new resource first, fall back to old
     import psycopg2
-    conn = psycopg2.connect(db_resource["connection_string"])
+    try:
+        db_resource = wmill.get_resource("u/admin/archevi_postgres")
+        conn = psycopg2.connect(db_resource["connection_string"])
+    except:
+        postgres_db = wmill.get_resource("f/chatbot/postgres_db")
+        conn = psycopg2.connect(
+            host=postgres_db["host"],
+            port=postgres_db["port"],
+            dbname=postgres_db["dbname"],
+            user=postgres_db["user"],
+            password=postgres_db["password"],
+            sslmode=postgres_db.get("sslmode", "disable")
+        )
 
     try:
         with conn.cursor() as cur:

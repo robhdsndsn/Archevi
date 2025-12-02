@@ -140,15 +140,58 @@ def main(
             WHERE id = %s
         """, (datetime.now(), datetime.now(), user_id))
 
+        # Get user's UUID and tenant information from users table
+        # The users table is the authoritative source for multi-tenant system
+        tenant_id = None
+        tenant_name = None
+        tenant_role = role  # Default to family_members role
+        users_table_id = None  # UUID from users table
+
+        # Try to get user info from users table (multi-tenant system)
+        cursor.execute("""
+            SELECT u.id, u.default_tenant_id, t.name, tm.role
+            FROM users u
+            LEFT JOIN tenants t ON u.default_tenant_id = t.id
+            LEFT JOIN tenant_memberships tm ON u.id = tm.user_id AND tm.tenant_id = u.default_tenant_id
+            WHERE u.email = %s
+        """, (user_email,))
+        tenant_result = cursor.fetchone()
+
+        if tenant_result:
+            users_table_id = str(tenant_result[0]) if tenant_result[0] else None
+            if tenant_result[1]:
+                tenant_id = str(tenant_result[1])
+                tenant_name = tenant_result[2]
+            if tenant_result[3]:
+                tenant_role = tenant_result[3]
+
+        if not tenant_id:
+            # Fall back: get first active tenant membership
+            cursor.execute("""
+                SELECT tm.tenant_id, t.name, tm.role
+                FROM tenant_memberships tm
+                JOIN tenants t ON tm.tenant_id = t.id
+                JOIN users u ON tm.user_id = u.id
+                WHERE u.email = %s AND tm.status = 'active' AND t.status = 'active'
+                ORDER BY tm.created_at ASC NULLS LAST
+                LIMIT 1
+            """, (user_email,))
+            fallback_result = cursor.fetchone()
+            if fallback_result:
+                tenant_id = str(fallback_result[0])
+                tenant_name = fallback_result[1]
+                tenant_role = fallback_result[2]
+
         # Generate tokens
         now = datetime.utcnow()
 
-        # Access token (short-lived)
+        # Access token (short-lived) - include tenant_id for multi-tenant support
         access_payload = {
             "sub": user_id,
             "email": user_email,
             "name": name,
-            "role": role,
+            "role": tenant_role,
+            "tenant_id": tenant_id,
             "type": "access",
             "iat": now,
             "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRY)
@@ -175,10 +218,12 @@ def main(
             "refresh_token": refresh_token,
             "expires_in": ACCESS_TOKEN_EXPIRY * 60,  # seconds
             "user": {
-                "id": user_id,
+                "id": users_table_id or str(user_id),  # Prefer UUID from users table, fall back to family_members id
                 "email": user_email,
                 "name": name,
-                "role": role
+                "role": tenant_role,
+                "tenant_id": tenant_id,
+                "tenant_name": tenant_name
             }
         }
 

@@ -14,6 +14,7 @@ Supports semantic search combined with:
 - Date range filtering
 - Category filtering
 - Tag filtering
+- Person/family member filtering
 - Pagination
 
 Args:
@@ -22,6 +23,7 @@ Args:
     date_from: Optional start date (ISO format)
     date_to: Optional end date (ISO format)
     tags: Optional list of tags to filter by
+    assigned_to: Optional family member ID to filter by
     limit: Max results (default 20)
     offset: Pagination offset (default 0)
     tenant_id: Tenant ID for multi-tenant isolation
@@ -59,6 +61,7 @@ def main(
     date_from: str | None = None,
     date_to: str | None = None,
     tags: List[str] | None = None,
+    assigned_to: int | None = None,
     limit: int = 20,
     offset: int = 0,
     tenant_id: str | None = None,
@@ -108,11 +111,16 @@ def main(
         except ValueError:
             pass
 
-    # Tag filtering
+    # Tag filtering - tags are stored in metadata JSONB
     if tags and len(tags) > 0:
-        # Filter documents that have ANY of the specified tags
-        conditions.append("d.tags && %s")
+        # Filter documents that have ANY of the specified tags in metadata->'tags'
+        conditions.append("d.metadata->'tags' ?| %s")
         params.append(tags)
+
+    # Family member (person) filter
+    if assigned_to is not None:
+        conditions.append("d.assigned_to = %s")
+        params.append(assigned_to)
 
     # If we have a search term, use vector similarity
     if search_term and search_term.strip():
@@ -124,7 +132,8 @@ def main(
             texts=[search_term],
             model="embed-v4.0",
             input_type="search_query",
-            embedding_types=["float"]
+            embedding_types=["float"],
+            output_dimension=1024  # Match document embedding dimensions
         )
         query_embedding = response.embeddings.float_[0]
 
@@ -132,9 +141,10 @@ def main(
         where_clause = " AND ".join(conditions) if conditions else "1=1"
 
         # First get total count
+        # Note: Uses family_documents table (legacy) which has tenant_id column added
         count_query = f"""
             SELECT COUNT(*)
-            FROM documents d
+            FROM family_documents d
             WHERE {where_clause}
               AND d.embedding IS NOT NULL
         """
@@ -150,8 +160,8 @@ def main(
                 d.category,
                 1 - (d.embedding <=> %s::vector) as similarity,
                 d.created_at,
-                COALESCE(d.tags, ARRAY[]::text[]) as tags
-            FROM documents d
+                COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags
+            FROM family_documents d
             WHERE {where_clause}
               AND d.embedding IS NOT NULL
             ORDER BY d.embedding <=> %s::vector
@@ -167,7 +177,7 @@ def main(
         where_clause = " AND ".join(conditions) if conditions else "1=1"
 
         # Get total count
-        count_query = f"SELECT COUNT(*) FROM documents d WHERE {where_clause}"
+        count_query = f"SELECT COUNT(*) FROM family_documents d WHERE {where_clause}"
         cursor.execute(count_query, params)
         total = cursor.fetchone()[0]
 
@@ -180,8 +190,8 @@ def main(
                 d.category,
                 0 as similarity,
                 d.created_at,
-                COALESCE(d.tags, ARRAY[]::text[]) as tags
-            FROM documents d
+                COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags
+            FROM family_documents d
             WHERE {where_clause}
             ORDER BY d.created_at DESC
             LIMIT %s OFFSET %s

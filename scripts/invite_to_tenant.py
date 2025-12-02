@@ -34,11 +34,23 @@ def main(
     if role not in ["member", "admin", "viewer"]:
         return {"success": False, "error": "Invalid role"}
 
-    db_resource = wmill.get_resource("u/admin/archevi_postgres")
     import psycopg2
     import psycopg2.extras
 
-    conn = psycopg2.connect(db_resource["connection_string"])
+    # Try new resource first, fall back to old
+    try:
+        db_resource = wmill.get_resource("u/admin/archevi_postgres")
+        conn = psycopg2.connect(db_resource["connection_string"])
+    except:
+        postgres_db = wmill.get_resource("f/chatbot/postgres_db")
+        conn = psycopg2.connect(
+            host=postgres_db["host"],
+            port=postgres_db["port"],
+            dbname=postgres_db["dbname"],
+            user=postgres_db["user"],
+            password=postgres_db["password"],
+            sslmode=postgres_db.get("sslmode", "disable")
+        )
 
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:

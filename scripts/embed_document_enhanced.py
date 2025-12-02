@@ -18,6 +18,7 @@ Enhanced document embedding with AI-powered features:
 Args:
     title (str): Document title
     content (str): Document text content
+    tenant_id (str): Tenant UUID for multi-tenant isolation (required)
     category (str, optional): Category - if not provided, will be auto-detected
     source_file (str, optional): Original filename if uploaded
     created_by (str, optional): User who added the document
@@ -47,6 +48,7 @@ import wmill
 import re
 from datetime import datetime
 import json
+import hashlib
 
 
 # Category definitions with example keywords for similarity matching
@@ -240,6 +242,165 @@ def extract_expiry_dates(content: str) -> List[Dict[str, Any]]:
     return unique[:5]  # Max 5 dates
 
 
+def clean_ocr_text(content: str) -> str:
+    """
+    Clean up OCR artifacts from scanned document text.
+    Fixes common issues like:
+    - Excessive spacing between letters ("De cember" -> "December")
+    - Broken words across lines
+    - Multiple spaces between words
+    - Garbled punctuation
+    """
+    if not content:
+        return content
+
+    # Step 1: Fix single-letter spacing patterns (OCR often splits words)
+    # Pattern: lowercase letter + space + lowercase letter (within words)
+    # Example: "De cember" -> "December", "con tinuing" -> "continuing"
+
+    # First, normalize line endings
+    text = content.replace('\r\n', '\n').replace('\r', '\n')
+
+    # Step 2: Fix letter-space-letter patterns that are likely broken words
+    # We look for patterns like "a b c" that should be "abc"
+    # But preserve intentional spaces between actual words
+
+    lines = text.split('\n')
+    cleaned_lines = []
+
+    for line in lines:
+        # Skip empty lines
+        if not line.strip():
+            cleaned_lines.append('')
+            continue
+
+        # Fix excessive spacing within words
+        # Pattern: single letter + space + single letter (repeatedly)
+        # "D e c e m b e r" -> "December"
+
+        # First pass: collapse single-character sequences
+        # Match: letter, space, letter, space... where each segment is 1-2 chars
+        words = []
+        current_word = []
+
+        parts = line.split()
+        i = 0
+        while i < len(parts):
+            part = parts[i]
+
+            # Check if this looks like a split word (1-3 chars, followed by more 1-3 char parts)
+            if len(part) <= 3 and i + 1 < len(parts):
+                # Look ahead to see if we have a sequence of short fragments
+                fragments = [part]
+                j = i + 1
+                while j < len(parts) and len(parts[j]) <= 3:
+                    fragments.append(parts[j])
+                    j += 1
+
+                # If we found multiple short fragments in a row (3+), likely a split word
+                if len(fragments) >= 3:
+                    # Join them together
+                    joined = ''.join(fragments)
+                    # Validate it looks like a word (mostly letters)
+                    if sum(c.isalpha() for c in joined) >= len(joined) * 0.7:
+                        words.append(joined)
+                        i = j
+                        continue
+
+            words.append(part)
+            i += 1
+
+        # Second pass: fix partial splits like "De cember" -> "December"
+        # Look for lowercase letter ending + space + lowercase starting
+        merged_words = []
+        i = 0
+        while i < len(words):
+            word = words[i]
+
+            # Check if this word and next should be merged
+            # Criteria: word ends with lowercase, next starts with lowercase,
+            # and combining them makes a real-looking word
+            if i + 1 < len(words):
+                next_word = words[i + 1]
+                # Check for partial word patterns
+                if (len(word) >= 1 and len(next_word) >= 2 and
+                    word[-1].islower() and next_word[0].islower() and
+                    not word.endswith((',', '.', ':', ';', '!', '?'))):
+                    # Try combining
+                    combined = word + next_word
+                    # If combined word is reasonable length and mostly alpha, merge
+                    if len(combined) <= 20 and sum(c.isalpha() for c in combined) >= len(combined) * 0.8:
+                        merged_words.append(combined)
+                        i += 2
+                        continue
+
+            merged_words.append(word)
+            i += 1
+
+        cleaned_lines.append(' '.join(merged_words))
+
+    result = '\n'.join(cleaned_lines)
+
+    # Step 3: Fix common OCR character substitutions
+    # (keeping this minimal to avoid over-correction)
+    replacements = [
+        ('  ', ' '),  # Double spaces to single
+        (' .', '.'),  # Space before period
+        (' ,', ','),  # Space before comma
+        (' :', ':'),  # Space before colon
+        ('( ', '('),  # Space after open paren
+        (' )', ')'),  # Space before close paren
+    ]
+
+    for old, new in replacements:
+        while old in result:
+            result = result.replace(old, new)
+
+    return result.strip()
+
+
+def compute_content_hash(content: str, title: str) -> str:
+    """
+    Compute a SHA-256 hash of the document content for duplicate detection.
+    Uses normalized content (lowercase, whitespace-trimmed) for consistency.
+    """
+    # Normalize content: lowercase, strip whitespace, remove extra spaces
+    normalized = ' '.join(content.lower().split())
+    normalized_title = ' '.join(title.lower().split())
+    # Combine title and content for the hash
+    combined = f"{normalized_title}||{normalized}"
+    return hashlib.sha256(combined.encode('utf-8')).hexdigest()
+
+
+def check_for_duplicate(conn, tenant_id: str, content_hash: str) -> Optional[Dict[str, Any]]:
+    """
+    Check if a document with the same content hash already exists for this tenant.
+    Returns the existing document info if found, None otherwise.
+    """
+    cursor = conn.cursor()
+    try:
+        # Check metadata->content_hash for exact matches
+        cursor.execute("""
+            SELECT id, title, category, created_at
+            FROM family_documents
+            WHERE tenant_id = %s
+              AND metadata->>'content_hash' = %s
+            LIMIT 1
+        """, (tenant_id, content_hash))
+
+        row = cursor.fetchone()
+        if row:
+            return {
+                'id': row[0],
+                'title': row[1],
+                'category': row[2],
+                'created_at': row[3].isoformat() if row[3] else None
+            }
+        return None
+    finally:
+        cursor.close()
+
+
 def auto_categorize(content: str, co: cohere.ClientV2, conn) -> Dict[str, Any]:
     """
     Auto-detect document category using embedding similarity with category exemplars.
@@ -341,9 +502,11 @@ def auto_categorize(content: str, co: cohere.ClientV2, conn) -> Dict[str, Any]:
 def main(
     title: str,
     content: str,
+    tenant_id: str,
     category: Optional[str] = None,
     source_file: Optional[str] = None,
     created_by: Optional[str] = None,
+    assigned_to: Optional[int] = None,
     auto_categorize_enabled: bool = True,
     extract_tags_enabled: bool = True,
     extract_dates_enabled: bool = True,
@@ -356,9 +519,15 @@ def main(
         raise ValueError("Title cannot be empty")
     if not content or not content.strip():
         raise ValueError("Content cannot be empty")
+    if not tenant_id or not tenant_id.strip():
+        raise ValueError("tenant_id is required for multi-tenant isolation")
 
     valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general',
                         'insurance', 'invoices', 'legal', 'education', 'travel']
+
+    # Clean up OCR artifacts before processing
+    # This fixes common issues like "De cember" -> "December", excessive spacing, etc.
+    content = clean_ocr_text(content)
 
     # Fetch resources from Windmill
     postgres_db = wmill.get_resource("f/chatbot/postgres_db")
@@ -378,12 +547,33 @@ def main(
     )
     register_vector(conn)
 
+    # Check for duplicate content BEFORE doing any expensive AI operations
+    content_hash = compute_content_hash(content.strip(), title.strip())
+    existing_doc = check_for_duplicate(conn, tenant_id.strip(), content_hash)
+
+    if existing_doc:
+        conn.close()
+        return {
+            "document_id": None,
+            "message": f"Duplicate document detected. This content already exists as '{existing_doc['title']}' (ID: {existing_doc['id']})",
+            "is_duplicate": True,
+            "existing_document": existing_doc,
+            "tokens_used": 0,
+            "category": existing_doc['category'],
+            "suggested_category": None,
+            "category_confidence": 1.0,
+            "tags": [],
+            "expiry_dates": [],
+            "ai_features_used": []
+        }
+
     ai_features_used = []
     result = {
         'tags': [],
         'expiry_dates': [],
         'suggested_category': None,
-        'category_confidence': 1.0
+        'category_confidence': 1.0,
+        'content_hash': content_hash  # Store for future duplicate detection
     }
 
     # Auto-categorize if no category provided or if enabled
@@ -432,21 +622,22 @@ def main(
     try:
         cursor = conn.cursor()
 
-        # Prepare metadata JSON
+        # Prepare metadata JSON (includes content_hash for duplicate detection)
         metadata = {
             'tags': result['tags'],
             'expiry_dates': result['expiry_dates'],
             'ai_features': ai_features_used,
-            'category_confidence': result['category_confidence']
+            'category_confidence': result['category_confidence'],
+            'content_hash': result['content_hash']  # SHA-256 hash for duplicate detection
         }
 
         # Insert document with embedding and metadata
         cursor.execute("""
-            INSERT INTO family_documents (title, content, category, source_file, created_by, embedding, metadata)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO family_documents (title, content, category, source_file, created_by, embedding, metadata, tenant_id, assigned_to)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
         """, (title.strip(), content.strip(), final_category, source_file, created_by,
-              embedding, json.dumps(metadata)))
+              embedding, json.dumps(metadata), tenant_id.strip(), assigned_to))
 
         document_id = cursor.fetchone()[0]
 
@@ -468,11 +659,14 @@ def main(
     return {
         "document_id": document_id,
         "message": f"Document '{title}' successfully embedded with AI features",
+        "is_duplicate": False,
+        "existing_document": None,
         "tokens_used": tokens_used,
         "category": final_category,
         "suggested_category": result['suggested_category'],
         "category_confidence": result['category_confidence'],
         "tags": result['tags'],
         "expiry_dates": result['expiry_dates'],
-        "ai_features_used": ai_features_used
+        "ai_features_used": ai_features_used,
+        "assigned_to": assigned_to
     }

@@ -49,12 +49,13 @@ from typing import List, Optional
 def main(
     documents: List[dict],
     batch_size: int = 10,
-    postgres_db: dict = None,  # Windmill resource: f/chatbot/postgres_db
-    cohere_api_key: str = None,  # Windmill variable: f/chatbot/cohere_api_key
+    tenant_id: str = None,
 ) -> dict:
     """
     Bulk upload documents with embeddings to the knowledge base.
     """
+    import wmill
+
     if not documents:
         return {
             "uploaded": 0,
@@ -62,6 +63,10 @@ def main(
             "total_tokens": 0,
             "errors": []
         }
+
+    # Get resources from Windmill
+    postgres_db = wmill.get_resource("f/chatbot/postgres_db")
+    cohere_api_key = wmill.get_variable("f/chatbot/cohere_api_key")
 
     valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general']
 
@@ -128,9 +133,10 @@ def main(
             contents = [doc['content'] for doc in batch]
             embed_response = co.embed(
                 texts=contents,
-                model="embed-english-v3.0",
+                model="embed-v4.0",
                 input_type="search_document",
-                embedding_types=["float"]
+                embedding_types=["float"],
+                output_dimension=1024  # Matryoshka: can use 256, 512, 1024, or 1536
             )
             embeddings = embed_response.embeddings.float_
 
