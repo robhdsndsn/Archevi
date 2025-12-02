@@ -3,20 +3,42 @@
 # Path: f/chatbot/embed_document_enhanced
 #
 # requirements:
+#   Core dependencies
 #   - cohere
 #   - psycopg2-binary
 #   - pgvector
+#   - numpy
 #   - wmill
-#   - sniffio
-#   - httpx
-#   - httpx-sse
-#   - pydantic
-#   - pydantic-core
+#   Cohere SDK dependencies
 #   - fastavro
-#   - requests
 #   - tokenizers
 #   - types-requests
+#   Tokenizers/HuggingFace chain
+#   - huggingface-hub
+#   - filelock
+#   - fsspec
+#   - packaging
+#   - pyyaml
+#   - tqdm
+#   Requests chain
+#   - requests
+#   - urllib3
+#   - charset-normalizer
+#   HTTP client chain (httpx -> httpcore -> h11)
+#   - httpx
+#   - httpx-sse
+#   - httpcore
+#   - h11
+#   - anyio
+#   - sniffio
+#   - idna
+#   - certifi
+#   Pydantic chain
+#   - pydantic
+#   - pydantic-core
+#   - annotated-types
 #   - typing_extensions
+#   - typing_inspection
 
 """
 Enhanced document embedding with AI-powered features:
@@ -633,11 +655,12 @@ def main(
         cursor = conn.cursor()
 
         # Prepare metadata JSON (includes content_hash for duplicate detection)
+        # Convert numpy floats to Python floats for JSON serialization
         metadata = {
             'tags': result['tags'],
             'expiry_dates': result['expiry_dates'],
             'ai_features': ai_features_used,
-            'category_confidence': result['category_confidence'],
+            'category_confidence': float(result['category_confidence']),
             'content_hash': result['content_hash']  # SHA-256 hash for duplicate detection
         }
 
