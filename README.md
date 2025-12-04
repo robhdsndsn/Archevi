@@ -34,31 +34,61 @@ No more hunting through PDFs. No more forgotten expiration dates. Your documents
 
 ## Features
 
-### Intelligent Document Search
+### AI-Powered Document Intelligence
 - **Natural language queries** - Ask questions, get answers with source citations
 - **Semantic search** - Find documents by meaning, not just keywords
 - **AI-powered extraction** - Automatic tags, categories, and expiration dates
+- **Duplicate detection** - Prevents uploading the same document twice
+- **Smart category defaults** - Remembers your preferences for faster uploads
 
 ### Document Management
 - **PDF upload** with automatic text extraction
 - **OCR support** for scanned documents
+- **Bulk operations** - Multi-select with checkboxes, bulk delete
+- **Document preview on hover** - Quick preview without opening
+- **Edit inline** - Update title, content, category, visibility
+- **Person assignment** - Assign documents to specific family members
+- **Visibility controls** - Everyone, Adults Only, Admins Only, or Private
 - **Expiry tracking** with dashboard alerts (urgent/soon/upcoming)
 - **Tag cloud** for browsing by topic
+- **Advanced filtering** - By date range, category, person, tags
 
 ### Voice Notes
 - **Browser recording** - Capture thoughts directly in the app
-- **Fast transcription** - 80+ languages supported
+- **Mobile-optimized** - Large touch targets for easy recording
+- **Fast transcription** - 80+ languages supported via Groq Whisper
 - **Searchable** - Voice notes become part of your knowledge base
+
+### Enhanced Chat Experience
+- **Workflow visualization** - See AI thinking process in real-time
+- **Source citations** - Every answer shows which documents were used
+- **Confidence scores** - Know how certain the AI is
+- **Chat export** - Export conversations to PDF
+- **Suggestion chips** - Quick-start queries on empty state
 
 ### Family Collaboration
 - **Family accounts** - Each household gets isolated, private storage
 - **Member management** - Invite family members via email
 - **Role-based access** - Admin and member permissions
+- **Member types** - Admin, Adult, Teen, Child with visibility controls
+- **Document visibility** - Control who sees what based on member type
+- **Person taxonomy** - Assign documents to specific people
+
+### Modern UI/UX
+- **Mobile-first design** - Works great on phones and tablets
+- **PWA support** - Install as an app, use camera for scanning
+- **Dark mode** - Easy on the eyes
+- **Command palette** - Quick access with Cmd/Ctrl+K
+- **Responsive tables** - Grid and table views
+- **Context menus** - Right-click for quick actions
+- **Hover cards** - Preview documents without opening
+- **Drawer navigation** - Mobile-friendly document details
 
 ### Analytics & Insights
 - **Usage tracking** - Monitor queries and document activity
 - **Document statistics** - See your knowledge base at a glance
 - **Expiry dashboard** - Never miss an important renewal date
+- **Admin views** - Instance-wide document management
 
 ---
 
@@ -102,24 +132,40 @@ All plans include:
 
 ## Roadmap
 
-### Now Available
+### Now Available (v0.3.0)
 - Core RAG pipeline with source citations
 - Document upload, search, and management
 - Voice note recording and transcription
-- AI-enhanced document processing
+- AI-enhanced document processing (auto-tags, categories, expiry detection)
 - OCR for scanned documents
 - Expiry alerts dashboard
 - Multi-tenant family accounts
 - Member invitation system
 - Analytics and usage tracking
+- **NEW** Export chat history as PDF
+- **NEW** Mobile PWA with camera scanning
+- **NEW** Document visibility/privacy controls
+- **NEW** Person assignment (assign docs to family members)
+- **NEW** Duplicate detection on upload
+- **NEW** Smart category defaults
+- **NEW** Bulk document operations (multi-select, bulk delete)
+- **NEW** Document preview on hover
+- **NEW** AI workflow visualization in chat
+- **NEW** Admin document management views
+- **NEW** Member type system (Admin/Adult/Teen/Child)
 
-### Coming Soon
+### Coming Soon (v0.4.0)
+- Two-factor authentication (2FA/MFA)
+- Image embedding and photo search
+- Document version history
+- Calendar integration for expiry dates
+
+### Future Plans
 - Email notifications for expiring documents
 - Bulk document import (ZIP upload)
-- Document sharing between members
-- Export chat history as PDF
-- Mobile app with camera scanning
 - Deep Search mode (multi-step research)
+- ElevenLabs audio document support
+- S3 direct upload for bulk import
 
 ---
 

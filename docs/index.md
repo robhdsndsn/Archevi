@@ -21,19 +21,19 @@ features:
     details: Your family gets a dedicated, isolated database. No shared infrastructure, no data mixing - ever.
 
   - title: AI-Powered Search
-    details: RAG technology understands your questions, not just keywords. Powered by Cohere's enterprise AI.
+    details: RAG technology understands your questions, not just keywords. See AI thinking in real-time with workflow visualization.
 
   - title: Voice Notes & OCR
     details: Record voice memos (auto-transcribed) and scan paper documents. Everything becomes searchable.
 
   - title: Smart Document Management
-    details: Auto-categorization, smart tagging, and expiry alerts. Never miss a renewal date again.
+    details: Auto-categorization, smart tagging, expiry alerts, duplicate detection, and person assignment. Never miss a renewal date.
 
-  - title: Ready in 60 Seconds
-    details: Sign up and start chatting immediately. AI included - no API key setup required.
+  - title: Privacy Controls
+    details: Set document visibility (Everyone, Adults Only, Admins Only, Private). Control who sees what with member types.
 
-  - title: PIPEDA Compliant
-    details: Canadian-hosted, privacy-first architecture. Your data never leaves your isolated instance.
+  - title: Modern Mobile Experience
+    details: PWA with camera scanning, responsive design, and touch-optimized controls. Works great on any device.
 ---
 
 ## Why Archevi?

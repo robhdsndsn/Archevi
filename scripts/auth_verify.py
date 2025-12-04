@@ -54,7 +54,9 @@ def main(token: str) -> dict:
                 "email": payload.get("email"),
                 "name": payload.get("name"),
                 "role": payload.get("role"),
-                "tenant_id": payload.get("tenant_id")
+                "tenant_id": payload.get("tenant_id"),
+                "member_type": payload.get("member_type", "adult"),
+                "member_id": payload.get("member_id")
             }
         }
 

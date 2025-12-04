@@ -235,7 +235,7 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
         )}
 
         {/* Recording Controls */}
-        <div className="flex flex-col items-center gap-4 py-4">
+        <div className="flex flex-col items-center gap-5 sm:gap-4 py-6 sm:py-4">
           {isRecording ? (
             <>
               <div className="relative">
@@ -244,43 +244,45 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
                   type="button"
                   size="lg"
                   variant="destructive"
-                  className="relative rounded-full h-16 w-16"
+                  className="relative rounded-full h-24 w-24 sm:h-20 sm:w-20"
                   onClick={stopRecording}
                 >
-                  <Square className="h-6 w-6" />
+                  <Square className="h-10 w-10 sm:h-8 sm:w-8" />
                 </Button>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-mono">{formatDuration(duration)}</div>
-                <div className="text-sm text-muted-foreground">Recording...</div>
+                <div className="text-4xl sm:text-3xl font-mono">{formatDuration(duration)}</div>
+                <div className="text-base sm:text-sm text-muted-foreground font-medium mt-1">
+                  Tap to stop
+                </div>
               </div>
             </>
           ) : audioBlob ? (
             <>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full max-w-xs">
                 <Button
                   type="button"
                   size="lg"
                   variant="outline"
-                  className="rounded-full h-16 w-16"
+                  className="rounded-full h-20 w-20 sm:h-16 sm:w-16 shrink-0"
                   onClick={togglePlayback}
                 >
-                  {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                  {isPlaying ? <Pause className="h-8 w-8 sm:h-6 sm:w-6" /> : <Play className="h-8 w-8 sm:h-6 sm:w-6" />}
                 </Button>
-                <div className="text-center">
-                  <div className="text-2xl font-mono">{formatDuration(duration)}</div>
-                  <Badge variant="secondary">
+                <div className="text-center flex-1">
+                  <div className="text-3xl sm:text-2xl font-mono">{formatDuration(duration)}</div>
+                  <Badge variant="secondary" className="text-sm mt-1">
                     {uploadedFile ? uploadedFile.name : 'Recording ready'}
                   </Badge>
                 </div>
                 <Button
                   type="button"
-                  size="icon"
+                  size="lg"
                   variant="ghost"
-                  className="text-destructive"
+                  className="text-destructive h-12 w-12 sm:h-10 sm:w-10 rounded-full"
                   onClick={clearRecording}
                 >
-                  <Trash2 className="h-5 w-5" />
+                  <Trash2 className="h-6 w-6 sm:h-5 sm:w-5" />
                 </Button>
               </div>
               <audio
@@ -295,17 +297,19 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
               <Button
                 type="button"
                 size="lg"
-                className="rounded-full h-16 w-16"
+                className="rounded-full h-24 w-24 sm:h-20 sm:w-20"
                 onClick={startRecording}
               >
-                <Mic className="h-6 w-6" />
+                <Mic className="h-10 w-10 sm:h-8 sm:w-8" />
               </Button>
-              <div className="text-sm text-muted-foreground">Click to start recording</div>
+              <div className="text-base sm:text-sm text-muted-foreground font-medium">
+                Tap to start recording
+              </div>
 
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="h-px bg-border flex-1 w-16" />
-                <span className="text-xs">or</span>
-                <div className="h-px bg-border flex-1 w-16" />
+              <div className="flex items-center gap-3 text-muted-foreground w-full max-w-[200px]">
+                <div className="h-px bg-border flex-1" />
+                <span className="text-xs uppercase tracking-wide">or</span>
+                <div className="h-px bg-border flex-1" />
               </div>
 
               <div>
@@ -319,9 +323,9 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
                 />
                 <Label
                   htmlFor="audio-upload"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm border rounded-md cursor-pointer hover:bg-accent"
+                  className="inline-flex items-center gap-2 px-6 py-3 sm:px-4 sm:py-2 text-base sm:text-sm border-2 rounded-lg cursor-pointer hover:bg-accent active:scale-95 transition-transform"
                 >
-                  <FileAudio className="h-4 w-4" />
+                  <FileAudio className="h-5 w-5 sm:h-4 sm:w-4" />
                   Upload audio file
                 </Label>
               </div>

@@ -7,6 +7,8 @@ export type {
   Document,
   FullDocument,
   DocumentCategory,
+  DocumentVisibility,
+  MemberType,
   EmbedDocumentArgs,
   EmbedDocumentResult,
   SearchDocumentsArgs,
@@ -41,4 +43,4 @@ export type {
   AdminListDocumentsArgs,
   AdminListDocumentsResult,
 } from './types';
-export { DOCUMENT_CATEGORIES, TENANT_PLANS } from './types';
+export { DOCUMENT_CATEGORIES, DOCUMENT_VISIBILITY, MEMBER_TYPES, TENANT_PLANS } from './types';

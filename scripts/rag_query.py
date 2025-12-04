@@ -81,6 +81,8 @@ def main(
     tenant_id: str,
     session_id: Optional[str] = None,
     user_id: Optional[str] = None,
+    user_member_type: Optional[str] = None,  # 'admin', 'adult', 'teen', 'child' for visibility filtering
+    user_member_id: Optional[int] = None,    # family_members.id for private doc access
 ) -> dict:
     """
     Execute RAG pipeline: embed query -> search -> rerank -> generate -> store
@@ -142,17 +144,45 @@ def main(
         register_vector(conn)
         cursor = conn.cursor()
 
-        # Search for top 10 similar documents - TENANT ISOLATED
+        # Search for top 10 similar documents - TENANT ISOLATED + VISIBILITY FILTERED
         # Only searches documents belonging to this specific tenant
         # Filter out documents without embeddings (NULL embedding returns NULL distance)
         # Note: Uses family_documents table (legacy) which has tenant_id column added
-        cursor.execute("""
+
+        # Build visibility filter based on user's member_type
+        visibility_filter = ""
+        params = [query_embedding, tenant_id]
+
+        if user_member_type:
+            if user_member_type == 'admin':
+                # Admins see everything - no visibility filter
+                pass
+            elif user_member_type == 'adult':
+                # Adults see: everyone, adults_only, and private docs assigned to them
+                if user_member_id is not None:
+                    visibility_filter = "AND (COALESCE(visibility, 'everyone') IN ('everyone', 'adults_only') OR (visibility = 'private' AND assigned_to = %s))"
+                    params.append(user_member_id)
+                else:
+                    visibility_filter = "AND COALESCE(visibility, 'everyone') IN ('everyone', 'adults_only')"
+            else:
+                # teen/child see: everyone, and private docs assigned to them
+                if user_member_id is not None:
+                    visibility_filter = "AND (COALESCE(visibility, 'everyone') = 'everyone' OR (visibility = 'private' AND assigned_to = %s))"
+                    params.append(user_member_id)
+                else:
+                    visibility_filter = "AND COALESCE(visibility, 'everyone') = 'everyone'"
+        else:
+            # No user_member_type - show only 'everyone' visibility (safest default)
+            visibility_filter = "AND COALESCE(visibility, 'everyone') = 'everyone'"
+
+        cursor.execute(f"""
             SELECT id, title, content, category, embedding <=> %s::vector AS distance
             FROM family_documents
             WHERE tenant_id = %s::uuid AND embedding IS NOT NULL
+            {visibility_filter}
             ORDER BY distance
             LIMIT 10
-        """, (query_embedding, tenant_id))
+        """, params)
 
         search_results = cursor.fetchall()
 

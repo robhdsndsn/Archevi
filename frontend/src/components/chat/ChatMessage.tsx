@@ -2,7 +2,17 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import type { Message } from '@/store/chat-store';
-import { SourcesList } from './SourcesList';
+import {
+  Sources,
+  SourcesTrigger,
+  SourcesContent,
+  Source,
+} from '@/components/ai-elements/sources';
+import {
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+} from '@/components/ai-elements/reasoning';
 import { User, Bot } from 'lucide-react';
 
 interface ChatMessageProps {
@@ -29,14 +39,42 @@ export function ChatMessage({ message }: ChatMessageProps) {
       </div>
 
       <div className="flex-1 space-y-2 overflow-hidden">
+        {/* Reasoning section - shows AI thought process */}
+        {message.reasoning && (
+          <Reasoning
+            isStreaming={message.isStreaming}
+            defaultOpen={message.isStreaming}
+          >
+            <ReasoningTrigger />
+            <ReasoningContent>{message.reasoning}</ReasoningContent>
+          </Reasoning>
+        )}
+
+        {/* Main message content */}
         <div className="prose prose-sm dark:prose-invert max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}
           </ReactMarkdown>
         </div>
 
+        {/* Sources section - shows cited documents */}
         {message.sources && message.sources.length > 0 && (
-          <SourcesList sources={message.sources} confidence={message.confidence} />
+          <Sources>
+            <SourcesTrigger
+              count={message.sources.length}
+              confidence={message.confidence}
+            />
+            <SourcesContent>
+              {message.sources.map((source) => (
+                <Source
+                  key={source.id}
+                  title={source.title}
+                  category={source.category}
+                  relevance={source.relevance}
+                />
+              ))}
+            </SourcesContent>
+          </Sources>
         )}
       </div>
     </div>

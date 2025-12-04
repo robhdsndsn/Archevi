@@ -73,7 +73,7 @@ def main(
         # Find user by email
         cursor.execute("""
             SELECT id, email, name, role, password_hash, is_active,
-                   failed_attempts, locked_until, email_verified
+                   failed_attempts, locked_until, email_verified, member_type
             FROM family_members
             WHERE email = %s
         """, (email,))
@@ -84,7 +84,7 @@ def main(
             return {"success": False, "error": "Invalid email or password"}
 
         user_id, user_email, name, role, password_hash, is_active, \
-            failed_attempts, locked_until, email_verified = user
+            failed_attempts, locked_until, email_verified, member_type = user
 
         # Check if account is active
         if not is_active:
@@ -192,6 +192,8 @@ def main(
             "name": name,
             "role": tenant_role,
             "tenant_id": tenant_id,
+            "member_type": member_type or "adult",  # For visibility filtering
+            "member_id": user_id,  # family_members.id for private doc access
             "type": "access",
             "iat": now,
             "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRY)
@@ -223,7 +225,9 @@ def main(
                 "name": name,
                 "role": tenant_role,
                 "tenant_id": tenant_id,
-                "tenant_name": tenant_name
+                "tenant_name": tenant_name,
+                "member_type": member_type or "adult",  # Default to adult if not set
+                "member_id": user_id  # family_members.id for visibility filtering
             }
         }
 

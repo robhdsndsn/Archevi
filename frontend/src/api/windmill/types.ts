@@ -13,6 +13,9 @@ export interface RAGQueryArgs {
   user_id?: string;
   session_id?: string;
   user_email?: string;
+  // Visibility filtering
+  user_member_type?: MemberType;  // For filtering documents by visibility
+  user_member_id?: number;        // For private document access
 }
 
 export interface RAGQueryResult {
@@ -40,6 +43,26 @@ export type DocumentCategory =
   | 'insurance'
   | 'invoices';
 
+// Document visibility levels
+export type DocumentVisibility = 'everyone' | 'adults_only' | 'admins_only' | 'private';
+
+// Family member types for visibility filtering
+export type MemberType = 'admin' | 'adult' | 'teen' | 'child';
+
+export const DOCUMENT_VISIBILITY: { value: DocumentVisibility; label: string; description: string }[] = [
+  { value: 'everyone', label: 'Everyone', description: 'All family members can see this document' },
+  { value: 'adults_only', label: 'Adults Only', description: 'Only adults and admins can see this document' },
+  { value: 'admins_only', label: 'Admins Only', description: 'Only family administrators can see this document' },
+  { value: 'private', label: 'Private', description: 'Only the assigned person and admins can see this document' },
+];
+
+export const MEMBER_TYPES: { value: MemberType; label: string; canView: DocumentVisibility[] }[] = [
+  { value: 'admin', label: 'Admin', canView: ['everyone', 'adults_only', 'admins_only', 'private'] },
+  { value: 'adult', label: 'Adult', canView: ['everyone', 'adults_only'] },
+  { value: 'teen', label: 'Teen', canView: ['everyone'] },
+  { value: 'child', label: 'Child', canView: ['everyone'] },
+];
+
 export interface Document {
   id: number;
   title: string;
@@ -47,6 +70,9 @@ export interface Document {
   category: DocumentCategory;
   relevance_score: number;
   created_at: string;
+  assigned_to?: number | null;
+  assigned_to_name?: string | null;
+  visibility?: DocumentVisibility;
 }
 
 export interface EmbedDocumentArgs {
@@ -183,6 +209,7 @@ export interface FamilyMember {
   email: string;
   name: string;
   role: MemberRole;
+  member_type: MemberType;
   avatar_url: string | null;
   created_at: string | null;
   last_active: string | null;
@@ -199,6 +226,7 @@ export interface FamilyMemberInput {
   name: string;
   role?: MemberRole;
   avatar_url?: string;
+  member_type?: MemberType;
 }
 
 export interface FamilyMembersResult {
@@ -218,6 +246,8 @@ export interface AuthUser {
   role: MemberRole;
   tenant_id?: string;
   tenant_name?: string;
+  member_type?: MemberType;   // For visibility filtering (admin, adult, teen, child)
+  member_id?: number;         // family_members.id for private doc access
 }
 
 export interface LoginResult {
@@ -296,6 +326,9 @@ export interface FullDocument {
   created_by: string | null;
   created_at: string | null;
   updated_at: string | null;
+  assigned_to?: number | null;
+  assigned_to_name?: string | null;
+  visibility?: DocumentVisibility;
 }
 
 export interface GetDocumentResult {
@@ -317,6 +350,9 @@ export interface UpdateDocumentArgs {
   title?: string;
   content?: string;
   category?: DocumentCategory;
+  assigned_to?: number | null;
+  clear_assigned_to?: boolean;
+  visibility?: DocumentVisibility;
 }
 
 export interface UpdateDocumentResult {
@@ -352,6 +388,7 @@ export interface EmbedDocumentEnhancedArgs {
   source_file?: string;
   created_by?: string;
   assigned_to?: number;  // Family member ID to assign this document to
+  visibility?: DocumentVisibility;  // Who can see this document
   auto_categorize_enabled?: boolean;
   extract_tags_enabled?: boolean;
   extract_dates_enabled?: boolean;
@@ -561,6 +598,9 @@ export interface AdvancedSearchArgs {
   tags?: string[];
   limit?: number;
   offset?: number;
+  // Visibility filtering
+  user_member_type?: MemberType;  // Current user's member type for visibility filtering
+  user_member_id?: number;        // Current user's family_member.id for private doc access
 }
 
 export interface AdvancedSearchResult {

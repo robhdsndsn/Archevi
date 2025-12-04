@@ -539,6 +539,7 @@ def main(
     source_file: Optional[str] = None,
     created_by: Optional[str] = None,
     assigned_to: Optional[int] = None,
+    visibility: Optional[str] = 'everyone',
     auto_categorize_enabled: bool = True,
     extract_tags_enabled: bool = True,
     extract_dates_enabled: bool = True,
@@ -664,13 +665,17 @@ def main(
             'content_hash': result['content_hash']  # SHA-256 hash for duplicate detection
         }
 
+        # Validate visibility
+        valid_visibility = ['everyone', 'adults_only', 'admins_only', 'private']
+        final_visibility = visibility if visibility in valid_visibility else 'everyone'
+
         # Insert document with embedding and metadata
         cursor.execute("""
-            INSERT INTO family_documents (title, content, category, source_file, created_by, embedding, metadata, tenant_id, assigned_to)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO family_documents (title, content, category, source_file, created_by, embedding, metadata, tenant_id, assigned_to, visibility)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
         """, (title.strip(), content.strip(), final_category, source_file, created_by,
-              embedding, json.dumps(metadata), tenant_id.strip(), assigned_to))
+              embedding, json.dumps(metadata), tenant_id.strip(), assigned_to, final_visibility))
 
         document_id = cursor.fetchone()[0]
 
@@ -701,5 +706,6 @@ def main(
         "tags": result['tags'],
         "expiry_dates": result['expiry_dates'],
         "ai_features_used": ai_features_used,
-        "assigned_to": assigned_to
+        "assigned_to": assigned_to,
+        "visibility": final_visibility
     }

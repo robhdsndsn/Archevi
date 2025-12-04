@@ -23,6 +23,8 @@ export interface Message {
   timestamp: Date;
   sources?: Source[];
   confidence?: number;
+  reasoning?: string; // AI reasoning/thought process
+  isStreaming?: boolean; // Whether reasoning is still streaming
 }
 
 export interface ChatSession {

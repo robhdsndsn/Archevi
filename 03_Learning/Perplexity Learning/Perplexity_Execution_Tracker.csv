@@ -1,0 +1,79 @@
+# TAB 1: SPACE SETUP STATUS
+
+Space Name,Files Uploaded,Custom Instructions Set,Status,Notes
+1. Competitive Intelligence,3,No,Not Started,"Files: Canadian Family Tech Funding, Competitor Pain Points, Recent SaaS Launches"
+2. Market Intelligence and Validation,3,No,Not Started,"Files: Document Disasters, Failed Consumer Doc Mgmt, User Pain Points Social"
+3. Launch Platform Research,5,No,Not Started,"Files: ProductHunt Strategy, Alt Launch Platforms, Canadian Media, Communities, Sponsorships"
+4. Partnership and Distribution,1,No,Not Started,"Files: Canadian Professional Partners"
+5. Content and SEO Opportunities,2,No,Not Started,"Files: Content Gap Analysis, Trending Questions SEO"
+6. Pricing and Monetization Intelligence,2,No,Not Started,"Files: Competitor Pricing Canadian, Open-Core Models"
+7. Technical Landscape and Differentiation,2,No,Not Started,"Files: Canadian Privacy Laws, RAG Tool Market Traction"
+8. Emerging Trends and Timing,2,No,Not Started,"Files: Canadian Societal Trends, Future Trends Family Tech"
+
+# TAB 2: SPACE QUERY CHECKLIST
+
+Space Name,Query Description,Priority,Status,Output Link/Notes,Date Completed
+1. Competitive Intelligence,Competitive positioning matrix - compare Archevi features vs competitors,P0,Not Started,,
+1. Competitive Intelligence,Market gap analysis - identify underserved segments,P0,Not Started,,
+2. Market Intelligence,Top 10 pain point stories for marketing copy,P0,Not Started,,
+2. Market Intelligence,Failure lessons checklist - what to avoid,P1,Not Started,,
+3. Launch Platform Research,ProductHunt launch timeline - week-by-week plan,P0,Not Started,,
+3. Launch Platform Research,Reddit strategy - which subreddits and how to engage,P1,Not Started,,
+3. Launch Platform Research,Media pitch templates for Canadian tech journalists,P1,Not Started,,
+4. Partnership and Distribution,Partnership tier structure - different partner types,P1,Not Started,,
+5. Content and SEO,20 blog post topics analysis - commercial intent ranking,P0,Not Started,,
+5. Content and SEO,Comparison pages priority list - Archevi vs X,P0,Not Started,,
+6. Pricing and Monetization,Pricing validation - test tiers against market,P0,Not Started,,
+6. Pricing and Monetization,Upgrade path design - free to paid journey,P1,Not Started,,
+7. Technical Differentiation,Privacy advantage copy - 3 versions (technical/simple/emotional),P0,Not Started,,
+7. Technical Differentiation,RAG technology ELI5 - explain to non-technical users,P1,Not Started,,
+8. Emerging Trends,Why Now narrative - timing story for press/investors,P0,Not Started,,
+8. Emerging Trends,Trend forecast - next 12 months family tech predictions,P2,Not Started,,
+
+# TAB 3: LABS DELIVERABLES TRACKER
+
+Space Name,Deliverable Name,Components,Priority,Status,Perplexity Lab Link,Downloaded Assets Location,Date Completed
+1. Competitive Intelligence,Interactive Competitive Analysis Dashboard,"Feature comparison matrix, pricing charts, funding timeline, positioning deck slides",P0,Not Started,,,
+2. Market Intelligence,Voice of Customer Messaging Toolkit,"Landing page copy variants, ad copy (3 versions), email sequences (welcome/nurture), pain point comparison charts",P0,Not Started,,,
+3. Launch Platform Research,8-Week Launch Campaign Dashboard,"Gantt chart, channel breakdown (PH/Reddit/HN/media), task checklists, contact lists, budget tracker, metrics dashboard",P0,Not Started,,,
+4. Partnership and Distribution,Partnership Outreach Kit,"Email templates (cold/warm/follow-up), partner pitch deck, ROI calculator, tracking spreadsheet, follow-up sequences",P1,Not Started,,,
+5. Content and SEO,90-Day Content Marketing System,"Editorial calendar, blog templates, SEO checklist, distribution plan (channels/timing), traffic projections",P0,Not Started,,,
+6. Pricing and Monetization,Pricing Strategy Toolkit,"Pricing comparison chart, interactive calculator (mock), conversion funnel diagram, competitor price monitor template, unit economics model",P0,Not Started,,,
+7. Technical Differentiation,Technical Differentiation Messaging Kit,"Privacy explainer (infographic), RAG diagram (visual), decision matrix (self-host vs cloud), FAQ generator template, developer pitch deck",P1,Not Started,,,
+8. Emerging Trends,Market Timing Toolkit,"Why Now deck (investor-ready), trend monitoring dashboard template, press angle bullets, investor deck section (market timing)",P1,Not Started,,,
+
+# TAB 4: LAUNCH TIMELINE
+
+Week,Focus Areas,Spaces to Tackle,Deliverables Due,Dependencies,Notes
+Week 1: Foundation,"Setup all Spaces, run critical queries","All 8 Spaces (setup), Spaces 1-2-3 (queries)","Competitive positioning matrix, Top 10 pain points, ProductHunt timeline",None,"Focus on P0 queries first. Get foundation data before generating deliverables."
+Week 2: Critical Deliverables,"Generate launch-blocking assets","Spaces 1, 2, 3 (Labs)","Competitive Dashboard, Voice of Customer Toolkit, Launch Campaign Dashboard","Week 1 queries complete","These 3 deliverables are critical path for launch. Allocate most time here."
+Week 3: Supporting Assets,"Content, pricing, partnerships","Spaces 4, 5, 6 (Labs)","Partnership Kit, Content System, Pricing Toolkit","Week 1-2 complete","Can work in parallel. Pricing toolkit informs launch messaging."
+Week 4: Polish and Trends,"Technical messaging, timing narrative","Spaces 7, 8 (Labs + remaining queries)","Technical Messaging Kit, Market Timing Toolkit, All remaining queries","Week 1-3 complete","Final polish. Use trend insights to refine Week 2-3 deliverables."
+
+# TAB 5: ASSETS INVENTORY
+
+Asset Name,Type,Source Space/Lab,File Location,Last Updated,Status
+Competitive Positioning Matrix,Spreadsheet,Space 1 Query,,,Not Started
+Market Gap Analysis,Document,Space 1 Query,,,Not Started
+Top 10 Pain Point Stories,Document,Space 2 Query,,,Not Started
+Failure Lessons Checklist,Checklist,Space 2 Query,,,Not Started
+ProductHunt Launch Timeline,Timeline,Space 3 Query,,,Not Started
+Reddit Strategy Guide,Document,Space 3 Query,,,Not Started
+Media Pitch Templates,Templates,Space 3 Query,,,Not Started
+Partnership Tier Structure,Framework,Space 4 Query,,,Not Started
+20 Blog Post Topics Analysis,Spreadsheet,Space 5 Query,,,Not Started
+Comparison Pages Priority List,Spreadsheet,Space 5 Query,,,Not Started
+Pricing Validation Analysis,Document,Space 6 Query,,,Not Started
+Upgrade Path Design,Diagram,Space 6 Query,,,Not Started
+Privacy Advantage Copy (3 versions),Copy,Space 7 Query,,,Not Started
+RAG Technology ELI5,Explainer,Space 7 Query,,,Not Started
+Why Now Narrative,Document,Space 8 Query,,,Not Started
+Trend Forecast (12 months),Report,Space 8 Query,,,Not Started
+Competitive Analysis Dashboard,Dashboard,Space 1 Lab,,,Not Started
+Voice of Customer Messaging Toolkit,Toolkit,Space 2 Lab,,,Not Started
+8-Week Launch Campaign Dashboard,Dashboard,Space 3 Lab,,,Not Started
+Partnership Outreach Kit,Toolkit,Space 4 Lab,,,Not Started
+90-Day Content Marketing System,System,Space 5 Lab,,,Not Started
+Pricing Strategy Toolkit,Toolkit,Space 6 Lab,,,Not Started
+Technical Differentiation Messaging Kit,Toolkit,Space 7 Lab,,,Not Started
+Market Timing Toolkit,Toolkit,Space 8 Lab,,,Not Started

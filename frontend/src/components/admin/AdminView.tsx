@@ -714,10 +714,6 @@ export function AdminView({ isEffectiveAdmin }: AdminViewProps) {
   );
 }
 
-// Interface for documents with content hash for duplicate detection
-interface DocumentWithHash extends Document {
-  content_hash?: string;
-}
 
 // Group documents by content hash to find duplicates
 function findDuplicates(documents: Document[]): Map<string, Document[]> {

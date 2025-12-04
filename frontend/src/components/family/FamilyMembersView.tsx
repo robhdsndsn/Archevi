@@ -56,7 +56,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import { windmill, type FamilyMember, type MemberRole } from '@/api/windmill';
+import { windmill, type FamilyMember, type MemberRole, type MemberType, MEMBER_TYPES } from '@/api/windmill';
 import { toast } from 'sonner';
 
 function getInitials(name: string): string {
@@ -81,12 +81,14 @@ interface MemberFormData {
   name: string;
   email: string;
   role: MemberRole;
+  member_type: MemberType;
 }
 
 const EMPTY_FORM: MemberFormData = {
   name: '',
   email: '',
   role: 'member',
+  member_type: 'adult',
 };
 
 export function FamilyMembersView() {
@@ -175,6 +177,7 @@ export function FamilyMembersView() {
         name: formData.name,
         email: formData.email,
         role: formData.role,
+        member_type: formData.member_type,
       });
 
       if (result.success) {
@@ -227,6 +230,7 @@ export function FamilyMembersView() {
       name: member.name,
       email: member.email,
       role: member.role,
+      member_type: member.member_type || 'adult',
     });
     setIsEditDialogOpen(true);
   };
@@ -506,7 +510,7 @@ export function FamilyMembersView() {
 
                       {/* Info */}
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium">{member.name}</span>
                           <Badge
                             variant={member.role === 'admin' ? 'default' : 'secondary'}
@@ -518,6 +522,9 @@ export function FamilyMembersView() {
                               <User className="mr-1 h-3 w-3" />
                             )}
                             {member.role}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {member.member_type || 'adult'}
                           </Badge>
                           {!member.has_password && (
                             <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
@@ -664,6 +671,27 @@ export function FamilyMembersView() {
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-member-type">Member Type</Label>
+              <Select
+                value={formData.member_type}
+                onValueChange={(v) => setFormData({ ...formData, member_type: v as MemberType })}
+              >
+                <SelectTrigger id="edit-member-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MEMBER_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Controls which documents this member can see based on visibility settings.
+              </p>
             </div>
           </div>
           <DialogFooter>

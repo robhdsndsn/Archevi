@@ -1,15 +1,18 @@
+import { useState, useEffect } from 'react';
 import {
   Archive,
-  MessageSquare,
   FolderOpen,
-  History,
   Users,
   HelpCircle,
-  Upload,
-  Search,
+  Plus,
+  Clock,
   BarChart3,
   Building2,
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
+import { windmill } from '@/api/windmill';
+import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/auth-store';
 import {
   Sidebar,
@@ -37,9 +40,27 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin', onViewAsChange }: AppSidebarProps) {
   const { user } = useAuthStore();
+  const [expiringCount, setExpiringCount] = useState(0);
 
   // Show admin menu only to system admins
   const isSystemAdmin = user?.role === 'admin' && viewAs === 'admin';
+
+  // Fetch expiring documents count on mount
+  useEffect(() => {
+    const fetchExpiringDocs = async () => {
+      try {
+        const result = await windmill.getExpiringDocuments(30); // Next 30 days
+        if (result.success) {
+          // Count urgent (< 7 days) and soon (< 14 days)
+          const urgentCount = result.documents.filter(d => d.days_until_expiry <= 14).length;
+          setExpiringCount(urgentCount);
+        }
+      } catch (error) {
+        console.error('Failed to fetch expiring documents:', error);
+      }
+    };
+    fetchExpiringDocs();
+  }, []);
 
   const handleNavigate = (view: string, options?: { tab?: DocumentsTab }) => {
     onNavigate?.(view, options);
@@ -62,50 +83,11 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Quick Actions */}
+        {/* Main Navigation - Primary Actions */}
         <SidebarGroup>
-          <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
+          <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Upload Document"
-                  onClick={() => handleNavigate('documents', { tab: 'upload' })}
-                >
-                  <Upload />
-                  <span>Upload Document</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Search"
-                  onClick={() => handleNavigate('documents', { tab: 'search' })}
-                >
-                  <Search />
-                  <span>Search Documents</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        {/* Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={currentView === 'chat'}
-                  tooltip="Chat"
-                  onClick={() => handleNavigate('chat')}
-                >
-                  <MessageSquare />
-                  <span>Chat</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={currentView === 'documents'}
@@ -118,12 +100,78 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  isActive={currentView === 'chat'}
+                  tooltip="Ask AI"
+                  onClick={() => handleNavigate('chat')}
+                >
+                  <Sparkles />
+                  <span>Ask AI</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Quick Access */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Quick Access</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Add Document"
+                  onClick={() => handleNavigate('documents', { tab: 'add' })}
+                >
+                  <Plus />
+                  <span>Add Document</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Expiring Soon"
+                  onClick={() => handleNavigate('documents', { tab: 'overview' })}
+                  className="relative"
+                >
+                  <AlertTriangle className={expiringCount > 0 ? "text-amber-500" : ""} />
+                  <span>Expiring Soon</span>
+                  {expiringCount > 0 && (
+                    <Badge variant="destructive" className="ml-auto h-5 min-w-5 px-1.5 text-xs">
+                      {expiringCount}
+                    </Badge>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
                   isActive={currentView === 'history'}
-                  tooltip="Chat History"
+                  tooltip="Recent Chats"
                   onClick={() => handleNavigate('history')}
                 >
-                  <History />
-                  <span>Chat History</span>
+                  <Clock />
+                  <span>Recent Chats</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Management */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Manage</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={currentView === 'analytics'}
+                  tooltip="Analytics"
+                  onClick={() => handleNavigate('analytics')}
+                >
+                  <BarChart3 />
+                  <span>Analytics</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -134,16 +182,6 @@ export function AppSidebar({ onNavigate, currentView = 'chat', viewAs = 'admin',
                 >
                   <Users />
                   <span>Family Members</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={currentView === 'analytics'}
-                  tooltip="Analytics"
-                  onClick={() => handleNavigate('analytics')}
-                >
-                  <BarChart3 />
-                  <span>Analytics</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {isSystemAdmin && (

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { windmill, type Document, type DocumentCategory, type FamilyMember, DOCUMENT_CATEGORIES } from '@/api/windmill';
+import { windmill, type Document, type DocumentCategory, type DocumentVisibility, type FamilyMember, DOCUMENT_CATEGORIES, DOCUMENT_VISIBILITY } from '@/api/windmill';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -40,35 +41,67 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
   FileText,
   Search,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
   ArrowUpDown,
   RefreshCw,
   Eye,
   Pencil,
   Trash2,
   List,
-  FileIcon,
-  FileImage,
-  FileSpreadsheet,
+  LayoutGrid,
   Receipt,
   GraduationCap,
   Heart,
   Scale,
   Home,
   Briefcase,
-  Calendar,
-  Tag,
+  Calendar as CalendarIcon,
   User,
+  Globe,
+  Users,
+  Shield,
+  Lock,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import type { FullDocument } from '@/api/windmill';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { format } from 'date-fns';
+import { MemberAvatar } from '@/components/ui/member-avatar';
 
 // Default tenant for MVP
 const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
@@ -84,6 +117,14 @@ const CATEGORY_CONFIG: Record<string, { icon: typeof FileText; color: string; bg
   property: { icon: Home, color: 'text-purple-600', bgColor: 'bg-purple-50 dark:bg-purple-950' },
   employment: { icon: Briefcase, color: 'text-cyan-600', bgColor: 'bg-cyan-50 dark:bg-cyan-950' },
   general: { icon: FileText, color: 'text-slate-600', bgColor: 'bg-slate-50 dark:bg-slate-950' },
+};
+
+// Visibility visual configuration
+const VISIBILITY_CONFIG: Record<string, { icon: typeof Globe; color: string; label: string }> = {
+  everyone: { icon: Globe, color: 'text-green-600', label: 'Everyone' },
+  adults_only: { icon: Users, color: 'text-amber-600', label: 'Adults' },
+  admins_only: { icon: Shield, color: 'text-blue-600', label: 'Admins' },
+  private: { icon: Lock, color: 'text-rose-600', label: 'Private' },
 };
 
 // Document preview component that shows a visual representation
@@ -133,13 +174,69 @@ function DocumentPreview({ document, className }: { document: FullDocument; clas
       {/* Document footer with metadata */}
       <div className="bg-white dark:bg-zinc-900 border-t px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
-          <Calendar className="h-3 w-3" />
+          <CalendarIcon className="h-3 w-3" />
           {document.created_at ? new Date(document.created_at).toLocaleDateString() : 'Unknown date'}
         </div>
         <div className="flex items-center gap-1">
           <FileText className="h-3 w-3" />
           {document.content.length.toLocaleString()} chars
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Quick preview component for hover cards - uses content_preview from list data
+function QuickPreview({ document }: { document: Document }) {
+  const config = CATEGORY_CONFIG[document.category] || CATEGORY_CONFIG.general;
+  const CategoryIcon = config.icon;
+  const visConfig = VISIBILITY_CONFIG[document.visibility || 'everyone'];
+  const VisIcon = visConfig.icon;
+
+  return (
+    <div className="w-full overflow-hidden">
+      {/* Header with icon and category */}
+      <div className="flex items-start gap-3 mb-3">
+        <div className={`p-2 rounded-lg shrink-0 ${config.bgColor}`}>
+          <CategoryIcon className={`h-5 w-5 ${config.color}`} />
+        </div>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <h4 className="font-semibold text-sm leading-tight truncate">{document.title}</h4>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <Badge variant="secondary" className="capitalize text-xs shrink-0">
+              {document.category.replace(/_/g, ' ')}
+            </Badge>
+            <Badge variant="outline" className={`gap-1 text-xs shrink-0 ${visConfig.color}`}>
+              <VisIcon className="h-3 w-3" />
+              {visConfig.label}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Content preview */}
+      <div className="text-sm text-muted-foreground leading-relaxed mb-3 line-clamp-4 break-words overflow-hidden">
+        {document.content_preview || 'No preview available'}
+      </div>
+
+      {/* Footer metadata */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+        <div className="flex items-center gap-1 shrink-0">
+          <CalendarIcon className="h-3 w-3" />
+          {document.created_at ? new Date(document.created_at).toLocaleDateString() : 'Unknown'}
+        </div>
+        {document.assigned_to_name && (
+          <div className="flex items-center gap-1 truncate ml-2">
+            <User className="h-3 w-3 shrink-0" />
+            <span className="truncate">{document.assigned_to_name}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Hint to click */}
+      <div className="text-xs text-primary mt-2 flex items-center gap-1">
+        <Eye className="h-3 w-3" />
+        Click to view full document
       </div>
     </div>
   );
@@ -159,6 +256,10 @@ export function FamilyDocumentsList() {
   const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<'created_at' | 'title' | 'category'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
 
   // Family members for filtering
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
@@ -178,10 +279,29 @@ export function FamilyDocumentsList() {
   const [documentToDelete, setDocumentToDelete] = useState<{ id: number; title: string } | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
+  // Mobile detection for responsive drawer/dialog
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Edit form state
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState<DocumentCategory>('general');
+  const [editAssignedTo, setEditAssignedTo] = useState<number | null>(null);
+  const [editVisibility, setEditVisibility] = useState<DocumentVisibility>('everyone');
 
   const loadDocuments = async () => {
     try {
@@ -195,10 +315,32 @@ export function FamilyDocumentsList() {
         assigned_to: selectedPerson || undefined,
         limit: ITEMS_PER_PAGE,
         offset: (page - 1) * ITEMS_PER_PAGE,
+        // Visibility filtering - pass user's member_type and member_id
+        user_member_type: user?.member_type,
+        user_member_id: user?.member_id,
       });
 
+      // Filter by date range locally
+      let filteredDocs = result.documents;
+      if (dateRange.from) {
+        const fromDate = new Date(dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+        filteredDocs = filteredDocs.filter(doc => {
+          const docDate = new Date(doc.created_at);
+          return docDate >= fromDate;
+        });
+      }
+      if (dateRange.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        filteredDocs = filteredDocs.filter(doc => {
+          const docDate = new Date(doc.created_at);
+          return docDate <= toDate;
+        });
+      }
+
       // Sort locally since advancedSearch doesn't support sorting
-      let sortedDocs = [...result.documents];
+      let sortedDocs = [...filteredDocs];
       sortedDocs.sort((a, b) => {
         let comparison = 0;
         if (sortBy === 'created_at') {
@@ -314,6 +456,8 @@ export function FamilyDocumentsList() {
         setEditTitle(result.document.title);
         setEditContent(result.document.content);
         setEditCategory(result.document.category);
+        setEditAssignedTo(result.document.assigned_to ?? null);
+        setEditVisibility(result.document.visibility || 'everyone');
         setEditDialogOpen(true);
       } else {
         toast.error(result.error || 'Failed to load document');
@@ -330,11 +474,21 @@ export function FamilyDocumentsList() {
 
     setIsActionLoading(true);
     try {
+      // Determine if assigned_to changed
+      const originalAssignedTo = editDocument.assigned_to ?? null;
+      const newAssignedTo = editAssignedTo;
+      const assignedToChanged = originalAssignedTo !== newAssignedTo;
+
       const result = await windmill.updateDocument({
         document_id: editDocument.id,
         title: editTitle !== editDocument.title ? editTitle : undefined,
         content: editContent !== editDocument.content ? editContent : undefined,
         category: editCategory !== editDocument.category ? editCategory : undefined,
+        // Only send assigned_to if it changed
+        ...(assignedToChanged && newAssignedTo !== null ? { assigned_to: newAssignedTo } : {}),
+        ...(assignedToChanged && newAssignedTo === null ? { clear_assigned_to: true } : {}),
+        // Only send visibility if it changed
+        visibility: editVisibility !== (editDocument.visibility || 'everyone') ? editVisibility : undefined,
       });
 
       if (result.success) {
@@ -379,6 +533,63 @@ export function FamilyDocumentsList() {
   };
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  // Bulk selection handlers
+  const isAllSelected = documents.length > 0 && documents.every(doc => selectedIds.has(doc.id));
+  const isSomeSelected = documents.some(doc => selectedIds.has(doc.id));
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(documents.map(doc => doc.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: number, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    setIsActionLoading(true);
+    const idsToDelete = Array.from(selectedIds);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of idsToDelete) {
+      try {
+        const result = await windmill.deleteDocument(id);
+        if (result.success) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+
+    setIsActionLoading(false);
+    setBulkDeleteDialogOpen(false);
+    setSelectedIds(new Set());
+
+    if (successCount > 0) {
+      toast.success(`Deleted ${successCount} document${successCount > 1 ? 's' : ''}`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to delete ${failCount} document${failCount > 1 ? 's' : ''}`);
+    }
+
+    loadDocuments();
+  };
 
   return (
     <Card>
@@ -446,18 +657,103 @@ export function FamilyDocumentsList() {
                 <SelectItem value="all">All People</SelectItem>
                 {familyMembers.map((member) => (
                   <SelectItem key={member.id} value={member.id.toString()}>
-                    {member.name}
+                    <div className="flex items-center gap-2">
+                      <MemberAvatar name={member.name} size="xs" showTooltip={false} />
+                      {member.name}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           )}
 
+          {/* Date Range Filter - Using native inputs for stability */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+              <Input
+                type="date"
+                className="w-[130px] h-9"
+                value={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const date = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, from: date }));
+                }}
+                placeholder="From"
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input
+                type="date"
+                className="w-[130px] h-9"
+                value={dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const date = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, to: date }));
+                }}
+                placeholder="To"
+              />
+            </div>
+            {(dateRange.from || dateRange.to) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 px-2"
+                onClick={() => {
+                  setDateRange({ from: undefined, to: undefined });
+                  handleFilterChange();
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+
           <Button onClick={handleSearch} disabled={loading}>
             <Search className="h-4 w-4 mr-2" />
             Filter
           </Button>
+
+          {/* View Mode Toggle */}
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(value) => value && setViewMode(value as 'list' | 'grid')}
+            size="sm"
+          >
+            <ToggleGroupItem value="list" aria-label="List view">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
+
+        {/* Bulk Actions Bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            <span className="text-sm font-medium">
+              {selectedIds.size} document{selectedIds.size > 1 ? 's' : ''} selected
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                Clear Selection
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setBulkDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Selected
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
@@ -466,7 +762,7 @@ export function FamilyDocumentsList() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Documents Display */}
         {loading && documents.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -477,11 +773,125 @@ export function FamilyDocumentsList() {
             <h3 className="text-lg font-medium mb-2">No documents yet</h3>
             <p className="text-sm">Upload your first document to get started.</p>
           </div>
+        ) : viewMode === 'grid' ? (
+          /* Grid View */
+          <ScrollArea className="h-[500px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-1">
+              {documents.map((doc) => {
+                const config = CATEGORY_CONFIG[doc.category] || CATEGORY_CONFIG.general;
+                const CategoryIcon = config.icon;
+                return (
+                  <ContextMenu key={doc.id}>
+                    <ContextMenuTrigger>
+                      <Card
+                        className={`cursor-pointer hover:shadow-md transition-shadow ${
+                          selectedIds.has(doc.id) ? 'ring-2 ring-primary' : ''
+                        }`}
+                        onClick={() => handleSelectOne(doc.id, !selectedIds.has(doc.id))}
+                      >
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg ${config.bgColor}`}>
+                              <CategoryIcon className={`h-5 w-5 ${config.color}`} />
+                            </div>
+                            <HoverCard openDelay={400} closeDelay={100}>
+                              <HoverCardTrigger asChild>
+                                <div
+                                  className="flex-1 min-w-0 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleView(doc.id);
+                                  }}
+                                >
+                                  <CardTitle className="text-sm font-medium truncate hover:text-primary transition-colors">
+                                    {doc.title}
+                                  </CardTitle>
+                                  <CardDescription className="text-xs mt-1 line-clamp-2">
+                                    {doc.content_preview}
+                                  </CardDescription>
+                                </div>
+                              </HoverCardTrigger>
+                              <HoverCardContent side="right" align="start" className="w-80 p-4 hidden sm:block">
+                                <QuickPreview document={doc} />
+                              </HoverCardContent>
+                            </HoverCard>
+                            <Checkbox
+                              checked={selectedIds.has(doc.id)}
+                              onCheckedChange={(checked) => handleSelectOne(doc.id, checked as boolean)}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`Select ${doc.title}`}
+                            />
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-0 space-y-2">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <Badge variant="secondary" className="capitalize text-xs">
+                              {doc.category.replace(/_/g, ' ')}
+                            </Badge>
+                            <span className="flex items-center gap-1">
+                              <CalendarIcon className="h-3 w-3" />
+                              {doc.created_at
+                                ? new Date(doc.created_at).toLocaleDateString()
+                                : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {/* Visibility Badge */}
+                            {(() => {
+                              const visConfig = VISIBILITY_CONFIG[doc.visibility || 'everyone'];
+                              const VisIcon = visConfig.icon;
+                              return (
+                                <Badge variant="outline" className={`gap-1 text-xs ${visConfig.color}`}>
+                                  <VisIcon className="h-3 w-3" />
+                                  {visConfig.label}
+                                </Badge>
+                              );
+                            })()}
+                            {/* Assigned To Avatar */}
+                            {doc.assigned_to_name && (
+                              <MemberAvatar name={doc.assigned_to_name} size="xs" />
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem onClick={() => handleView(doc.id)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Document
+                      </ContextMenuItem>
+                      <ContextMenuItem onClick={() => handleEdit(doc.id)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Document
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        onClick={() => handleDeleteClick(doc.id, doc.title)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Document
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
+                );
+              })}
+            </div>
+          </ScrollArea>
         ) : (
+          /* List View (Table) */
           <ScrollArea className="h-[400px]">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px]">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all documents"
+                      className={isSomeSelected && !isAllSelected ? 'data-[state=checked]:bg-primary/50' : ''}
+                    />
+                  </TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
@@ -504,6 +914,8 @@ export function FamilyDocumentsList() {
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </TableHead>
+                  <TableHead>Assigned To</TableHead>
+                  <TableHead>Visibility</TableHead>
                   <TableHead>
                     <Button
                       variant="ghost"
@@ -520,57 +932,112 @@ export function FamilyDocumentsList() {
               </TableHeader>
               <TableBody>
                 {documents.map((doc) => (
-                  <TableRow key={doc.id}>
-                    <TableCell>
-                      <div className="max-w-[300px]">
-                        <p className="font-medium truncate">{doc.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {doc.content_preview}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {doc.category.replace(/_/g, ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {doc.created_at
-                        ? new Date(doc.created_at).toLocaleDateString()
-                        : 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleView(doc.id)}
-                          disabled={isActionLoading}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleEdit(doc.id)}
-                          disabled={isActionLoading}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteClick(doc.id, doc.title)}
-                          disabled={isActionLoading}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <ContextMenu key={doc.id}>
+                    <ContextMenuTrigger asChild>
+                      <TableRow className={selectedIds.has(doc.id) ? 'bg-muted/50' : ''}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.has(doc.id)}
+                            onCheckedChange={(checked) => handleSelectOne(doc.id, checked as boolean)}
+                            aria-label={`Select ${doc.title}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <HoverCard openDelay={300} closeDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <div className="max-w-[300px] cursor-pointer" onClick={() => handleView(doc.id)}>
+                                <p className="font-medium truncate hover:text-primary transition-colors">{doc.title}</p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {doc.content_preview}
+                                </p>
+                              </div>
+                            </HoverCardTrigger>
+                            <HoverCardContent side="right" align="start" className="w-80 p-4">
+                              <QuickPreview document={doc} />
+                            </HoverCardContent>
+                          </HoverCard>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize">
+                            {doc.category.replace(/_/g, ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {doc.assigned_to_name ? (
+                            <MemberAvatar name={doc.assigned_to_name} size="sm" />
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const visConfig = VISIBILITY_CONFIG[doc.visibility || 'everyone'];
+                            const VisIcon = visConfig.icon;
+                            return (
+                              <Badge variant="outline" className={`gap-1 ${visConfig.color}`}>
+                                <VisIcon className="h-3 w-3" />
+                                {visConfig.label}
+                              </Badge>
+                            );
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {doc.created_at
+                            ? new Date(doc.created_at).toLocaleDateString()
+                            : 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleView(doc.id)}
+                              disabled={isActionLoading}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleEdit(doc.id)}
+                              disabled={isActionLoading}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteClick(doc.id, doc.title)}
+                              disabled={isActionLoading}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuItem onClick={() => handleView(doc.id)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Document
+                      </ContextMenuItem>
+                      <ContextMenuItem onClick={() => handleEdit(doc.id)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Document
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        onClick={() => handleDeleteClick(doc.id, doc.title)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Document
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 ))}
               </TableBody>
             </Table>
@@ -579,133 +1046,349 @@ export function FamilyDocumentsList() {
 
         {/* Pagination */}
         {total > 0 && (
-          <div className="flex items-center justify-between pt-4 border-t">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t">
             <div className="text-sm text-muted-foreground">
               Showing {((page - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(page * ITEMS_PER_PAGE, total)} of {total}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1 || loading}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Button>
-              <div className="text-sm">
-                Page {page} of {totalPages}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(p => p + 1)}
-                disabled={!hasMore || loading}
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => !loading && page > 1 && setPage(p => p - 1)}
+                    className={page === 1 || loading ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+
+                {/* First page */}
+                {page > 2 && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPage(1)} className="cursor-pointer">
+                      1
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
+                {/* Ellipsis before current */}
+                {page > 3 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+
+                {/* Previous page */}
+                {page > 1 && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPage(page - 1)} className="cursor-pointer">
+                      {page - 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
+                {/* Current page */}
+                <PaginationItem>
+                  <PaginationLink isActive className="cursor-default">
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+
+                {/* Next page */}
+                {page < totalPages && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPage(page + 1)} className="cursor-pointer">
+                      {page + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
+                {/* Ellipsis after current */}
+                {page < totalPages - 2 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+
+                {/* Last page */}
+                {page < totalPages - 1 && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPage(totalPages)} className="cursor-pointer">
+                      {totalPages}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => !loading && hasMore && setPage(p => p + 1)}
+                    className={!hasMore || loading ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </CardContent>
 
-      {/* View Document Dialog */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              {viewDocument?.title}
-            </DialogTitle>
-          </DialogHeader>
+      {/* View Document - Drawer on Mobile, Dialog on Desktop */}
+      {isMobile ? (
+        <Drawer open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+          <DrawerContent className="max-h-[85vh]">
+            <DrawerHeader className="text-left">
+              <DrawerTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {viewDocument?.title}
+              </DrawerTitle>
+              <DrawerDescription>
+                <div className="flex items-center gap-2 flex-wrap mt-1">
+                  {viewDocument?.category && (
+                    <Badge variant="secondary" className="capitalize">
+                      {viewDocument.category.replace(/_/g, ' ')}
+                    </Badge>
+                  )}
+                  {viewDocument && (() => {
+                    const visConfig = VISIBILITY_CONFIG[viewDocument.visibility || 'everyone'];
+                    const VisIcon = visConfig.icon;
+                    return (
+                      <Badge variant="outline" className={`gap-1 ${visConfig.color}`}>
+                        <VisIcon className="h-3 w-3" />
+                        {visConfig.label}
+                      </Badge>
+                    );
+                  })()}
+                  {viewDocument?.assigned_to_name && (
+                    <MemberAvatar name={viewDocument.assigned_to_name} size="sm" />
+                  )}
+                </div>
+              </DrawerDescription>
+            </DrawerHeader>
 
-          {viewDocument && (
-            <Tabs defaultValue="preview" className="mt-2">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="preview" className="gap-2">
-                  <Eye className="h-4 w-4" />
-                  Preview
-                </TabsTrigger>
-                <TabsTrigger value="content" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  Full Text
-                </TabsTrigger>
-              </TabsList>
+            {viewDocument && (
+              <div className="px-4 pb-4">
+                <Tabs defaultValue="preview">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="preview" className="gap-2">
+                      <Eye className="h-4 w-4" />
+                      Preview
+                    </TabsTrigger>
+                    <TabsTrigger value="content" className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Full Text
+                    </TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="preview" className="mt-4">
-                <DocumentPreview document={viewDocument} className="max-w-md mx-auto" />
-              </TabsContent>
+                  <TabsContent value="preview" className="mt-4">
+                    <DocumentPreview document={viewDocument} className="max-w-full" />
+                  </TabsContent>
 
-              <TabsContent value="content" className="mt-4">
-                <ScrollArea className="h-[50vh] rounded-lg border p-4 bg-muted/30">
-                  <div className="whitespace-pre-wrap text-sm font-mono">
-                    {viewDocument.content}
-                  </div>
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          )}
+                  <TabsContent value="content" className="mt-4">
+                    <ScrollArea className="h-[40vh] rounded-lg border p-4 bg-muted/30">
+                      <div className="whitespace-pre-wrap text-sm font-mono">
+                        {viewDocument.content}
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
 
-          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-            <div className="flex-1 text-xs text-muted-foreground">
-              {viewDocument?.created_at && (
-                <span>Created: {new Date(viewDocument.created_at).toLocaleDateString()}</span>
-              )}
-            </div>
-            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DrawerFooter className="pt-2">
+              <div className="flex items-center justify-between w-full">
+                <div className="text-xs text-muted-foreground">
+                  {viewDocument?.created_at && (
+                    <span>Created: {new Date(viewDocument.created_at).toLocaleDateString()}</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setViewDialogOpen(false);
+                      if (viewDocument) handleEdit(viewDocument.id);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <DrawerClose asChild>
+                    <Button variant="secondary" size="sm">Close</Button>
+                  </DrawerClose>
+                </div>
+              </div>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[85vh]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {viewDocument?.title}
+              </DialogTitle>
+              <DialogDescription>
+                <div className="flex items-center gap-2 flex-wrap mt-1">
+                  {viewDocument?.category && (
+                    <Badge variant="secondary" className="capitalize">
+                      {viewDocument.category.replace(/_/g, ' ')}
+                    </Badge>
+                  )}
+                  {viewDocument && (() => {
+                    const visConfig = VISIBILITY_CONFIG[viewDocument.visibility || 'everyone'];
+                    const VisIcon = visConfig.icon;
+                    return (
+                      <Badge variant="outline" className={`gap-1 ${visConfig.color}`}>
+                        <VisIcon className="h-3 w-3" />
+                        {visConfig.label}
+                      </Badge>
+                    );
+                  })()}
+                  {viewDocument?.assigned_to_name && (
+                    <MemberAvatar name={viewDocument.assigned_to_name} size="sm" />
+                  )}
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+
+            {viewDocument && (
+              <Tabs defaultValue="preview" className="mt-2">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="preview" className="gap-2">
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="content" className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Full Text
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="preview" className="mt-4">
+                  <DocumentPreview document={viewDocument} className="max-w-md mx-auto" />
+                </TabsContent>
+
+                <TabsContent value="content" className="mt-4">
+                  <ScrollArea className="h-[50vh] rounded-lg border p-4 bg-muted/30">
+                    <div className="whitespace-pre-wrap text-sm font-mono">
+                      {viewDocument.content}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+            )}
+
+            <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
+              <div className="flex-1 text-xs text-muted-foreground">
+                {viewDocument?.created_at && (
+                  <span>Created: {new Date(viewDocument.created_at).toLocaleDateString()}</span>
+                )}
+              </div>
+              <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Edit Document Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Edit Document</DialogTitle>
             <DialogDescription>
               Make changes to your document. Content changes will update the AI search index.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-title">Title</Label>
-              <Input
-                id="edit-title"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Document title"
-              />
+          <ScrollArea className="flex-1 min-h-0 -mx-6 px-6">
+            <div className="space-y-4 py-4 pr-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Title</Label>
+                <Input
+                  id="edit-title"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Document title"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Category</Label>
+                  <Select value={editCategory} onValueChange={(v) => setEditCategory(v as DocumentCategory)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DOCUMENT_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-assigned-to">Assigned To</Label>
+                  <Select
+                    value={editAssignedTo?.toString() || "none"}
+                    onValueChange={(v) => setEditAssignedTo(v === "none" ? null : parseInt(v, 10))}
+                  >
+                    <SelectTrigger>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <SelectValue placeholder="Select person" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No one (unassigned)</SelectItem>
+                      {familyMembers.map((member) => (
+                        <SelectItem key={member.id} value={member.id.toString()}>
+                          <div className="flex items-center gap-2">
+                            <MemberAvatar name={member.name} size="xs" showTooltip={false} />
+                            {member.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-visibility">Visibility</Label>
+                <Select
+                  value={editVisibility}
+                  onValueChange={(v) => setEditVisibility(v as DocumentVisibility)}
+                >
+                  <SelectTrigger>
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <SelectValue placeholder="Who can see this?" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DOCUMENT_VISIBILITY.map((vis) => (
+                      <SelectItem key={vis.value} value={vis.value}>
+                        <div className="flex flex-col">
+                          <span>{vis.label}</span>
+                          <span className="text-xs text-muted-foreground">{vis.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-content">Content</Label>
+                <Textarea
+                  id="edit-content"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  placeholder="Document content"
+                  className="min-h-[250px] resize-none"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-category">Category</Label>
-              <Select value={editCategory} onValueChange={(v) => setEditCategory(v as DocumentCategory)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOCUMENT_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-content">Content</Label>
-              <Textarea
-                id="edit-content"
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                placeholder="Document content"
-                className="min-h-[200px]"
-              />
-            </div>
-          </div>
-          <DialogFooter>
+          </ScrollArea>
+          <DialogFooter className="flex-shrink-0">
             <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={isActionLoading}>
               Cancel
             </Button>
@@ -746,6 +1429,35 @@ export function FamilyDocumentsList() {
                 </>
               ) : (
                 'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} Documents</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedIds.size} selected document{selectedIds.size > 1 ? 's' : ''}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isActionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isActionLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isActionLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                `Delete ${selectedIds.size} Document${selectedIds.size > 1 ? 's' : ''}`
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -53,7 +53,8 @@ def main(
                        password_hash IS NOT NULL as has_password,
                        COALESCE(email_verified, false) as email_verified,
                        last_login,
-                       invite_token IS NOT NULL AND invite_expires > NOW() as invite_pending
+                       invite_token IS NOT NULL AND invite_expires > NOW() as invite_pending,
+                       COALESCE(member_type, 'adult') as member_type
                 FROM family_members
                 WHERE is_active = true
                 ORDER BY
@@ -74,7 +75,8 @@ def main(
                     "has_password": row[8],
                     "email_verified": row[9],
                     "last_login": row[10].isoformat() if row[10] else None,
-                    "invite_pending": row[11]
+                    "invite_pending": row[11],
+                    "member_type": row[12]
                 }
                 for row in rows
             ]
@@ -137,6 +139,12 @@ def main(
             if "avatar_url" in member_data:
                 updates.append("avatar_url = %s")
                 values.append(member_data["avatar_url"])
+            if "member_type" in member_data:
+                # Validate member_type value
+                valid_types = ['admin', 'adult', 'teen', 'child']
+                if member_data["member_type"] in valid_types:
+                    updates.append("member_type = %s")
+                    values.append(member_data["member_type"])
 
             if not updates:
                 return {"success": False, "error": "No fields to update"}
@@ -147,7 +155,7 @@ def main(
                 UPDATE family_members
                 SET {', '.join(updates)}
                 WHERE id = %s
-                RETURNING id, email, name, role, avatar_url
+                RETURNING id, email, name, role, avatar_url, COALESCE(member_type, 'adult') as member_type
             """, values)
 
             row = cursor.fetchone()
@@ -161,7 +169,8 @@ def main(
                 "email": row[1],
                 "name": row[2],
                 "role": row[3],
-                "avatar_url": row[4]
+                "avatar_url": row[4],
+                "member_type": row[5]
             }
 
             cursor.close()

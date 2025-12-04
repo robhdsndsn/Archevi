@@ -40,19 +40,31 @@ def main(
     title: Optional[str] = None,
     content: Optional[str] = None,
     category: Optional[str] = None,
+    assigned_to: Optional[int] = None,
+    clear_assigned_to: bool = False,
+    visibility: Optional[str] = None,
 ) -> dict:
     """
     Update a document in the knowledge base.
+
+    Args:
+        assigned_to: Family member ID to assign document to
+        clear_assigned_to: Set to True to unassign the document (set assigned_to to NULL)
+        visibility: Document visibility level (everyone, adults_only, admins_only, private)
     """
     if not document_id:
         return {"success": False, "error": "Document ID is required"}
 
-    if not title and not content and not category:
+    if not title and not content and not category and assigned_to is None and not clear_assigned_to and not visibility:
         return {"success": False, "error": "At least one field to update is required"}
 
     valid_categories = ['recipes', 'medical', 'financial', 'family_history', 'general', 'insurance', 'invoices']
     if category and category not in valid_categories:
         return {"success": False, "error": f"Category must be one of: {valid_categories}"}
+
+    valid_visibility = ['everyone', 'adults_only', 'admins_only', 'private']
+    if visibility and visibility not in valid_visibility:
+        return {"success": False, "error": f"Visibility must be one of: {valid_visibility}"}
 
     # Fetch database resource
     postgres_db = wmill.get_resource("f/chatbot/postgres_db")
@@ -95,6 +107,18 @@ def main(
         if category:
             updates.append("category = %s")
             values.append(category)
+
+        # Handle assigned_to update
+        if clear_assigned_to:
+            updates.append("assigned_to = NULL")
+        elif assigned_to is not None:
+            updates.append("assigned_to = %s")
+            values.append(assigned_to)
+
+        # Handle visibility update
+        if visibility:
+            updates.append("visibility = %s")
+            values.append(visibility)
 
         if content:
             # Need to regenerate embedding

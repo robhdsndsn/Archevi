@@ -57,7 +57,7 @@ def main(refresh_token: str) -> dict:
         # Find session by refresh token
         cursor.execute("""
             SELECT s.member_id, s.expires_at, s.revoked,
-                   m.email, m.name, m.role, m.is_active
+                   m.email, m.name, m.role, m.is_active, m.member_type
             FROM user_sessions s
             JOIN family_members m ON s.member_id = m.id
             WHERE s.refresh_token = %s
@@ -68,7 +68,7 @@ def main(refresh_token: str) -> dict:
         if not session:
             return {"success": False, "error": "Invalid refresh token"}
 
-        member_id, expires_at, revoked, email, name, role, is_active = session
+        member_id, expires_at, revoked, email, name, role, is_active, member_type = session
 
         # Check if session is revoked
         if revoked:
@@ -130,6 +130,8 @@ def main(refresh_token: str) -> dict:
             "name": name,
             "role": tenant_role,
             "tenant_id": tenant_id,
+            "member_type": member_type or "adult",  # For visibility filtering
+            "member_id": member_id,  # family_members.id for private doc access
             "type": "access",
             "iat": now,
             "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRY)
@@ -155,7 +157,9 @@ def main(refresh_token: str) -> dict:
                 "name": name,
                 "role": tenant_role,
                 "tenant_id": tenant_id,
-                "tenant_name": tenant_name
+                "tenant_name": tenant_name,
+                "member_type": member_type or "adult",
+                "member_id": member_id
             }
         }
 

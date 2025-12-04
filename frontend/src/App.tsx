@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChatContainer } from '@/components/chat/ChatContainer';
-import { ChatHistory } from '@/components/ChatHistory';
+import { AskAIView } from '@/components/chat/AskAIView';
 import { CommandPalette, SearchButton, type CommandPaletteRef } from '@/components/CommandPalette';
 import { AppSidebar } from '@/components/AppSidebar';
 import { DocumentsView } from '@/components/documents';
@@ -12,13 +11,12 @@ import { LoginPage, SetPasswordPage, ForgotPasswordPage } from '@/components/aut
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { PWAInstallPrompt, PWAReloadPrompt } from '@/components/pwa';
-import { useChatStore } from '@/store/chat-store';
 import { useAuthStore } from '@/store/auth-store';
 import { Loader2 } from 'lucide-react';
 
 export type ViewAsRole = 'admin' | 'user';
 
-export type DocumentsTab = 'overview' | 'browse' | 'search' | 'upload' | 'voice';
+export type DocumentsTab = 'overview' | 'browse' | 'search' | 'add';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -27,7 +25,6 @@ function App() {
   const [viewAs, setViewAs] = useState<ViewAsRole>('admin');
   const [showSetPassword, setShowSetPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { switchSession } = useChatStore();
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const commandPaletteRef = useRef<CommandPaletteRef>(null);
 
@@ -77,8 +74,14 @@ function App() {
       return;
     }
 
+    // Map 'history' to 'chat' since history is now integrated into Ask AI view
+    if (view === 'history') {
+      setCurrentView('chat');
+      return;
+    }
+
     // Handle actual navigation for implemented views
-    if (view === 'chat' || view === 'history' || view === 'analytics' || view === 'settings' || view === 'family' || view === 'admin') {
+    if (view === 'chat' || view === 'analytics' || view === 'settings' || view === 'family' || view === 'admin') {
       setCurrentView(view);
       return;
     }
@@ -87,17 +90,10 @@ function App() {
     alert(`${view.charAt(0).toUpperCase() + view.slice(1).replace(/-/g, ' ')} view coming soon!`);
   };
 
-  const handleSelectSession = (sessionId: string) => {
-    switchSession(sessionId);
-    setCurrentView('chat');
-  };
-
   const getViewTitle = () => {
     switch (currentView) {
       case 'chat':
-        return 'Chat';
-      case 'history':
-        return 'Chat History';
+        return 'Ask AI';
       case 'documents':
         return 'Documents';
       case 'analytics':
@@ -173,10 +169,7 @@ function App() {
           </span>
         </header>
         <main className="flex-1 overflow-auto">
-          {currentView === 'chat' && <ChatContainer />}
-          {currentView === 'history' && (
-            <ChatHistory onSelectSession={handleSelectSession} />
-          )}
+          {currentView === 'chat' && <AskAIView />}
           {currentView === 'documents' && <DocumentsView activeTab={documentsTab} onTabChange={setDocumentsTab} />}
           {currentView === 'analytics' && <AnalyticsView isEffectiveAdmin={isEffectiveAdmin} />}
           {currentView === 'settings' && (

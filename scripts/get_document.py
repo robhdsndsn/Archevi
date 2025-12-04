@@ -55,9 +55,12 @@ def main(document_id: int) -> dict:
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id, title, content, category, source_file, created_by, created_at, updated_at
-            FROM family_documents
-            WHERE id = %s
+            SELECT d.id, d.title, d.content, d.category, d.source_file, d.created_by,
+                   d.created_at, d.updated_at, d.assigned_to, fm.name as assigned_to_name,
+                   d.visibility
+            FROM family_documents d
+            LEFT JOIN family_members fm ON d.assigned_to = fm.id
+            WHERE d.id = %s
         """, (document_id,))
 
         row = cursor.fetchone()
@@ -76,6 +79,9 @@ def main(document_id: int) -> dict:
             "created_by": row[5],
             "created_at": row[6].isoformat() if row[6] else None,
             "updated_at": row[7].isoformat() if row[7] else None,
+            "assigned_to": row[8],
+            "assigned_to_name": row[9],
+            "visibility": row[10] or "everyone",
         }
 
         return {

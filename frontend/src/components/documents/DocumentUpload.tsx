@@ -29,8 +29,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { Upload, FileText, Loader2, CheckCircle2, FileUp, X, Sparkles, ScanText, ChevronDown, Tag, Calendar, Brain, Camera, HelpCircle, User } from 'lucide-react';
-import { windmill, DOCUMENT_CATEGORIES, type DocumentCategory, type FamilyMember } from '@/api/windmill';
+import { Upload, FileText, Loader2, CheckCircle2, FileUp, X, Sparkles, ScanText, ChevronDown, Tag, Calendar, Brain, Camera, HelpCircle, User, Eye, Globe, Users, Shield, Lock, ExternalLink, Plus } from 'lucide-react';
+import { windmill, DOCUMENT_CATEGORIES, DOCUMENT_VISIBILITY, type DocumentCategory, type DocumentVisibility, type FamilyMember } from '@/api/windmill';
 import type { EmbedDocumentEnhancedResult, ExpiryDate } from '@/api/windmill/types';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
@@ -39,29 +39,45 @@ import { Progress } from '@/components/ui/progress';
 import { parsePDF } from '@/lib/pdf-parser';
 import { performOCR, extractPDFPagesAsImages, isPDFLikelyScanned, type OCRProgress } from '@/lib/ocr';
 import { CameraCapture, useHasCamera } from './CameraCapture';
+import { MemberAvatar } from '@/components/ui/member-avatar';
 
 interface DocumentUploadProps {
   onSuccess?: () => void;
+  onViewDocument?: (documentId: number) => void;
 }
 
 // Default tenant for MVP - The Hudson Family
 // TODO: Remove this when auth properly returns tenant_id
 const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
 
-export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
+export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProps) {
   const { user } = useAuthStore();
   // Use tenant_id from auth context, fall back to default for MVP
   const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [category, setCategory] = useState<DocumentCategory | ''>('');
+
+  // Smart category default: remember user's most recent category choice
+  const getDefaultCategory = (): DocumentCategory | '' => {
+    try {
+      const saved = localStorage.getItem('archevi_last_category');
+      if (saved && DOCUMENT_CATEGORIES.some(c => c.value === saved)) {
+        return saved as DocumentCategory;
+      }
+    } catch {
+      // localStorage not available
+    }
+    return '';
+  };
+  const [category, setCategory] = useState<DocumentCategory | ''>(getDefaultCategory);
   const [isUploading, setIsUploading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [isOCRing, setIsOCRing] = useState(false);
   const [ocrProgress, setOCRProgress] = useState<OCRProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [uploadedDocId, setUploadedDocId] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<{ name: string; type: string; pageCount?: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,6 +106,9 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
 
+  // Document visibility
+  const [visibility, setVisibility] = useState<DocumentVisibility>('everyone');
+
   // Fetch family members on mount
   useEffect(() => {
     const fetchFamilyMembers = async () => {
@@ -114,6 +133,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     setError(null);
     setSuccess(null);
     setEnhancedResult(null);
+    setUploadedDocId(null);
 
     if (!title.trim()) {
       setError('Title is required');
@@ -141,6 +161,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           tenant_id: tenantId,
           category: category as DocumentCategory || undefined,
           assigned_to: assignedTo || undefined,
+          visibility: visibility,
           auto_categorize_enabled: autoCategorizaion,
           extract_tags_enabled: extractTags,
           extract_dates_enabled: extractDates,
@@ -169,6 +190,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
         if (result.expiry_dates?.length) features.push(`${result.expiry_dates.length} dates`);
         if (result.suggested_category) features.push(`category: ${result.suggested_category}`);
 
+        setUploadedDocId(result.document_id);
         setSuccess(`Document saved with AI enhancements: ${features.join(', ')}`);
         toast.success('Document uploaded', {
           description: `"${title}" processed with AI features.`,
@@ -181,16 +203,27 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
           category: category as DocumentCategory,
         });
 
+        setUploadedDocId(result.document_id);
         setSuccess(`Document "${result.message}" (ID: ${result.document_id})`);
         toast.success('Document uploaded', {
           description: `"${title}" has been added to the archive.`,
         });
       }
 
+      // Save category preference for smart defaults
+      if (category) {
+        try {
+          localStorage.setItem('archevi_last_category', category);
+        } catch {
+          // localStorage not available
+        }
+      }
+
       setTitle('');
       setContent('');
-      setCategory('');
+      // Don't reset category - keep smart default for next upload
       setAssignedTo(null);
+      setVisibility('everyone');
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -358,6 +391,22 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
     }
   };
 
+  const handleUploadAnother = () => {
+    setTitle('');
+    setContent('');
+    // Don't reset category - keep smart default for next upload
+    setAssignedTo(null);
+    setVisibility('everyone');
+    setSelectedFile(null);
+    setSuccess(null);
+    setUploadedDocId(null);
+    setEnhancedResult(null);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // Handle camera capture
   const handleCameraCapture = async (file: File) => {
     setSelectedFile({ name: file.name, type: 'camera scan' });
@@ -518,9 +567,48 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
             </div>
           )}
           {success && (
-            <div className="p-3 text-sm text-green-600 bg-green-50 dark:bg-green-950/30 dark:text-green-400 rounded-md flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              {success}
+            <div className="p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-full">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="font-medium text-green-700 dark:text-green-300">Document uploaded successfully!</p>
+                  <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-green-200 dark:border-green-800">
+                {uploadedDocId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/50"
+                    onClick={() => {
+                      if (onViewDocument) {
+                        onViewDocument(uploadedDocId);
+                      } else {
+                        toast.info('View document', {
+                          description: `Document ID: ${uploadedDocId}. View it in the Browse tab.`,
+                        });
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View Document
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleUploadAnother}
+                >
+                  <Plus className="h-4 w-4" />
+                  Upload Another
+                </Button>
+              </div>
             </div>
           )}
 
@@ -641,7 +729,7 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
                   {familyMembers.map((member) => (
                     <SelectItem key={member.id} value={member.id.toString()}>
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
+                        <MemberAvatar name={member.name} size="xs" showTooltip={false} />
                         {member.name}
                         {member.role === 'admin' && (
                           <Badge variant="outline" className="text-xs ml-1">Admin</Badge>
@@ -653,6 +741,71 @@ export function DocumentUpload({ onSuccess }: DocumentUploadProps) {
               </Select>
             </div>
           )}
+
+          {/* Document Visibility */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="visibility">
+                Visibility
+              </Label>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Document Visibility
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Control who in your family can see this document:
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li className="flex items-center gap-2">
+                        <Globe className="h-3 w-3 text-green-600" />
+                        <strong>Everyone:</strong> All family members
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Users className="h-3 w-3 text-amber-600" />
+                        <strong>Adults Only:</strong> Adults and admins
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Shield className="h-3 w-3 text-blue-600" />
+                        <strong>Admins Only:</strong> Administrators only
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Lock className="h-3 w-3 text-rose-600" />
+                        <strong>Private:</strong> Assigned person and admins
+                      </li>
+                    </ul>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
+            <Select
+              value={visibility}
+              onValueChange={(v) => setVisibility(v as DocumentVisibility)}
+              disabled={isUploading}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DOCUMENT_VISIBILITY.map((vis) => (
+                  <SelectItem key={vis.value} value={vis.value}>
+                    <div className="flex items-center gap-2">
+                      {vis.value === 'everyone' && <Globe className="h-4 w-4 text-green-600" />}
+                      {vis.value === 'adults_only' && <Users className="h-4 w-4 text-amber-600" />}
+                      {vis.value === 'admins_only' && <Shield className="h-4 w-4 text-blue-600" />}
+                      {vis.value === 'private' && <Lock className="h-4 w-4 text-rose-600" />}
+                      <span>{vis.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="content">Content</Label>

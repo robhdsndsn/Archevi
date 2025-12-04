@@ -65,6 +65,9 @@ def main(
     limit: int = 20,
     offset: int = 0,
     tenant_id: str | None = None,
+    # Visibility filtering parameters
+    user_member_type: str | None = None,  # 'admin', 'adult', 'teen', 'child'
+    user_member_id: int | None = None,    # Current user's family_member.id for private doc access
 ) -> SearchResult:
     """Search documents with advanced filters."""
 
@@ -122,6 +125,36 @@ def main(
         conditions.append("d.assigned_to = %s")
         params.append(assigned_to)
 
+    # Visibility filtering based on user's member_type
+    # If no user_member_type provided, default to showing only 'everyone' (most restrictive)
+    if user_member_type:
+        if user_member_type == 'admin':
+            # Admins see everything - no visibility filter needed
+            pass
+        elif user_member_type == 'adult':
+            # Adults see: everyone, adults_only, and private docs assigned to them
+            if user_member_id is not None:
+                conditions.append("""
+                    (d.visibility IN ('everyone', 'adults_only')
+                     OR (d.visibility = 'private' AND d.assigned_to = %s))
+                """)
+                params.append(user_member_id)
+            else:
+                conditions.append("d.visibility IN ('everyone', 'adults_only')")
+        else:
+            # teen/child see: everyone, and private docs assigned to them
+            if user_member_id is not None:
+                conditions.append("""
+                    (d.visibility = 'everyone'
+                     OR (d.visibility = 'private' AND d.assigned_to = %s))
+                """)
+                params.append(user_member_id)
+            else:
+                conditions.append("d.visibility = 'everyone'")
+    else:
+        # No user_member_type provided - show only 'everyone' visibility (safest default)
+        conditions.append("COALESCE(d.visibility, 'everyone') = 'everyone'")
+
     # If we have a search term, use vector similarity
     if search_term and search_term.strip():
         # Get embedding for search term
@@ -160,8 +193,12 @@ def main(
                 d.category,
                 1 - (d.embedding <=> %s::vector) as similarity,
                 d.created_at,
-                COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags
+                COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags,
+                d.assigned_to,
+                fm.name as assigned_to_name,
+                d.visibility
             FROM family_documents d
+            LEFT JOIN family_members fm ON d.assigned_to = fm.id
             WHERE {where_clause}
               AND d.embedding IS NOT NULL
             ORDER BY d.embedding <=> %s::vector
@@ -190,8 +227,12 @@ def main(
                 d.category,
                 0 as similarity,
                 d.created_at,
-                COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags
+                COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags,
+                d.assigned_to,
+                fm.name as assigned_to_name,
+                d.visibility
             FROM family_documents d
+            LEFT JOIN family_members fm ON d.assigned_to = fm.id
             WHERE {where_clause}
             ORDER BY d.created_at DESC
             LIMIT %s OFFSET %s
@@ -211,7 +252,10 @@ def main(
             "category": row[3],
             "relevance_score": float(row[4]) if row[4] else 0,
             "created_at": row[5].isoformat() if row[5] else "",
-            "tags": list(row[6]) if row[6] else []
+            "tags": list(row[6]) if row[6] else [],
+            "assigned_to": row[7],
+            "assigned_to_name": row[8],
+            "visibility": row[9] or "everyone"
         })
 
     return {

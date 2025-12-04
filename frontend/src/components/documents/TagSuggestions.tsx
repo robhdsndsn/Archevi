@@ -3,18 +3,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { X, Plus, Sparkles, Loader2, CheckIcon, Tag, Calendar, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ExpiryDate } from '@/api/windmill/types';
@@ -52,7 +47,6 @@ export function TagSuggestions({
 }: TagSuggestionsProps) {
   void _availableCategories; // Reserved for future category filtering
   const [newTagInput, setNewTagInput] = useState('');
-  const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
 
   const addTag = (tag: string) => {
     const normalizedTag = tag.toLowerCase().trim().replace(/\s+/g, '-');
@@ -199,78 +193,51 @@ export function TagSuggestions({
 
       {/* Add Custom Tag */}
       <div className="flex items-center gap-2">
-        <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1">
-              <Plus className="h-3 w-3" />
-              Add Tag
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-0" align="start">
-            <Command>
-              <CommandInput
-                placeholder="Search or add tag..."
-                value={newTagInput}
-                onValueChange={setNewTagInput}
-              />
-              <CommandList>
-                <CommandEmpty>
-                  {newTagInput && (
-                    <div
-                      className="p-2 text-sm cursor-pointer hover:bg-accent rounded"
-                      onClick={() => {
-                        addTag(newTagInput);
-                        setTagPopoverOpen(false);
-                      }}
-                    >
-                      Create "{newTagInput}"
-                    </div>
-                  )}
-                </CommandEmpty>
-                {suggestions.existing_tags_matched.length > 0 && (
-                  <CommandGroup heading="Existing Tags">
-                    {suggestions.existing_tags_matched
-                      .filter(tag => !selectedTags.includes(tag))
-                      .map((tag) => (
-                        <CommandItem
-                          key={tag}
-                          value={tag}
-                          onSelect={() => {
-                            addTag(tag);
-                            setTagPopoverOpen(false);
-                          }}
-                        >
-                          {tag}
-                        </CommandItem>
-                      ))}
-                  </CommandGroup>
-                )}
-                {suggestions.new_tags_suggested.length > 0 && (
-                  <CommandGroup heading="New Suggestions">
-                    {suggestions.new_tags_suggested
-                      .filter(tag => !selectedTags.includes(tag))
-                      .map((tag) => (
-                        <CommandItem
-                          key={tag}
-                          value={tag}
-                          onSelect={() => {
-                            addTag(tag);
-                            setTagPopoverOpen(false);
-                          }}
-                        >
-                          <Sparkles className="h-3 w-3 mr-2 text-primary" />
-                          {tag}
-                        </CommandItem>
-                      ))}
-                  </CommandGroup>
-                )}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        {/* Dropdown for quick tag selection */}
+        {(suggestions.existing_tags_matched.filter(t => !selectedTags.includes(t)).length > 0 ||
+          suggestions.new_tags_suggested.filter(t => !selectedTags.includes(t)).length > 0) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <Plus className="h-3 w-3" />
+                Quick Add
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              {suggestions.existing_tags_matched.filter(t => !selectedTags.includes(t)).length > 0 && (
+                <>
+                  <DropdownMenuLabel className="text-xs">Existing Tags</DropdownMenuLabel>
+                  {suggestions.existing_tags_matched
+                    .filter(tag => !selectedTags.includes(tag))
+                    .slice(0, 5)
+                    .map((tag) => (
+                      <DropdownMenuItem key={tag} onSelect={() => addTag(tag)}>
+                        {tag}
+                      </DropdownMenuItem>
+                    ))}
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {suggestions.new_tags_suggested.filter(t => !selectedTags.includes(t)).length > 0 && (
+                <>
+                  <DropdownMenuLabel className="text-xs">New Suggestions</DropdownMenuLabel>
+                  {suggestions.new_tags_suggested
+                    .filter(tag => !selectedTags.includes(tag))
+                    .slice(0, 5)
+                    .map((tag) => (
+                      <DropdownMenuItem key={tag} onSelect={() => addTag(tag)}>
+                        <Sparkles className="h-3 w-3 mr-2 text-primary" />
+                        {tag}
+                      </DropdownMenuItem>
+                    ))}
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         <Input
-          placeholder="Type and press Enter..."
+          placeholder="Type tag and press Enter..."
           value={newTagInput}
           onChange={(e) => setNewTagInput(e.target.value)}
           onKeyDown={(e) => {
