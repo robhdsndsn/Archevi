@@ -45,7 +45,7 @@ Obsidian is a local-first markdown knowledge base for power users. Archevi is a 
 |------|---------|----------|
 | Basic | $180 CAD/year | $0 + plugins |
 | With Sync | Included | $600/year ($10/mo x 5) |
-| With AI | Included | Variable (plugin + API keys) |
+| With AI | Included | Variable (plugin costs) |
 
 ## Bottom Line
 

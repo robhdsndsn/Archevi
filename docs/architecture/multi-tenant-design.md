@@ -263,8 +263,3 @@ See migration SQL in `003_multi_tenant_schema.sql`.
 - Search is always tenant-scoped
 - Error messages don't reveal other tenant info
 
-### BYOK Mode
-
-- API keys stored encrypted per tenant
-- Keys never shared between tenants
-- Key rotation affects single tenant only

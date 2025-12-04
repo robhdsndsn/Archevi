@@ -92,7 +92,7 @@ Chat naturally with your family's knowledge base. Watch the AI work in real-time
 | Feature | Archevi | Typical SaaS |
 |---------|---------|--------------|
 | Data Storage | **Isolated database per family** | Shared multi-tenant |
-| AI Processing | **Included + optional BYOK** | Shared API, logs queries |
+| AI Processing | **Included, private** | Shared API, logs queries |
 | Data Access | **Only your family** | Company employees can access |
 | Compliance | **PIPEDA compliant** | Varies |
 

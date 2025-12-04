@@ -46,16 +46,6 @@ Unlike other services, Archevi includes AI usage in your subscription:
 
 Most families never exceed their included allowance. If you do, overages are billed at $0.01 per 1,000 tokens (roughly $0.01 per query).
 
-## Optional: Bring Your Own Key (BYOK)
-
-For privacy-conscious users, you can optionally use your own Cohere API key:
-
-- **Your queries go directly to Cohere** - We never see what you search for
-- **You control costs** - Pay Cohere directly
-- **Extra privacy** - AI processing happens with YOUR key
-
-[Set up BYOK (optional)](/guide/byok-setup)
-
 ## What Can I Store?
 
 Archevi works great for:
@@ -99,7 +89,6 @@ Once you've added documents, ask things like:
 2. [Learn how to use Archevi](/guide/usage)
 3. [Explore use cases](/use-cases/)
 4. [Read the FAQ](/guide/faq)
-5. [Set up BYOK (optional)](/guide/byok-setup)
 
 ## Need Help?
 

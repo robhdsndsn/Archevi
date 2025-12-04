@@ -10,16 +10,9 @@ Archevi is an AI-powered family knowledge base that helps you store, organize, a
 
 Unlike file storage services, Archevi **understands your content**. You can ask "What medications is mom taking?" and get an instant answer, rather than opening multiple files to find the information.
 
-### Do I need to set up an API key?
+### Do I need to set up anything technical?
 
-No! Archevi includes AI usage in your subscription. You can start using it immediately after signing up. Optionally, you can bring your own Cohere API key (BYOK) for maximum privacy, but it's not required.
-
-### What's the difference between managed and BYOK mode?
-
-- **Managed Mode (default)**: AI is included in your subscription. We handle everything, you just use it.
-- **BYOK Mode (optional)**: You use your own Cohere API key. Your queries go directly to Cohere for maximum privacy.
-
-Most families use managed mode and never need to think about API keys.
+No! Archevi is a fully-managed service. Sign up, and you're ready to go. AI is included in your subscription - no API keys, no configuration, no technical setup required.
 
 ### How do I know if I'm exceeding my AI allowance?
 
@@ -27,7 +20,7 @@ Your Archevi dashboard shows your current usage against your plan's allowance. W
 
 ### Is my data safe?
 
-Absolutely. Each family gets their own **isolated database** - your data is never mixed with other customers. In managed mode, we process queries securely on your behalf. In BYOK mode, queries go directly to Cohere using your key.
+Absolutely. Each family gets their own **isolated database** - your data is never mixed with other customers. We process queries securely on your behalf, and your documents are never used to train AI models.
 
 ### Where is my data stored?
 
@@ -37,17 +30,7 @@ All data is stored in Canadian data centers, making Archevi **PIPEDA compliant**
 
 ### Do you read my documents?
 
-No. Your documents are stored in your isolated database, and we have no access to them. In managed mode, we process your queries securely but don't store them. In BYOK mode, queries go directly to Cohere using your API key.
-
-### What makes the BYOK model more private?
-
-With Bring Your Own Key (BYOK):
-- Your AI queries go directly to Cohere, not through our servers
-- We never see your search patterns or questions
-- You have full control over your AI usage and costs
-- No query logs on our side
-
-BYOK is optional and recommended for users handling highly sensitive information.
+No. Your documents are stored in your isolated database. We process your queries securely but don't store them. Your documents are never used to train AI models.
 
 ### Is Archevi PIPEDA compliant?
 
@@ -82,16 +65,6 @@ AI usage is included in your subscription:
 | Family Office | Unlimited |
 
 Most families never exceed their allowance. If you do, overages are billed at $0.01 per 1,000 tokens (roughly $0.01 per query).
-
-### What if I want to use my own Cohere API key (BYOK)?
-
-BYOK is optional. If you choose BYOK:
-- You pay Cohere directly (typically $2-5 CAD/month for normal usage)
-- Your queries go directly to Cohere for maximum privacy
-- You have complete transparency on AI costs
-- A single question costs less than $0.001 (a tenth of a cent)
-
-[How to set up BYOK](/guide/byok-setup)
 
 ## Features
 
@@ -135,7 +108,7 @@ Currently, Archevi requires an internet connection for AI processing. Offline mo
 
 ### How long does setup take?
 
-About **60 seconds** to sign up. You can start adding documents and asking questions immediately - no API key setup required.
+About **60 seconds** to sign up. You can start adding documents and asking questions immediately.
 
 ### What happens after I sign up?
 
@@ -143,7 +116,7 @@ About **60 seconds** to sign up. You can start adding documents and asking quest
 2. Your isolated database is created automatically
 3. You're ready to add documents and start querying immediately
 
-Optionally, you can set up BYOK for maximum privacy, but it's not required to get started.
+You're ready to start organizing your family's information immediately.
 
 ### Can I try before I buy?
 
@@ -181,14 +154,6 @@ Your monthly fee covers:
 - Updates and new features
 - Email support
 - AI usage (included in your plan allowance)
-
-### Why would I use BYOK if AI is already included?
-
-BYOK is optional and recommended if you:
-- Handle highly sensitive information (medical, legal)
-- Want queries to go directly to Cohere for maximum privacy
-- Prefer direct billing transparency with Cohere
-- Are a power user who wants granular cost control
 
 ### Can I cancel anytime?
 

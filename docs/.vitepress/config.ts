@@ -33,7 +33,6 @@ export default defineConfig({
             { text: 'Introduction', link: '/guide/' },
             { text: 'Features', link: '/guide/features' },
             { text: 'Using Archevi', link: '/guide/usage' },
-            { text: 'BYOK Setup (Optional)', link: '/guide/byok-setup' },
             { text: 'FAQ', link: '/guide/faq' }
           ]
         }
@@ -55,7 +54,6 @@ export default defineConfig({
           text: 'Architecture',
           items: [
             { text: 'Multi-Tenant Design', link: '/architecture/multi-tenant-design' },
-            { text: 'API Key Management', link: '/architecture/api-key-management' }
           ]
         }
       ],

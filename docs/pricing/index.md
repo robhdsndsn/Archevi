@@ -8,9 +8,9 @@ Archevi uses a **simple subscription model** with AI included:
 
 1. **Platform Fee** - You pay us for infrastructure, the platform, and AI usage
 2. **Generous Allowance** - Each plan includes AI queries
-3. **Optional BYOK** - Privacy-conscious users can use their own key
+3. **No Surprises** - Clear pricing, no hidden fees
 
-No surprise bills. No API key setup required.
+No technical setup required. Sign up and start using it immediately.
 
 ---
 
@@ -84,18 +84,6 @@ Overages are billed at $0.01 per 1,000 tokens (roughly $0.01 per query). Most fa
 
 ---
 
-## Optional: Bring Your Own Key (BYOK)
-
-For maximum privacy, you can use your own Cohere API key:
-
-- **Your queries go directly to Cohere** - We never see what you search
-- **You control costs** - Pay Cohere directly
-- **No tracking** - AI processing happens with YOUR key
-
-[Learn about BYOK](/guide/byok-setup)
-
----
-
 ## Comparison
 
 ### vs. Other Family Tools
@@ -123,13 +111,9 @@ For maximum privacy, you can use your own Cohere API key:
 
 ## FAQ
 
-### Is there really no API key setup?
+### Is there really no setup?
 
-Correct! Sign up and start using Archevi immediately. AI usage is included in your subscription.
-
-### What if I want maximum privacy?
-
-You can optionally enable BYOK (Bring Your Own Key) in settings. Your queries will go directly to Cohere without passing through our servers.
+Correct! Sign up and start using Archevi immediately. AI usage is included in your subscription. No API keys, no configuration, no technical knowledge required.
 
 ### What happens if I use a lot of AI queries?
 

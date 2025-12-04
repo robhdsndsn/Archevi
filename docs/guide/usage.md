@@ -348,4 +348,3 @@ Use your phone's camera to capture documents:
 
 - [Explore use cases](/use-cases/)
 - [View API documentation](/api/)
-- [Set up BYOK for maximum privacy](/guide/byok-setup)
