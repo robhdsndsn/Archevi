@@ -6,16 +6,17 @@ Welcome to Archevi! Get your family's AI-powered knowledge base running in 60 se
 
 Archevi is a **private, AI-powered family knowledge base** that gives you:
 
-- **Instant answers** - Ask questions in natural language
+- **Instant answers** - Ask questions in natural language, watch AI find answers in real-time
 - **Complete privacy** - Your own isolated database, no data sharing
+- **Privacy controls** - Set who sees what: Everyone, Adults Only, Admins Only, or Private
 - **Zero friction** - Works immediately, no API key setup required
 - **Enterprise security** - PIPEDA compliant, Canadian-hosted
 
 ## How It Works
 
 1. **Sign up** - Create your Archevi account
-2. **Your instance spins up** - Private database at `yourfamily.archevi.ca`
-3. **Start adding knowledge** - Upload documents, paste text
+2. **Your instance spins up** - Private database for your family only
+3. **Start adding knowledge** - Upload PDFs, snap photos, record voice notes, or paste text
 4. **Ask anything** - Get instant answers with source citations
 
 ## Quick Start
@@ -66,7 +67,7 @@ Archevi works great for:
 - Legal documents (wills, contracts)
 - Family stories and memories
 - Important dates and reminders
-- Technical manuals and guides
+- Voice memos and notes
 
 ## Example Questions
 
@@ -76,14 +77,29 @@ Once you've added documents, ask things like:
 - "Where's the home insurance policy?"
 - "What's grandma's apple pie recipe?"
 - "When does the car registration expire?"
-- "What allergies does dad have?"
+- "Show me all of Sarah's documents"
+- "What financial documents expire this month?"
+
+## Key Features
+
+| Feature | What It Does |
+|---------|--------------|
+| **AI Search** | Ask questions naturally, get cited answers |
+| **Privacy Controls** | Everyone, Adults Only, Admins Only, Private |
+| **Person Assignment** | Assign docs to specific family members |
+| **Smart Tags** | Auto-categorization and tagging |
+| **Expiry Alerts** | Never miss renewal dates |
+| **Voice Notes** | Record and auto-transcribe (80+ languages) |
+| **PDF Export** | Export chat conversations |
+| **Mobile PWA** | Camera scanning on your phone |
 
 ## Next Steps
 
-1. [Learn how to use Archevi](/guide/usage)
-2. [Explore use cases](/use-cases/)
-3. [Read the FAQ](/guide/faq)
-4. [Set up BYOK (optional)](/guide/byok-setup)
+1. [See all features](/guide/features)
+2. [Learn how to use Archevi](/guide/usage)
+3. [Explore use cases](/use-cases/)
+4. [Read the FAQ](/guide/faq)
+5. [Set up BYOK (optional)](/guide/byok-setup)
 
 ## Need Help?
 

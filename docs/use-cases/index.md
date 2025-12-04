@@ -24,21 +24,32 @@ Preserve stories, memories, and genealogy information for future generations.
 Archevi shines when you need to:
 
 1. **Find information quickly** - Natural language search means no more digging through folders
-2. **Share with family** - Everyone can access what they need
-3. **Keep things private** - Sensitive information stays within your family
-4. **Answer questions** - The AI understands context and relationships
+2. **Control who sees what** - Privacy controls let you share recipes with everyone while keeping finances adults-only
+3. **Assign to people** - Medical records go to specific family members
+4. **Never miss dates** - Expiry alerts for insurance renewals, passport expirations, and more
+
+## Privacy Controls by Use Case
+
+| Use Case | Suggested Visibility | Why |
+|----------|---------------------|-----|
+| Recipes | Everyone | Share with the whole family |
+| Medical Records | Private or Adults Only | Personal health info |
+| Financial Docs | Adults Only | Keep from kids |
+| Legal Documents | Admins Only | Sensitive matters |
+| Family Stories | Everyone | Share memories |
 
 ## Real-World Examples
 
-> "We uploaded all of grandma's recipes. Now when someone asks 'what's in her apple pie?', we get an instant answer instead of hunting through handwritten cards."
+> "We uploaded all of grandma's recipes as 'Everyone' visibility. Now the kids can look up recipes themselves!"
 
-> "My dad has complex medications. Now any caregiver can ask 'what medications does he take?' and get an accurate, up-to-date answer."
+> "My dad has complex medications. I set his records to 'Private' so only he and I (as admin) can see them. Caregivers get a summary I share separately."
 
-> "We stored all our insurance policies. When we had a claim, we could instantly find coverage details instead of calling the insurance company."
+> "Financial documents are 'Adults Only' so our teens can't access them, but my spouse and I both can."
 
 ## Getting Started
 
 1. Pick a use case that matters to your family
-2. Start uploading relevant documents
-3. Encourage family members to ask questions
-4. Watch your knowledge base grow
+2. Decide on visibility levels for each document type
+3. Start uploading and assigning to family members
+4. Encourage family members to ask questions
+5. Watch your knowledge base grow
