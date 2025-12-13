@@ -22,7 +22,15 @@ export default defineConfig({
       { text: 'API', link: '/api/' },
       { text: 'Architecture', link: '/architecture/multi-tenant-design' },
       { text: 'Use Cases', link: '/use-cases/' },
-      { text: 'Pricing', link: '/pricing/' }
+      { text: 'Pricing', link: '/pricing/' },
+      {
+        text: 'Archevi',
+        items: [
+          { text: 'Marketing Site', link: 'https://archevi.ca' },
+          { text: 'Dashboard', link: 'https://app.archevi.ca' },
+          { text: 'Blog', link: 'https://archevi.ca/blog' }
+        ]
+      }
     ],
 
     sidebar: {
@@ -122,5 +130,12 @@ export default defineConfig({
       light: 'github-light',
       dark: 'github-dark'
     }
-  }
+  },
+
+  // Ignore dead links for placeholder documentation pages
+  ignoreDeadLinks: [
+    '/docs/document-upload',
+    '/docs/ai-extraction',
+    '/docs/notifications'
+  ]
 })

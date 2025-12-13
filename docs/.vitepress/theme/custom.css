@@ -1,0 +1,211 @@
+/**
+ * Archevi Brand Theme for VitePress
+ * Matches the marketing site (archevi.ca) styling
+ */
+
+/* =============================================================================
+   Brand Colors - Archevi Blue
+   ============================================================================= */
+
+:root {
+  /* Primary brand color */
+  --vp-c-brand-1: #3b82f6;
+  --vp-c-brand-2: #2563eb;
+  --vp-c-brand-3: #1d4ed8;
+  --vp-c-brand-soft: rgba(59, 130, 246, 0.14);
+
+  /* Semantic colors matching marketing site */
+  --vp-c-tip-1: #3b82f6;
+  --vp-c-tip-2: rgba(59, 130, 246, 0.14);
+  --vp-c-tip-3: rgba(59, 130, 246, 0.08);
+
+  /* Home page hero gradient */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+
+  /* Hero image glow */
+  --vp-home-hero-image-background-image: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.3) 0%,
+    rgba(29, 78, 216, 0.2) 100%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+/* Dark mode adjustments */
+.dark {
+  --vp-c-brand-1: #60a5fa;
+  --vp-c-brand-2: #3b82f6;
+  --vp-c-brand-3: #2563eb;
+  --vp-c-brand-soft: rgba(96, 165, 250, 0.14);
+
+  --vp-home-hero-image-background-image: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.4) 0%,
+    rgba(29, 78, 216, 0.3) 100%
+  );
+}
+
+/* =============================================================================
+   Typography - Match Marketing Site
+   ============================================================================= */
+
+:root {
+  /* Use system fonts for performance, matches marketing site fallbacks */
+  --vp-font-family-base: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --vp-font-family-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular,
+    'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* =============================================================================
+   Navigation - Connect to Marketing Site
+   ============================================================================= */
+
+/* Add marketing site link style */
+.VPNavBar .VPNavBarTitle .title {
+  font-weight: 600;
+}
+
+/* Make nav items consistent */
+.VPNavBarMenuLink {
+  font-weight: 500;
+}
+
+/* =============================================================================
+   Buttons - Match shadcn/ui Style
+   ============================================================================= */
+
+.VPButton.brand {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.VPButton.brand:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.VPButton.alt {
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+/* =============================================================================
+   Content Styling
+   ============================================================================= */
+
+/* Feature boxes on home page */
+.VPFeature {
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.VPFeature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.dark .VPFeature:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Code blocks */
+.vp-code-group .tabs label {
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+/* Custom containers */
+.custom-block {
+  border-radius: 0.5rem;
+}
+
+.custom-block.tip {
+  border-color: var(--vp-c-brand-1);
+}
+
+/* =============================================================================
+   Footer - Match Marketing Site
+   ============================================================================= */
+
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.VPFooter .message {
+  font-size: 0.875rem;
+  color: var(--vp-c-text-2);
+}
+
+/* =============================================================================
+   Sidebar - Clean Design
+   ============================================================================= */
+
+.VPSidebar {
+  padding-top: 1.5rem;
+}
+
+.VPSidebarItem.level-0 > .item > .text {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--vp-c-text-2);
+}
+
+/* Active sidebar item */
+.VPSidebarItem.is-active > .item > .text {
+  color: var(--vp-c-brand-1);
+}
+
+/* =============================================================================
+   Search - Enhanced Styling
+   ============================================================================= */
+
+.DocSearch-Button {
+  border-radius: 0.5rem !important;
+}
+
+/* =============================================================================
+   Mobile Responsiveness
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .VPNavBar .content {
+    padding: 0 1rem;
+  }
+
+  .VPDoc .container {
+    padding: 0 1rem;
+  }
+}
+
+/* =============================================================================
+   Back to Marketing Site Link (Header)
+   ============================================================================= */
+
+/* Style for external links in nav */
+.VPNavBarMenuLink[href*="archevi.ca"]:not([href*="docs"]) {
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavBarMenuLink[href*="archevi.ca"]:not([href*="docs"]):hover {
+  color: var(--vp-c-brand-2);
+}
+
+/* =============================================================================
+   Print Styles
+   ============================================================================= */
+
+@media print {
+  .VPNavBar,
+  .VPSidebar,
+  .VPFooter {
+    display: none !important;
+  }
+
+  .VPDoc {
+    padding: 0 !important;
+  }
+}
