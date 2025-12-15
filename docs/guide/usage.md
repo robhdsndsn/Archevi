@@ -54,7 +54,7 @@ Archevi works with many content types:
 - **Text documents** - Medical records, prescriptions, recipes, contracts
 - **PDF files** - Automatically extracts text content
 - **Scanned documents** - OCR extracts text from images (Tesseract.js)
-- **Voice notes** - Record and auto-transcribe with Groq Whisper (80+ languages)
+- **Voice notes** - Record and auto-transcribe (80+ languages supported)
 - **Photos** - Use the PWA camera feature on mobile
 
 ::: tip Best Practice
@@ -243,7 +243,7 @@ Already have an audio file?
 2. Select your WAV, MP3, M4A, or WebM file
 3. Transcription starts automatically
 
-Voice notes are transcribed using Groq Whisper (80+ languages supported) and become fully searchable in your knowledge base.
+Voice notes are transcribed (80+ languages supported) and become fully searchable in your knowledge base.
 
 ## Expiry Alerts
 

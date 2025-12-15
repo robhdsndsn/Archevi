@@ -48,7 +48,7 @@ Yes! You can export all documents, chat history, and settings at any time in sta
 
 ### Which AI models does Archevi use?
 
-Archevi uses Cohere's latest enterprise AI:
+Archevi uses enterprise-grade AI:
 - **Embed v4.0** - For understanding and searching your documents
 - **Rerank v3.5** - For finding the most relevant results
 - **Command A** - For generating comprehensive answers
@@ -128,7 +128,7 @@ Yes! We offer a **14-day free trial** with full features, including AI usage.
 
 First query after logging in may take a few seconds as the system warms up. Subsequent queries should be fast (1-2 seconds). If consistently slow:
 - Check your internet connection
-- Check [Cohere Status](https://status.cohere.com)
+- Check our status page
 - Contact support if the issue persists
 
 ### Why didn't it find my document?
@@ -194,7 +194,7 @@ Major multi-tenant architecture release:
 
 AI-enhanced document features:
 
-- **Voice Notes** - Record and transcribe voice memos (Groq Whisper)
+- **Voice Notes** - Record and transcribe voice memos (80+ languages)
 - **Document OCR** - Scan paper documents and extract text (Tesseract.js)
 - **Smart Tags** - AI auto-generates relevant document tags
 - **Expiry Alerts** - Get notified when documents expire

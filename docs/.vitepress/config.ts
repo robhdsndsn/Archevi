@@ -137,5 +137,8 @@ export default defineConfig({
     '/docs/document-upload',
     '/docs/ai-extraction',
     '/docs/notifications'
-  ]
+  ],
+
+  // Exclude internal docs from public build
+  srcExclude: ['**/internal/**']
 })

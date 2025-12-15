@@ -50,7 +50,7 @@ features:
 
 ## Why Archevi?
 
-Stop losing important family information. Stop paying for tools that weren't built for families. Stop worrying about who can see your data.
+Stop losing important family information. Stop paying for tools that were not built for families. Stop worrying about who can see your data.
 
 Archevi is your family's **private, AI-powered knowledge base**:
 
@@ -74,18 +74,30 @@ Upload PDFs, snap photos, record voice notes, or paste text. Our AI automaticall
 ### 4. Ask Anything
 Chat naturally with your family's knowledge base. Watch the AI work in real-time and see exactly which documents it uses.
 
-## What's New in v0.3.0
+## What's New in v0.5.0
 
 | Feature | Description |
 |---------|-------------|
-| **Privacy Controls** | Set visibility: Everyone, Adults Only, Admins Only, or Private |
-| **Member Types** | Admin, Adult, Teen, Child - control who sees what |
-| **Person Assignment** | Assign documents to specific family members |
-| **AI Workflow** | Watch the AI search and analyze in real-time |
-| **PDF Export** | Export chat conversations with source citations |
-| **Duplicate Detection** | Warns before uploading the same document twice |
-| **Quick Preview** | Hover to preview documents without opening |
-| **Bulk Operations** | Multi-select, bulk delete |
+| **Marketing Website** | SEO-optimized Next.js site at archevi.ca with landing, pricing, blog, and FAQ pages |
+| **Strapi CMS** | Content management for blog posts, FAQs, announcements, and changelog |
+| **Self-Service Signup** | Create your account and get your private instance in 60 seconds |
+| **Cross-Domain Auth** | Seamless login flow between marketing site and dashboard |
+
+### Previous Release (v0.4.9)
+
+| Feature | Description |
+|---------|-------------|
+| **Family Timeline** | Visual chronological view of family events with AI extraction |
+| **Biography Generator** | AI-powered narratives for family members from their documents |
+| **Text-to-Speech** | Listen to documents with free browser TTS |
+| **Billing UI** | Subscription management, usage tracking, plan comparisons |
+| **Two-Factor Auth** | TOTP-based 2FA with backup codes |
+| **PDF Visual Search** | Find specific pages by charts, diagrams, or handwritten notes |
+| **Secure Links** | Password-protected document sharing with view limits |
+| **Calendar Integration** | Subscribe to expiry dates in Google/Apple/Outlook Calendar |
+| **Document Versioning** | Track changes over time, rollback to any previous version |
+| **Multi-Model AI** | Choose from multiple AI models optimized for different tasks |
+| **Admin Dashboard** | System health, tenant management, API costs, audit logs |
 
 ## Enterprise-Grade Privacy
 
@@ -98,7 +110,7 @@ Chat naturally with your family's knowledge base. Watch the AI work in real-time
 
 ## What Families Are Saying
 
-> "Finally, all our family recipes in one place and actually findable!"
+> "Finally, all our family recipes in one place and actually findable\!"
 > *- Sarah T., Toronto*
 
 > "The privacy controls are perfect. Financial docs stay visible to adults only, while recipes are shared with everyone."
@@ -109,9 +121,14 @@ Chat naturally with your family's knowledge base. Watch the AI work in real-time
 
 ## Simple, Transparent Pricing
 
-**$14.99 CAD/month** - Everything included (AI, storage, support)
+| Plan | Price | Best For |
+|------|-------|----------|
+| **Free** | $0/mo | Try Archevi with 50 documents |
+| **Family** | $9/mo | Most families (500 docs, 6 members) |
+| **Family Plus** | $19/mo | Large families (2,000 docs, 15 members) |
+| **Family Office** | $49/mo | Complex estates (unlimited) |
 
-Most families stay well within the included AI allowance. No surprise bills.
+Everything included: AI, storage, support. No surprise bills.
 
 [See Full Pricing](/pricing/) | [Start Free Trial](/guide/)
 
