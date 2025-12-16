@@ -152,3 +152,36 @@ test-results/
 # Note: .beads/ has its own .gitignore that:
 # - Ignores: *.db, daemon files, merge artifacts
 # - Tracks: issues.jsonl, metadata.json, config.yaml
+.beads/issues.jsonl
+.beads/metadata.json
+
+# -------------------------------------------
+# Claude Code
+# -------------------------------------------
+.claude/settings.local.json
+.claude/mcp_config.json
+# Keep: .claude/agents/ and .claude/commands/ (project-specific)
+
+# -------------------------------------------
+# Private Documentation
+# -------------------------------------------
+private-docs/
+
+# -------------------------------------------
+# Test Data
+# -------------------------------------------
+scripts/test_*.png
+scripts/test_*.jpg
+scripts/test_*.pdf
+
+# -------------------------------------------
+# Vite Dev Artifacts
+# -------------------------------------------
+**/dev-dist/
+
+# -------------------------------------------
+# Lock Files (Use pnpm-lock.yaml only)
+# -------------------------------------------
+package-lock.json
+**/package-lock.json
+!pnpm-lock.yaml
