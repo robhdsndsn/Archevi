@@ -7,12 +7,23 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock localStorage
+// Mock localStorage with real storage behavior
+const localStorageStore: Record<string, string> = {};
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+  getItem: vi.fn((key: string) => localStorageStore[key] ?? null),
+  setItem: vi.fn((key: string, value: string) => {
+    localStorageStore[key] = value;
+  }),
+  removeItem: vi.fn((key: string) => {
+    delete localStorageStore[key];
+  }),
+  clear: vi.fn(() => {
+    Object.keys(localStorageStore).forEach((key) => delete localStorageStore[key]);
+  }),
+  get length() {
+    return Object.keys(localStorageStore).length;
+  },
+  key: vi.fn((index: number) => Object.keys(localStorageStore)[index] ?? null),
 };
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
@@ -34,9 +45,30 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// Mock ResizeObserver as a proper class
+class ResizeObserverMock {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+global.ResizeObserver = ResizeObserverMock;
+
+// Mock IntersectionObserver as a proper class
+class IntersectionObserverMock {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
+  root = null;
+  rootMargin = '';
+  thresholds = [];
+}
+global.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
+
+// Mock pointer capture methods for Radix UI Select components
+Element.prototype.hasPointerCapture = vi.fn(() => false);
+Element.prototype.setPointerCapture = vi.fn();
+Element.prototype.releasePointerCapture = vi.fn();
+
+// Mock scrollIntoView for components that auto-scroll
+Element.prototype.scrollIntoView = vi.fn();

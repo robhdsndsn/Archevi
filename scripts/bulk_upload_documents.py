@@ -6,6 +6,8 @@
 #   - cohere
 #   - psycopg2-binary
 #   - pgvector
+#   - wmill
+#   - httpx
 
 """
 Bulk upload and embed multiple documents to the Family Second Brain knowledge base.

@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 
 """
 Logout user by revoking refresh token.

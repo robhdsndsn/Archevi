@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 
 """
 Request a password reset token for a user.

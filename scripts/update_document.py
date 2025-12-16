@@ -7,6 +7,7 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
+#   - httpx
 
 """
 Update a document in the Family Second Brain knowledge base.

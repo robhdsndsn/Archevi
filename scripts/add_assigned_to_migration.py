@@ -1,6 +1,12 @@
 # add_assigned_to_migration.py
 # Windmill Python script to add assigned_to column for family member document assignment
 # Path: f/migrations/add_assigned_to
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 
 """
 Migration: Add assigned_to column to family_documents table

@@ -590,8 +590,18 @@ export function FamilyMembersView() {
                 {members.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No family members yet</p>
-                    <p className="text-sm">Add your first member to get started</p>
+                    <p className="font-medium mb-1">No family members yet</p>
+                    <p className="text-sm mb-4">Add your first member to get started</p>
+                    <Button
+                      onClick={() => {
+                        setFormData(EMPTY_FORM);
+                        setIsAddDialogOpen(true);
+                      }}
+                      size="sm"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add First Member
+                    </Button>
                   </div>
                 )}
               </div>

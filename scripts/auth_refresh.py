@@ -6,6 +6,7 @@
 #   - psycopg2-binary
 #   - PyJWT
 #   - wmill
+#   - httpx
 
 """
 Refresh access token using refresh token.
@@ -26,10 +27,11 @@ import psycopg2
 import jwt
 from datetime import datetime, timedelta
 import wmill
+from config import get_jwt_secret
 
 
-# Must match auth_login.py
-JWT_SECRET = "archevi-jwt-secret-2026-change-in-production"
+# JWT Configuration
+JWT_SECRET = get_jwt_secret()
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRY = 15  # minutes
 

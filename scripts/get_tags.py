@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 
 """
 Get all unique tags used across documents.

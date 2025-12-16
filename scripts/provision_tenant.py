@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Tenant Provisioning Script
 Handles the complete flow from signup to ready-to-use tenant.

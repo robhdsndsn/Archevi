@@ -7,6 +7,7 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
+#   - httpx
 
 """
 Embed and store a document in the Archevi knowledge base.

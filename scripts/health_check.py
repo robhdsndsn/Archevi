@@ -6,6 +6,7 @@
 #   - cohere
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 #   - requests
 
 """

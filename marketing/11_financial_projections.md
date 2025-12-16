@@ -1,78 +1,86 @@
 # Financial Projections
 
+*Updated December 2025 - Based on new pricing model*
+
 ## Year 1 Revenue Model
 
 ### Assumptions
 
-**Customer Acquisition**:
-- Month 1: 10 customers (founding members)
-- Month 3: 25 customers
-- Month 6: 50 customers
-- Month 9: 75 customers
-- Month 12: 100 customers
+**Customer Acquisition** (Freemium Model):
+- Month 1: 50 free signups, 10 paid conversions
+- Month 3: 150 free signups, 30 paid customers
+- Month 6: 400 free signups, 80 paid customers
+- Month 9: 700 free signups, 130 paid customers
+- Month 12: 1,000 free signups, 200 paid customers
 
-**Pricing Mix**:
-- Starter ($14.99): 70% of customers
-- Family ($24.99): 25% of customers
-- Family Office ($99+): 5% of customers
+**Pricing Mix** (of paid customers):
+- Family ($9): 70% of paid customers
+- Family Plus ($19): 25% of paid customers
+- Family Office ($49): 5% of paid customers
 
 **Churn Rate**:
-- Months 1-3: 10% monthly (early adopters testing)
-- Months 4-12: 5% monthly (stabilized)
+- Free: N/A (no revenue impact)
+- Paid Months 1-3: 8% monthly (early adopters testing)
+- Paid Months 4-12: 5% monthly (stabilized)
 
-**Trial Conversion**:
-- 25-35% average
-- Month 1-3: 25% (finding product-market fit)
-- Month 4-12: 35% (optimized funnel)
+**Free-to-Paid Conversion**:
+- Initial: 20% within 30 days
+- Ongoing: 15% monthly of engaged free users
+- With founding discount: 25-30%
 
 ---
 
 ### Monthly Recurring Revenue (MRR) Projections
 
 **Month 1**:
-- Customers: 10
-- Mix: 7 Starter, 2 Family, 1 Family Office
-- MRR: (7 × $14.99) + (2 × $24.99) + (1 × $99) = $254.91
+- Free Users: 50
+- Paid Customers: 10
+- Mix: 7 Family, 2 Family Plus, 1 Family Office
+- MRR: (7 × $9) + (2 × $19) + (1 × $49) = $150
 
 **Month 3**:
-- Customers: 25
-- Mix: 18 Starter, 6 Family, 1 Family Office
-- MRR: (18 × $14.99) + (6 × $24.99) + (1 × $99) = $518.76
+- Free Users: 150
+- Paid Customers: 30
+- Mix: 21 Family, 8 Family Plus, 1 Family Office
+- MRR: (21 × $9) + (8 × $19) + (1 × $49) = $390
 
 **Month 6**:
-- Customers: 50
-- Mix: 35 Starter, 13 Family, 2 Family Office
-- MRR: (35 × $14.99) + (13 × $24.99) + (2 × $99) = $1,047.50
+- Free Users: 400
+- Paid Customers: 80
+- Mix: 56 Family, 20 Family Plus, 4 Family Office
+- MRR: (56 × $9) + (20 × $19) + (4 × $49) = $1,080
 
 **Month 9**:
-- Customers: 75
-- Mix: 53 Starter, 19 Family, 3 Family Office
-- MRR: (53 × $14.99) + (19 × $24.99) + (3 × $99) = $1,566.25
+- Free Users: 700
+- Paid Customers: 130
+- Mix: 91 Family, 33 Family Plus, 6 Family Office
+- MRR: (91 × $9) + (33 × $19) + (6 × $49) = $1,740
 
 **Month 12**:
-- Customers: 100
-- Mix: 70 Starter, 25 Family, 5 Family Office
-- MRR: (70 × $14.99) + (25 × $24.99) + (5 × $99) = $2,169.55
+- Free Users: 1,000
+- Paid Customers: 200
+- Mix: 140 Family, 50 Family Plus, 10 Family Office
+- MRR: (140 × $9) + (50 × $19) + (10 × $49) = $2,700
 
 ---
 
 ### Annual Recurring Revenue (ARR)
 
-**Year 1 End**: $26,034 ARR (MRR × 12)
+**Year 1 End**: $32,400 ARR (MRR × 12)
 
 ---
 
 ### One-Time Revenue Streams
 
-**Setup Services**:
-- DIY Setup Support ($299): 10 customers
-- Revenue: $2,990
-
 **Migration Services**:
-- White-Glove ($499): 5 customers
-- Revenue: $2,495
+- White-Glove ($199): 15 customers
+- Revenue: $2,985
 
-**Total One-Time Revenue**: $5,485
+**Premium Add-ons**:
+- Premium Support ($9.99/mo): 20 customers × 6 avg months
+- Revenue: $1,200
+
+**Total One-Time/Add-on Revenue**: $4,185
 
 ---
 
@@ -80,33 +88,58 @@
 
 | Category | Amount |
 |----------|--------|
-| Subscription Revenue | ~$15,000 |
-| One-Time Services | $5,485 |
-| **Total** | **~$20,485** |
+| Subscription Revenue | ~$18,000 |
+| One-Time Services | $4,185 |
+| **Total** | **~$22,185** |
 
 *Note: This is conservative. Actual may be higher due to:*
-- Annual billing (pay upfront)
+- Annual billing (20% discount drives upfront cash)
 - Faster growth from partnerships
-- Higher mix of Family/Family Office tiers
-- Additional services revenue
+- Higher Family Plus/Office mix than projected
+- Word-of-mouth from free users
 
 ---
 
 ## Cost Structure (Year 1)
 
-### Variable Costs (Scale with Customers)
+### Variable Costs (Scale with Usage)
 
-**Infrastructure** (per customer per month):
+**AI API Costs** (per action):
+
+| Action | Cost | Notes |
+|--------|------|-------|
+| Document upload | ~$0.003 | Cohere embed + categorize |
+| AI question (RAG) | ~$0.008 | Embed + rerank + chat |
+| Voice note (1 min) | ~$0.00 | Groq free tier |
+| Email notification | ~$0.00 | Resend free tier |
+
+**Per Customer Monthly Cost** (average usage):
+
+| User Type | Docs/mo | Questions/mo | AI Cost |
+|-----------|---------|--------------|---------|
+| Free user (light) | 5 | 20 | $0.18 |
+| Family (medium) | 20 | 80 | $0.70 |
+| Family Plus (heavy) | 50 | 200 | $1.75 |
+| Family Office (power) | 100 | 400 | $3.50 |
+
+**Year 1 AI Costs** (blended average ~$0.70/paid customer/month):
+- 200 paid customers × $0.70 × 12 months = **$1,680**
+- 1,000 free users × $0.18 × 12 months = **$2,160**
+- **Total AI Costs: ~$3,840/year**
+
+**Infrastructure** (self-hosted):
 
 | Item | Cost |
 |------|------|
-| Neon Serverless DB | $0.50 |
-| Windmill compute | $0.30 |
-| File storage | $0.20 |
-| Bandwidth | $0.10 |
-| **Total per customer** | **$1.10/month** |
+| PostgreSQL (Docker) | $0 |
+| Windmill (self-hosted) | $0 |
+| Supabase Storage (1GB free) | $0 |
+| **Total infrastructure** | **$0/month** |
 
-**At 100 customers**: $110/month = $1,320/year
+*Note: Infrastructure costs remain $0 until:*
+- Storage > 1GB: Supabase Pro ($25/mo)
+- Heavy compute: Windmill Cloud (~$30/mo)
+- Scale triggers: ~500+ paid customers
 
 ---
 
@@ -154,12 +187,13 @@
 
 | Category | Amount |
 |----------|--------|
-| Variable (infrastructure) | $1,320 |
+| AI API Costs | $3,840 |
+| Infrastructure | $0 |
 | Software & Tools | $1,240 |
 | Marketing | $4,200 |
 | Development | $944 |
 | Legal & Admin | $1,450 |
-| **Total** | **$9,154** |
+| **Total** | **$11,674** |
 
 ---
 
@@ -167,12 +201,22 @@
 
 | Metric | Amount |
 |--------|--------|
-| Revenue | $20,485 |
-| Costs | $9,154 |
-| **Profit** | **$11,331** |
-| **Profit Margin** | **55%** |
+| Revenue | $22,185 |
+| Costs | $11,674 |
+| **Profit** | **$10,511** |
+| **Gross Margin** | **47%** |
 
 *Note: This assumes founder time is not paid salary. If accounting for founder salary, profitability would be negative in Year 1.*
+
+**Margin by Tier** (excluding fixed costs):
+
+| Tier | Price | AI Cost | Gross Margin |
+|------|-------|---------|--------------|
+| Family ($9) | $9.00 | $0.70 | 92% |
+| Family Plus ($19) | $19.00 | $1.75 | 91% |
+| Family Office ($49) | $49.00 | $3.50 | 93% |
+
+**Key insight:** AI costs are negligible per customer. The real cost is acquiring and retaining customers.
 
 ---
 
@@ -180,54 +224,58 @@
 
 ### Year 2 Assumptions
 
-**Customer Growth**:
-- Start: 100 customers
-- End: 300 customers (3x growth)
-- Churn: 5% monthly (improved from Year 1)
+**Customer Growth** (Freemium flywheel):
+- Free Users: 3,000 (3x Year 1)
+- Paid Customers: 500 (2.5x Year 1)
+- Churn: 4% monthly (improved from Year 1)
 
-**Pricing Mix**:
-- Starter: 60% (down from 70% as users upgrade)
-- Family: 30% (up from 25%)
-- Family Office: 10% (up from 5%)
+**Pricing Mix** (of paid):
+- Family ($9): 60% (users upgrade as needs grow)
+- Family Plus ($19): 30% (up from 25%)
+- Family Office ($49): 10% (up from 5%)
 
 **New Revenue Streams**:
-- Family Office tier: 30 clients at $99/month avg
-- Annual billing: 40% choose annual (15% discount)
+- Annual billing: 40% choose annual (20% discount)
 - Partnerships: 20% of new customers
+- Add-ons: Premium support growth
 
-**Year 2 Revenue**: $72,000 CAD
-**Year 2 Costs**: $24,000 CAD
-**Year 2 Profit**: $48,000 CAD
-**Profit Margin**: 67%
+**Year 2 Projections**:
+- MRR at Year End: $6,500
+- **Year 2 Revenue**: $60,000 CAD
+- **Year 2 Costs**: $18,000 CAD
+- **Year 2 Profit**: $42,000 CAD
+- **Profit Margin**: 70%
 
 ---
 
 ### Year 3 Assumptions
 
 **Customer Growth**:
-- Start: 300 customers
-- End: 600 customers (2x growth)
-- Churn: 4% monthly (continued improvement)
+- Free Users: 8,000
+- Paid Customers: 1,200 (2.4x Year 2)
+- Churn: 3% monthly (product-market fit achieved)
 
-**Pricing Mix**:
-- Starter: 50%
-- Family: 35%
-- Family Office: 15%
+**Pricing Mix** (of paid):
+- Family ($9): 50%
+- Family Plus ($19): 35%
+- Family Office ($49): 15%
 
-**Revenue**: $180,000 CAD
-**Costs**: $54,000 CAD
-**Profit**: $126,000 CAD
-**Profit Margin**: 70%
+**Year 3 Projections**:
+- MRR at Year End: $16,000
+- **Year 3 Revenue**: $150,000 CAD
+- **Year 3 Costs**: $40,000 CAD
+- **Year 3 Profit**: $110,000 CAD
+- **Profit Margin**: 73%
 
 ---
 
 ### 3-Year Summary
 
-| Year | Customers | Revenue | Costs | Profit | Margin |
-|------|-----------|---------|-------|--------|--------|
-| 1 | 100 | $20,485 | $9,154 | $11,331 | 55% |
-| 2 | 300 | $72,000 | $24,000 | $48,000 | 67% |
-| 3 | 600 | $180,000 | $54,000 | $126,000 | 70% |
+| Year | Free Users | Paid Customers | Revenue | Costs | Profit | Margin |
+|------|------------|----------------|---------|-------|--------|--------|
+| 1 | 1,000 | 200 | $22,185 | $11,674 | $10,511 | 47% |
+| 2 | 3,000 | 500 | $60,000 | $18,000 | $42,000 | 70% |
+| 3 | 8,000 | 1,200 | $150,000 | $40,000 | $110,000 | 73% |
 
 ---
 
@@ -235,13 +283,13 @@
 
 ### Monthly Break-Even Point
 
-Fixed costs per month: $763
-Variable cost per customer: $1.10
-Average revenue per customer: $21.70
+Fixed costs per month: $650 (tools + marketing + admin)
+AI cost per paid customer: $0.70
+Average revenue per paid customer: $13.50 (blended)
 
-**Break-even customers**: $763 ÷ ($21.70 - $1.10) = **37 customers**
+**Break-even paid customers**: $650 ÷ ($13.50 - $0.70) = **51 customers**
 
-**Timeline to Break-Even**: Month 3-4 (projected 30-40 customers)
+**Timeline to Break-Even**: Month 4-5 (projected 50-80 paid customers)
 
 ---
 
@@ -306,22 +354,23 @@ Average revenue per customer: $21.70
 
 ### Unit Economics
 
-| Metric | Target |
-|--------|--------|
-| Customer Acquisition Cost (CAC) | <$50 |
-| Customer Lifetime Value (LTV) | $500-800 |
-| LTV:CAC Ratio | 10:1+ |
-| Payback Period | <2 months |
-| Gross Margin | 90%+ |
+| Metric | Target | Notes |
+|--------|--------|-------|
+| Customer Acquisition Cost (CAC) | <$30 | Free tier reduces paid acquisition cost |
+| Customer Lifetime Value (LTV) | $270-400 | 24mo avg × $13.50 blended ARPU |
+| LTV:CAC Ratio | 9:1+ | Target >3:1 is healthy |
+| Payback Period | <3 months | First payment covers CAC |
+| Gross Margin (per customer) | 93%+ | AI costs are minimal |
 
 ### Growth Metrics
 
 | Metric | Target |
 |--------|--------|
-| Month-over-Month Growth | 15-20% |
+| Free-to-Paid Conversion | 20%+ |
+| Month-over-Month Paid Growth | 15-20% |
 | Net Revenue Retention | 105%+ |
-| Annual Contract Value | $240-300 |
-| Expansion Revenue | 20% of MRR |
+| Average Revenue Per User (ARPU) | $13.50 |
+| Expansion Revenue | 15% of MRR |
 
 ---
 
@@ -358,16 +407,18 @@ Average revenue per customer: $21.70
 
 | Milestone | Target Date | Metric |
 |-----------|-------------|--------|
-| First Paying Customer | Launch Week | $15 MRR |
-| 10 Customers | Month 1 | $200 MRR |
-| Break-Even | Month 4 | 37 customers |
-| $500 MRR | Month 3 | 25 customers |
-| $1,000 MRR | Month 6 | 50 customers |
-| $2,000 MRR | Month 12 | 100 customers |
-| $5,000 MRR | Month 18 | 250 customers |
-| $10,000 MRR | Month 24 | 500 customers |
-| $50K ARR | Month 12 | 100+ customers |
-| $100K ARR | Month 18 | 250+ customers |
+| First Paying Customer | Launch Week | $9 MRR |
+| 100 Free Users | Month 1 | Validation |
+| 10 Paid Customers | Month 1 | $135 MRR |
+| 50 Paid Customers | Month 4 | Break-even |
+| $500 MRR | Month 4 | 40 customers |
+| $1,000 MRR | Month 6 | 80 customers |
+| $2,500 MRR | Month 12 | 200 customers |
+| $5,000 MRR | Month 18 | 400 customers |
+| $10,000 MRR | Month 24 | 800 customers |
+| $25K ARR | Month 12 | 200 paid customers |
+| $75K ARR | Month 18 | 500 paid customers |
+| $150K ARR | Month 24 | 1,000 paid customers |
 
 ---
 

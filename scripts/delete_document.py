@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 
 """
 Delete a document from the Family Second Brain knowledge base.

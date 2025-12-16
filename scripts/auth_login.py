@@ -7,6 +7,7 @@
 #   - bcrypt
 #   - PyJWT
 #   - wmill
+#   - httpx
 
 """
 Authenticate user with email and password, return JWT tokens.
@@ -32,10 +33,11 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 import wmill
+from config import get_jwt_secret
 
 
-# JWT secret - in production, use a proper secret management
-JWT_SECRET = "archevi-jwt-secret-2026-change-in-production"
+# JWT Configuration
+JWT_SECRET = get_jwt_secret()
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRY = 15  # minutes
 REFRESH_TOKEN_EXPIRY = 7  # days
@@ -70,10 +72,11 @@ def main(
         )
         cursor = conn.cursor()
 
-        # Find user by email
+        # Find user by email (including 2FA status)
         cursor.execute("""
             SELECT id, email, name, role, password_hash, is_active,
-                   failed_attempts, locked_until, email_verified, member_type
+                   failed_attempts, locked_until, email_verified, member_type,
+                   totp_enabled, totp_secret
             FROM family_members
             WHERE email = %s
         """, (email,))
@@ -84,7 +87,8 @@ def main(
             return {"success": False, "error": "Invalid email or password"}
 
         user_id, user_email, name, role, password_hash, is_active, \
-            failed_attempts, locked_until, email_verified, member_type = user
+            failed_attempts, locked_until, email_verified, member_type, \
+            totp_enabled, totp_secret = user
 
         # Check if account is active
         if not is_active:
@@ -133,10 +137,42 @@ def main(
 
             return {"success": False, "error": "Invalid email or password"}
 
-        # Password correct - reset failed attempts and update last login
+        # Password correct - reset failed attempts
         cursor.execute("""
             UPDATE family_members
-            SET failed_attempts = 0, locked_until = NULL, last_login = %s, last_active = %s
+            SET failed_attempts = 0, locked_until = NULL
+            WHERE id = %s
+        """, (user_id,))
+
+        # Check if 2FA is enabled - if so, create 2FA session instead of issuing tokens
+        if totp_enabled:
+            session_token = secrets.token_urlsafe(32)
+            session_expires = datetime.now() + timedelta(minutes=5)  # 5 min to complete 2FA
+
+            cursor.execute("""
+                INSERT INTO two_factor_sessions (user_id, session_token, expires_at)
+                VALUES (%s, %s, %s)
+            """, (user_id, session_token, session_expires))
+
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            return {
+                "success": True,
+                "requires_2fa": True,
+                "session_token": session_token,
+                "expires_in": 300,  # 5 minutes in seconds
+                "user": {
+                    "email": user_email,
+                    "name": name
+                }
+            }
+
+        # No 2FA - proceed with normal login, update last login
+        cursor.execute("""
+            UPDATE family_members
+            SET last_login = %s, last_active = %s
             WHERE id = %s
         """, (datetime.now(), datetime.now(), user_id))
 

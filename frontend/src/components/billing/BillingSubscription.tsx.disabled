@@ -1,0 +1,392 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  CreditCard,
+  Calendar,
+  ArrowUpRight,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Loader2,
+  Receipt,
+  Settings2,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { PricingTable } from './PricingTable';
+import { UsageMetrics } from './UsageMetrics';
+import type {
+  Subscription,
+  BillingUsage,
+  TenantPlan,
+  BillingInterval,
+  SubscriptionStatus,
+} from '@/api/windmill/types';
+
+interface BillingSubscriptionProps {
+  subscription: Subscription;
+  usage: BillingUsage;
+  onChangePlan?: (planId: TenantPlan, interval: BillingInterval) => Promise<void>;
+  onCancelSubscription?: () => Promise<void>;
+  onResumeSubscription?: () => Promise<void>;
+  onUpdatePaymentMethod?: () => void;
+  className?: string;
+}
+
+const STATUS_CONFIG: Record<SubscriptionStatus, {
+  label: string;
+  variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  icon: React.ReactNode;
+  description: string;
+}> = {
+  active: {
+    label: 'Active',
+    variant: 'default',
+    icon: <CheckCircle2 className="h-4 w-4" />,
+    description: 'Your subscription is active and in good standing.',
+  },
+  trialing: {
+    label: 'Trial',
+    variant: 'secondary',
+    icon: <Clock className="h-4 w-4" />,
+    description: 'You\'re on a free trial. Upgrade before it ends to continue.',
+  },
+  past_due: {
+    label: 'Past Due',
+    variant: 'destructive',
+    icon: <AlertTriangle className="h-4 w-4" />,
+    description: 'Payment failed. Please update your payment method.',
+  },
+  canceled: {
+    label: 'Canceled',
+    variant: 'outline',
+    icon: <XCircle className="h-4 w-4" />,
+    description: 'Your subscription has been canceled.',
+  },
+  incomplete: {
+    label: 'Incomplete',
+    variant: 'outline',
+    icon: <AlertTriangle className="h-4 w-4" />,
+    description: 'Setup incomplete. Please complete payment.',
+  },
+};
+
+export function BillingSubscription({
+  subscription,
+  usage,
+  onChangePlan,
+  onCancelSubscription,
+  onResumeSubscription,
+  onUpdatePaymentMethod,
+  className,
+}: BillingSubscriptionProps) {
+  const [isChangingPlan, setIsChangingPlan] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
+
+  const statusConfig = STATUS_CONFIG[subscription.status];
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const handleChangePlan = async (planId: TenantPlan, interval: BillingInterval) => {
+    if (!onChangePlan) return;
+    setIsChangingPlan(true);
+    try {
+      await onChangePlan(planId, interval);
+      setShowPricingDialog(false);
+    } finally {
+      setIsChangingPlan(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!onCancelSubscription) return;
+    setIsCanceling(true);
+    try {
+      await onCancelSubscription();
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
+  const handleResume = async () => {
+    if (!onResumeSubscription) return;
+    setIsResuming(true);
+    try {
+      await onResumeSubscription();
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
+  const isCanceled = subscription.status === 'canceled' || subscription.cancelAtPeriodEnd;
+
+  return (
+    <div className={cn('space-y-6', className)}>
+      {/* Current Plan Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                {subscription.planName}
+                <Badge variant={statusConfig.variant} className="gap-1">
+                  {statusConfig.icon}
+                  {statusConfig.label}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {statusConfig.description}
+              </CardDescription>
+            </div>
+            <Dialog open={showPricingDialog} onOpenChange={setShowPricingDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <ArrowUpRight className="h-4 w-4" />
+                  Change Plan
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Change Your Plan</DialogTitle>
+                  <DialogDescription>
+                    Choose the plan that best fits your family's needs.
+                  </DialogDescription>
+                </DialogHeader>
+                <PricingTable
+                  currentPlan={subscription.planId}
+                  onSelectPlan={handleChangePlan}
+                  showCurrentBadge={true}
+                />
+                {isChangingPlan && (
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Processing...
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Billing details */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Billing Cycle</p>
+              <p className="font-medium capitalize">{subscription.interval}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Amount</p>
+              <p className="font-medium">${subscription.amount.toFixed(2)}/{subscription.interval === 'yearly' ? 'year' : 'month'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                {isCanceled ? 'Access Until' : 'Next Billing Date'}
+              </p>
+              <p className="font-medium">{formatDate(subscription.currentPeriodEnd)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Member Since</p>
+              <p className="font-medium">{formatDate(subscription.startedAt)}</p>
+            </div>
+          </div>
+
+          {/* Cancel at period end warning */}
+          {subscription.cancelAtPeriodEnd && subscription.status !== 'canceled' && (
+            <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Subscription Ending</p>
+                <p className="text-sm text-muted-foreground">
+                  Your subscription will end on {formatDate(subscription.currentPeriodEnd)}.
+                  You'll retain access until then.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResume}
+                  disabled={isResuming}
+                >
+                  {isResuming ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Resuming...
+                    </>
+                  ) : (
+                    'Keep My Subscription'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Trial ending warning */}
+          {subscription.status === 'trialing' && subscription.trialEnd && (
+            <div className="rounded-lg border border-blue-500/50 bg-blue-500/10 p-4 flex items-start gap-3">
+              <Clock className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Trial Ending Soon</p>
+                <p className="text-sm text-muted-foreground">
+                  Your free trial ends on {formatDate(subscription.trialEnd)}.
+                  Add a payment method to continue using all features.
+                </p>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowPricingDialog(true)}
+                >
+                  Choose a Plan
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Past due warning */}
+          {subscription.status === 'past_due' && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Payment Failed</p>
+                <p className="text-sm text-muted-foreground">
+                  We couldn't process your payment. Please update your payment method
+                  to avoid service interruption.
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={onUpdatePaymentMethod}
+                >
+                  Update Payment Method
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Payment method */}
+          {subscription.paymentMethod && (
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-md bg-muted">
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="font-medium capitalize">
+                    {subscription.paymentMethod.brand} ending in {subscription.paymentMethod.last4}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Expires {subscription.paymentMethod.expMonth}/{subscription.paymentMethod.expYear}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={onUpdatePaymentMethod}>
+                <Settings2 className="h-4 w-4 mr-2" />
+                Update
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Usage Card */}
+      <UsageMetrics usage={usage} />
+
+      {/* Management Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Manage Subscription</CardTitle>
+          <CardDescription>
+            View invoices, update payment methods, or cancel your subscription.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Receipt className="h-4 w-4" />
+              View Invoices
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={onUpdatePaymentMethod}
+            >
+              <CreditCard className="h-4 w-4" />
+              Payment Methods
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Billing History
+            </Button>
+
+            {/* Cancel subscription */}
+            {!isCanceled && subscription.status !== 'trialing' && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                    Cancel Subscription
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Your subscription will remain active until{' '}
+                      {formatDate(subscription.currentPeriodEnd)}. After that,
+                      you'll lose access to premium features and your data will be
+                      retained for 30 days before deletion.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleCancel}
+                      disabled={isCanceling}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isCanceling ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Canceling...
+                        </>
+                      ) : (
+                        'Yes, Cancel'
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -9,7 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Archive, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import {
+  Archive,
+  Loader2,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Shield,
+  Key,
+  ArrowLeft,
+} from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
@@ -22,7 +31,20 @@ export function LoginPage({ onForgotPassword }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { login, isLoading, error, clearError } = useAuthStore();
+  // 2FA state
+  const [verifyCode, setVerifyCode] = useState('');
+  const [useBackupCode, setUseBackupCode] = useState(false);
+
+  const {
+    login,
+    verify2FA,
+    verifyBackupCode,
+    cancel2FA,
+    isLoading,
+    error,
+    clearError,
+    twoFactorPending,
+  } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +54,31 @@ export function LoginPage({ onForgotPassword }: LoginPageProps) {
       return;
     }
 
-    const success = await login(email, password);
+    const result = await login(email, password);
+    if (result === true) {
+      toast.success('Welcome back!', {
+        description: 'You have been signed in successfully.',
+      });
+    } else if (result === 'requires_2fa') {
+      // 2FA required - the UI will switch to the 2FA form
+      toast.info('Enter your verification code', {
+        description: 'Two-factor authentication is enabled for this account.',
+      });
+    }
+  };
+
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
+
+    if (!verifyCode) {
+      return;
+    }
+
+    const success = useBackupCode
+      ? await verifyBackupCode(verifyCode.replace(/\s/g, ''))
+      : await verify2FA(verifyCode.replace(/\s/g, ''));
+
     if (success) {
       toast.success('Welcome back!', {
         description: 'You have been signed in successfully.',
@@ -40,6 +86,145 @@ export function LoginPage({ onForgotPassword }: LoginPageProps) {
     }
   };
 
+  const handleCancel2FA = () => {
+    cancel2FA();
+    setVerifyCode('');
+    setUseBackupCode(false);
+  };
+
+  // 2FA Verification Form
+  if (twoFactorPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+              <Shield className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold">Two-Factor Authentication</h1>
+            <p className="text-muted-foreground">
+              {twoFactorPending.name && `Welcome, ${twoFactorPending.name}`}
+            </p>
+          </div>
+
+          {/* 2FA Card */}
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-xl">
+                {useBackupCode ? 'Enter Backup Code' : 'Enter Verification Code'}
+              </CardTitle>
+              <CardDescription>
+                {useBackupCode
+                  ? 'Enter one of your backup codes to sign in'
+                  : 'Enter the 6-digit code from your authenticator app'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleVerify2FA} className="space-y-4">
+                {/* Error Alert */}
+                {error && (
+                  <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {/* Verification Code Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="verify-code">
+                    {useBackupCode ? 'Backup Code' : 'Verification Code'}
+                  </Label>
+                  <Input
+                    id="verify-code"
+                    type="text"
+                    inputMode={useBackupCode ? 'text' : 'numeric'}
+                    pattern={useBackupCode ? undefined : '[0-9]*'}
+                    maxLength={useBackupCode ? 9 : 6}
+                    placeholder={useBackupCode ? 'XXXX-XXXX' : '000000'}
+                    value={verifyCode}
+                    onChange={(e) =>
+                      setVerifyCode(
+                        useBackupCode
+                          ? e.target.value.toUpperCase()
+                          : e.target.value.replace(/\D/g, '')
+                      )
+                    }
+                    disabled={isLoading}
+                    autoComplete="one-time-code"
+                    autoFocus
+                    className={
+                      useBackupCode
+                        ? 'text-center text-lg tracking-wider font-mono'
+                        : 'text-center text-2xl tracking-widest font-mono'
+                    }
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={
+                    isLoading ||
+                    (useBackupCode ? verifyCode.length < 8 : verifyCode.length !== 6)
+                  }
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify'
+                  )}
+                </Button>
+
+                {/* Toggle to backup code */}
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-sm text-muted-foreground hover:text-primary"
+                    onClick={() => {
+                      setUseBackupCode(!useBackupCode);
+                      setVerifyCode('');
+                      clearError();
+                    }}
+                  >
+                    <Key className="mr-1 h-3 w-3" />
+                    {useBackupCode
+                      ? 'Use authenticator app instead'
+                      : "Can't access your authenticator? Use a backup code"}
+                  </Button>
+                </div>
+
+                {/* Back to login */}
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-sm text-muted-foreground"
+                    onClick={handleCancel2FA}
+                  >
+                    <ArrowLeft className="mr-1 h-3 w-3" />
+                    Back to login
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Version */}
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Archevi v1.0 - 2026
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal Login Form
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">

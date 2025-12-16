@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Get User Tenants
 Returns all tenants (families) a user has access to.

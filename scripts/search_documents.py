@@ -7,6 +7,7 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
+#   - httpx
 
 """
 Semantic search for documents in the Archevi knowledge base.
@@ -52,10 +53,12 @@ import wmill
 
 
 def main(
-    search_term: str,
-    tenant_id: str,
+    search_term: str = None,
+    tenant_id: str = None,
     category: Optional[str] = None,
     limit: int = 5,
+    # Aliases for backward compatibility
+    query: str = None,  # Alternative name for search_term
 ) -> List[dict]:
     """
     Perform semantic search for documents in the knowledge base (tenant-scoped).
@@ -64,9 +67,13 @@ def main(
     postgres_db = wmill.get_resource("f/chatbot/postgres_db")
     cohere_api_key = wmill.get_variable("f/chatbot/cohere_api_key")
 
+    # Support both 'search_term' and 'query' parameter names
+    if not search_term and query:
+        search_term = query
+
     # Validate input
     if not search_term or not search_term.strip():
-        raise ValueError("Search term cannot be empty")
+        raise ValueError("Search term cannot be empty (use 'search_term' or 'query' parameter)")
     if not tenant_id or not tenant_id.strip():
         raise ValueError("tenant_id is required for data isolation")
 
@@ -159,4 +166,9 @@ def main(
             "created_at": timestamp
         })
 
-    return documents
+    # Return with success wrapper for consistency with other endpoints
+    return {
+        "success": True,
+        "results": documents,
+        "count": len(documents)
+    }

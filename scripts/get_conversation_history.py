@@ -4,6 +4,8 @@
 #
 # requirements:
 #   - psycopg2-binary
+#   - wmill
+#   - httpx
 
 """
 Retrieve conversation history from the Family Second Brain chatbot.

@@ -141,3 +141,14 @@ coverage/
 junit.xml
 test-results/
 
+# Playwright
+playwright/.auth/
+playwright-report/
+test-results/
+
+# -------------------------------------------
+# Beads (Issue Tracking)
+# -------------------------------------------
+# Note: .beads/ has its own .gitignore that:
+# - Ignores: *.db, daemon files, merge artifacts
+# - Tracks: issues.jsonl, metadata.json, config.yaml

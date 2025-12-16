@@ -1,0 +1,72 @@
+{
+  "kind": "collectionType",
+  "collectionName": "announcements",
+  "info": {
+    "singularName": "announcement",
+    "pluralName": "announcements",
+    "displayName": "Announcement"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "maxLength": 200,
+      "required": true
+    },
+    "message": {
+      "type": "blocks",
+      "required": true
+    },
+    "announcement_type": {
+      "type": "enumeration",
+      "required": true,
+      "default": "Info",
+      "enum": [
+        "Info",
+        "Warning",
+        "Success",
+        "Alert"
+      ]
+    },
+    "start_date": {
+      "type": "datetime"
+    },
+    "end_date": {
+      "type": "datetime"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "target_roles": {
+      "type": "enumeration",
+      "default": "All",
+      "enum": [
+        "All",
+        "OlderAdult",
+        "Volunteer",
+        "Family"
+      ]
+    },
+    "display_location": {
+      "type": "enumeration",
+      "default": "Everywhere",
+      "enum": [
+        "Everywhere",
+        "Home",
+        "Pricing",
+        "Features",
+        "Blog",
+        "FAQ",
+        "Dashboard"
+      ]
+    }
+  }
+}

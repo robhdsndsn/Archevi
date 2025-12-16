@@ -43,7 +43,8 @@ export function ChatInput({
   };
 
   return (
-    <div className="border-t bg-background p-4">
+    <div className="border-t bg-background p-4" role="region" aria-label="Chat input">
+      <span id="chat-input-hint" className="sr-only">Press Enter to send, Shift+Enter for new line</span>
       <div className="flex gap-2 items-end">
         <div className="relative flex-1">
           <textarea
@@ -54,6 +55,8 @@ export function ChatInput({
             placeholder={placeholder}
             disabled={isLoading}
             rows={1}
+            aria-label="Message input"
+            aria-describedby="chat-input-hint"
             className={cn(
               'w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm',
               'ring-offset-background placeholder:text-muted-foreground',
@@ -67,12 +70,13 @@ export function ChatInput({
           onClick={handleSubmit}
           disabled={!input.trim() || isLoading}
           size="icon"
-          className="shrink-0 h-11 w-11 sm:h-10 sm:w-10"
+          className="shrink-0 h-[44px] w-[44px]"
+          aria-label={isLoading ? "Sending message..." : "Send message"}
         >
           {isLoading ? (
-            <Loader2 className="h-5 w-5 sm:h-4 sm:w-4 animate-spin" />
+            <Loader2 className="h-5 w-5 sm:h-4 sm:w-4 animate-spin" aria-hidden="true" />
           ) : (
-            <Send className="h-5 w-5 sm:h-4 sm:w-4" />
+            <Send className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
           )}
         </Button>
       </div>

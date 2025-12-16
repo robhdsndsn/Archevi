@@ -2,10 +2,12 @@
 
 Complete reference for all Windmill-based API endpoints.
 
-::: info Version 2.4.0
+::: info Version 2.6.0
 This documentation reflects the multi-tenant architecture. All endpoints now require `tenant_id` for data isolation.
 
 **Embedding Model:** Cohere Embed v4 (embed-v4.0) with 1024-dimension Matryoshka embeddings.
+
+**New in v2.6.0:** Secure Links endpoints, PDF Visual Search via RAG agent.
 :::
 
 ## embed_document
@@ -62,7 +64,7 @@ Authorization: Bearer {token}
 
 ## rag_query
 
-Query documents using RAG (Retrieval-Augmented Generation).
+Query documents using RAG (Retrieval-Augmented Generation). The agent automatically decides whether to use text search (`search_documents`) or visual search (`search_pdf_pages`) based on the query.
 
 ### Request
 
@@ -80,6 +82,18 @@ Authorization: Bearer {token}
 | `family_id` | string | Yes | Family identifier |
 | `conversation_id` | string | No | For conversation continuity |
 | `max_sources` | number | No | Max source docs (default: 5) |
+| `model` | string | No | AI model to use (default: groq_llama_3_3_70b) |
+
+### Supported Models
+
+| Provider | Model ID | Description |
+|----------|----------|-------------|
+| Groq | `groq_llama_3_3_70b` | Fast, general queries (default) |
+| Groq | `groq_llama_4_scout` | Vision/document understanding |
+| Groq | `groq_llama_4_maverick` | Complex reasoning |
+| Cohere | `cohere_command_a` | Tool use, structured data |
+| Cohere | `cohere_command_r_plus` | High quality answers |
+| Cohere | `cohere_command_r` | Fast responses |
 
 ### Example Request
 
@@ -87,7 +101,8 @@ Authorization: Bearer {token}
 {
   "query": "What medications is dad currently taking?",
   "family_id": "family-001",
-  "conversation_id": "conv-456"
+  "conversation_id": "conv-456",
+  "model": "groq_llama_3_3_70b"
 }
 ```
 
@@ -104,8 +119,33 @@ Authorization: Bearer {token}
       "snippet": "Current medications: Metformin 500mg..."
     }
   ],
+  "page_sources": [],
   "conversation_id": "conv-456",
   "tokens_used": 1250
+}
+```
+
+### Visual Search Response
+
+When the agent uses visual search (e.g., "show me the page with the budget chart"):
+
+```json
+{
+  "answer": "I found a budget chart on page 3 of the Financial Report...",
+  "sources": [],
+  "page_sources": [
+    {
+      "page_id": 45,
+      "document_id": 123,
+      "document_title": "Financial Report Q4",
+      "page_number": 3,
+      "similarity": 0.89,
+      "page_image": "base64-encoded-thumbnail...",
+      "ocr_text": "Budget breakdown for Q4..."
+    }
+  ],
+  "conversation_id": "conv-456",
+  "tokens_used": 1500
 }
 ```
 
@@ -909,6 +949,111 @@ POST /api/w/archevi/jobs/run/p/f/tenant/invite_to_tenant
 
 ---
 
+## get_search_suggestions
+
+Get intelligent autocomplete suggestions for search queries. Returns suggestions from documents, people, tags, recent queries, extracted entities, and categories - all filtered by tenant for data isolation.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/get_search_suggestions
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query_prefix` | string | Yes | Partial search query (minimum 2 characters) |
+| `tenant_id` | string | Yes | Tenant UUID for data isolation |
+| `user_email` | string | No | User email for recent query suggestions |
+| `limit` | number | No | Max suggestions to return (default: 10) |
+
+### Example Request
+
+```json
+{
+  "query_prefix": "insur",
+  "tenant_id": "5302d94d-4c08-459d-b49f-d211abdb4047",
+  "user_email": "user@example.com",
+  "limit": 10
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "suggestions": [
+    {
+      "type": "document",
+      "value": "Home Insurance Policy",
+      "label": "Home Insurance Policy (insurance)",
+      "document_id": 123,
+      "score": 1.0
+    },
+    {
+      "type": "person",
+      "value": "John Smith",
+      "label": "Person: John Smith",
+      "document_id": null,
+      "score": 0.9
+    },
+    {
+      "type": "tag",
+      "value": "insurance",
+      "label": "Tag: insurance (12 docs)",
+      "document_id": null,
+      "score": 0.75
+    },
+    {
+      "type": "recent",
+      "value": "what is my insurance deductible",
+      "label": "Recent: what is my insurance deductible",
+      "document_id": null,
+      "score": 0.65
+    },
+    {
+      "type": "entity",
+      "value": "State Farm",
+      "label": "Provider: State Farm",
+      "document_id": 123,
+      "score": 0.7
+    },
+    {
+      "type": "category",
+      "value": "category:insurance",
+      "label": "Category: insurance (15 docs)",
+      "document_id": null,
+      "score": 0.6
+    }
+  ]
+}
+```
+
+### Suggestion Types
+
+| Type | Description | Score Range |
+|------|-------------|-------------|
+| `document` | Document titles matching the query | 0.8-1.0 |
+| `person` | Family member names | 0.7-0.9 |
+| `tag` | Document tags with usage counts | 0.75 |
+| `recent` | User's recent search queries | 0.65 |
+| `entity` | Extracted data fields (policy numbers, providers, etc.) | 0.7 |
+| `category` | Document categories with counts | 0.6 |
+
+### Notes
+
+- Suggestions are deduplicated by value
+- Results are sorted by score (highest first)
+- All queries filter by `tenant_id` for complete data isolation
+- Recent queries are filtered by `user_email` (user's own history only)
+- Prefix matching prioritizes results that start with the query
+
+---
+
 ## suggest_tags
 
 Get AI-powered tag and category suggestions before document upload.
@@ -962,6 +1107,360 @@ Authorization: Bearer {token}
 - Frontend can display suggestions for user confirmation
 - `existing_tags_matched` shows tags already in the tenant's collection
 - `new_tags_suggested` shows AI-generated tags not yet in collection
+
+---
+
+## Document Versioning Endpoints
+
+### get_document_versions
+
+Get version history for a document.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/get_document_versions
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `document_id` | string | Yes | Document UUID |
+| `tenant_id` | string | Yes | Tenant UUID |
+
+### Example Request
+
+```json
+{
+  "document_id": "doc-uuid-123",
+  "tenant_id": "tenant-uuid-456"
+}
+```
+
+### Response
+
+```json
+{
+  "document_id": "doc-uuid-123",
+  "document_title": "Home Insurance Policy",
+  "current_version": 3,
+  "version_count": 3,
+  "versions": [
+    {
+      "version_number": 3,
+      "title": "Home Insurance Policy",
+      "content_preview": "Policy details...",
+      "content_hash": "sha256:abc123...",
+      "file_size_bytes": 15420,
+      "change_summary": null,
+      "change_type": "update",
+      "created_by_name": "John Doe",
+      "created_at": "2024-12-08T10:30:00Z",
+      "is_current": true
+    },
+    {
+      "version_number": 2,
+      "title": "Home Insurance Policy",
+      "content_preview": "Previous version...",
+      "content_hash": "sha256:def456...",
+      "file_size_bytes": 14200,
+      "change_summary": "Updated coverage amount",
+      "change_type": "update",
+      "created_by_name": "John Doe",
+      "created_at": "2024-11-15T14:20:00Z",
+      "is_current": false
+    },
+    {
+      "version_number": 1,
+      "title": "Home Insurance Policy",
+      "content_preview": "Original content...",
+      "content_hash": "sha256:ghi789...",
+      "file_size_bytes": 12000,
+      "change_summary": null,
+      "change_type": "initial",
+      "created_by_name": "John Doe",
+      "created_at": "2024-01-15T10:30:00Z",
+      "is_current": false
+    }
+  ]
+}
+```
+
+---
+
+### rollback_document_version
+
+Rollback a document to a previous version. Creates a new version with the old content (preserves history).
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/rollback_document_version
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `document_id` | string | Yes | Document UUID |
+| `target_version` | number | Yes | Version number to rollback to |
+| `tenant_id` | string | Yes | Tenant UUID |
+| `user_id` | string | Yes | User performing the rollback |
+
+### Example Request
+
+```json
+{
+  "document_id": "doc-uuid-123",
+  "target_version": 1,
+  "tenant_id": "tenant-uuid-456",
+  "user_id": "user-uuid-789"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "document_id": "doc-uuid-123",
+  "new_version_number": 4,
+  "rolled_back_from": 3,
+  "rolled_back_to": 1,
+  "message": "Document rolled back to version 1. New version 4 created."
+}
+```
+
+---
+
+### create_document_version
+
+Create a new version of a document (used internally when documents are updated).
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/create_document_version
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `document_id` | string | Yes | Document UUID |
+| `title` | string | Yes | Document title |
+| `content` | string | Yes | Document content |
+| `tenant_id` | string | Yes | Tenant UUID |
+| `user_id` | string | Yes | User creating the version |
+| `change_summary` | string | No | Description of changes |
+| `change_type` | string | No | One of: initial, update, correction, major_revision |
+| `file_size_bytes` | number | No | File size in bytes |
+| `storage_path` | string | No | Path in storage bucket |
+
+### Response
+
+```json
+{
+  "success": true,
+  "document_id": "doc-uuid-123",
+  "version_number": 4,
+  "message": "Version 4 created successfully"
+}
+```
+
+---
+
+## Secure Links Endpoints
+
+### create_secure_link
+
+Create a password-protected shareable link for a document.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/create_secure_link
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `document_id` | number | Yes | Document ID to share |
+| `tenant_id` | string | Yes | Tenant UUID |
+| `user_id` | string | Yes | User creating the link |
+| `password` | string | No | Optional password protection |
+| `max_views` | number | No | View limit (null = unlimited) |
+| `expires_in` | string | No | Expiration: 1_hour, 24_hours, 7_days, 30_days, 1_year, never |
+
+### Example Request
+
+```json
+{
+  "document_id": 123,
+  "tenant_id": "tenant-uuid-456",
+  "user_id": "user-uuid-789",
+  "password": "secret123",
+  "max_views": 5,
+  "expires_in": "7_days"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "link_id": "link-uuid-123",
+  "token": "abc123xyz...",
+  "url": "https://archevi.ca/share/abc123xyz",
+  "expires_at": "2025-12-17T10:30:00Z",
+  "max_views": 5,
+  "has_password": true
+}
+```
+
+---
+
+### access_secure_link
+
+Access a document via secure link (validates token, password, view limits).
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/access_secure_link
+Content-Type: application/json
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `token` | string | Yes | Secure link token |
+| `password` | string | Conditional | Required if link has password |
+
+### Example Request
+
+```json
+{
+  "token": "abc123xyz...",
+  "password": "secret123"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "document": {
+    "id": 123,
+    "title": "Home Insurance Policy",
+    "content": "Policy details...",
+    "category": "insurance"
+  },
+  "views_remaining": 4,
+  "expires_at": "2025-12-17T10:30:00Z"
+}
+```
+
+### Error Response (Invalid Password)
+
+```json
+{
+  "success": false,
+  "error": "Invalid password",
+  "code": "INVALID_PASSWORD"
+}
+```
+
+---
+
+### list_secure_links
+
+List all secure links for a tenant.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/list_secure_links
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tenant_id` | string | Yes | Tenant UUID |
+| `document_id` | number | No | Filter by specific document |
+| `include_expired` | boolean | No | Include expired links (default: false) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "links": [
+    {
+      "id": "link-uuid-123",
+      "document_id": 123,
+      "document_title": "Home Insurance Policy",
+      "token": "abc123xyz...",
+      "url": "https://archevi.ca/share/abc123xyz",
+      "has_password": true,
+      "max_views": 5,
+      "view_count": 2,
+      "expires_at": "2025-12-17T10:30:00Z",
+      "is_active": true,
+      "created_at": "2025-12-10T10:30:00Z",
+      "created_by_name": "John Doe"
+    }
+  ],
+  "count": 1
+}
+```
+
+---
+
+### revoke_secure_link
+
+Revoke an active secure link.
+
+### Request
+
+```http
+POST /api/w/archevi/jobs/run/p/f/chatbot/revoke_secure_link
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `link_id` | string | Yes | Secure link UUID |
+| `tenant_id` | string | Yes | Tenant UUID |
+
+### Response
+
+```json
+{
+  "success": true,
+  "link_id": "link-uuid-123",
+  "message": "Secure link revoked successfully"
+}
+```
 
 ---
 

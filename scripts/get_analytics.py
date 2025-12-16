@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Fetch usage analytics and statistics for the Archevi dashboard.
 

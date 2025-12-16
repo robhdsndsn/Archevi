@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Deploy admin scripts to Windmill"""
 import requests
+from config import WINDMILL_URL, WINDMILL_WORKSPACE as WORKSPACE, get_windmill_token
 
-WINDMILL_URL = "http://localhost"
-TOKEN = "t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi"
-WORKSPACE = "family-brain"
+TOKEN = get_windmill_token()
 
 # Lock file for admin scripts (wmill needs httpx)
 lock_content = """# py: 3.11

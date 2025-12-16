@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Invite User to Tenant
 Creates an invitation for a user to join a family.
@@ -128,36 +134,21 @@ def main(
 
             conn.commit()
 
-            # Send invite email
+            # Send invite email using centralized email service
             try:
-                import resend
-                resend.api_key = wmill.get_variable("u/admin/resend_api_key")
+                from email_service import EmailService
 
                 invite_url = f"https://archevi.ca/invite?token={invite_token}"
 
-                resend.Emails.send({
-                    "from": "Archevi <hello@archevi.ca>",
-                    "to": invitee_email,
-                    "subject": f"You're invited to join {inviter['tenant_name']} on Archevi",
-                    "html": f"""
-                    <h1>You've been invited!</h1>
-
-                    <p><strong>{inviter['inviter_name']}</strong> has invited you to join
-                    <strong>{inviter['tenant_name']}</strong> on Archevi.</p>
-
-                    <p>Archevi is a private, AI-powered family knowledge base where families
-                    organize and search their important documents.</p>
-
-                    <p><a href="{invite_url}" style="background:#000;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">
-                        Accept Invitation
-                    </a></p>
-
-                    <p>This invitation expires in 7 days.</p>
-
-                    <p>Questions? Just reply to this email.</p>
-                    """
-                })
-                email_sent = True
+                service = EmailService()
+                result = service.send_tenant_invite(
+                    to=invitee_email,
+                    inviter_name=inviter['inviter_name'],
+                    tenant_name=inviter['tenant_name'],
+                    invite_url=invite_url,
+                    role=role
+                )
+                email_sent = result.get("success", False)
             except Exception as e:
                 email_sent = False
 

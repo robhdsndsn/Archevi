@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 
 """
 Get documents with expiry dates within a specified number of days.

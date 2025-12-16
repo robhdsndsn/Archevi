@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Switch Tenant Context
 Updates user's active tenant and returns new JWT token.
@@ -9,10 +15,11 @@ Windmill Script Configuration:
 
 import wmill
 import jwt
+from config import get_jwt_secret
 from datetime import datetime, timedelta
 
 # JWT secret - matches auth_login.py, auth_verify.py, auth_refresh.py
-JWT_SECRET = "archevi-jwt-secret-2026-change-in-production"
+JWT_SECRET = get_jwt_secret()
 JWT_ALGORITHM = "HS256"
 
 

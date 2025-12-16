@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git check-ignore:*)",
+      "Bash(pnpm outdated:*)",
+      "Bash(pnpm audit:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(docker compose:*)",
+      "Bash(python fix_jwt_secret.py:*)",
+      "Bash(pnpm update:*)",
+      "Bash(git checkout:*)",
+      "Bash(test:*)",
+      "Bash(if [ ! -f .env ])",
+      "Bash(then cp .env.example .env)",
+      "Bash(else echo \".env already exists\")",
+      "Bash(fi)",
+      "Bash(python3:*)",
+      "Bash(bash setup_env.sh:*)",
+      "Bash(git add:*)"
+    ]
+  },
+  "allowedTools": [
+    "Bash(\"C:\\Users\\RHudson\\AppData\\Local\\Programs\\beads\\bd.exe\" *)"
+  ]
+}

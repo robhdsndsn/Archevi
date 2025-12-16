@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Multi-Tenant System Integration Test
 Creates test data and validates the entire tenant system.
@@ -59,12 +65,61 @@ def main(cleanup_first: bool = True) -> dict:
     try:
         # ============================================
         # CLEANUP (if requested)
+        # Proper order to respect FK constraints:
+        # 1. Clear user references to test tenants (default_tenant_id)
+        # 2. Delete dependent records in correct order
+        # 3. Delete tenants
+        # 4. Delete users
         # ============================================
         if cleanup_first:
+            # Get test tenant IDs for subqueries
+            test_tenant_subquery = "SELECT id FROM tenants WHERE slug LIKE 'test-%'"
+            test_user_subquery = "SELECT id FROM users WHERE email LIKE 'test-%@archevi.ca'"
+
+            # Step 1: Clear default_tenant_id references FIRST (this is the FK that causes issues)
+            cursor.execute(f"""
+                UPDATE users SET default_tenant_id = NULL
+                WHERE default_tenant_id IN ({test_tenant_subquery})
+            """)
+
+            # Step 2: Delete dependent records (most have ON DELETE CASCADE, but be explicit)
+            # Delete chat messages (via cascade from chat_sessions, but be safe)
+            cursor.execute(f"""
+                DELETE FROM chat_messages WHERE session_id IN (
+                    SELECT id FROM chat_sessions WHERE tenant_id IN ({test_tenant_subquery})
+                )
+            """)
+
+            # Delete chat sessions
+            cursor.execute(f"DELETE FROM chat_sessions WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Delete documents with TEST: prefix
             cursor.execute("DELETE FROM documents WHERE title LIKE 'TEST:%'")
-            cursor.execute("DELETE FROM tenant_memberships WHERE tenant_id IN (SELECT id FROM tenants WHERE slug LIKE 'test-%')")
+
+            # Delete AI usage records
+            cursor.execute(f"DELETE FROM ai_usage WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Delete monthly usage summaries
+            cursor.execute(f"DELETE FROM monthly_usage_summary WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Delete admin audit logs (no cascade)
+            cursor.execute(f"DELETE FROM admin_audit_logs WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Delete API usage records (no cascade)
+            cursor.execute(f"DELETE FROM api_usage WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Delete provisioning queue entries
+            cursor.execute(f"DELETE FROM provisioning_queue WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Delete tenant memberships (has cascade, but explicit is clearer)
+            cursor.execute(f"DELETE FROM tenant_memberships WHERE tenant_id IN ({test_tenant_subquery})")
+
+            # Step 3: Now safe to delete tenants
             cursor.execute("DELETE FROM tenants WHERE slug LIKE 'test-%'")
+
+            # Step 4: Finally delete test users
             cursor.execute("DELETE FROM users WHERE email LIKE 'test-%@archevi.ca'")
+
             conn.commit()
 
         # ============================================

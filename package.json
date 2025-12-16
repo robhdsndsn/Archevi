@@ -1,0 +1,21 @@
+{
+  "name": "archevi",
+  "version": "0.4.9",
+  "private": true,
+  "description": "RAG-powered family knowledge base",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:frontend": "cd frontend && pnpm test:run",
+    "test:admin": "cd admin && pnpm test:run",
+    "test:all": "npm run test:frontend && npm run test:admin",
+    "dev": "concurrently \"cd frontend && pnpm dev\" \"cd admin && pnpm dev\"",
+    "build": "cd frontend && pnpm build && cd ../admin && pnpm build"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "@playwright/test": "^1.49.1"
+  }
+}

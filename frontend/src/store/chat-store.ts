@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Source } from '@/api/windmill';
+import type { Source, PageSource, ToolCall } from '@/api/windmill';
 
 // UUID generator that works in non-secure contexts (HTTP)
 // crypto.randomUUID() only works in secure contexts (HTTPS/localhost)
@@ -22,9 +22,11 @@ export interface Message {
   role: 'user' | 'assistant';
   timestamp: Date;
   sources?: Source[];
+  pageSources?: PageSource[];  // Visual search results (PDF pages)
   confidence?: number;
   reasoning?: string; // AI reasoning/thought process
   isStreaming?: boolean; // Whether reasoning is still streaming
+  toolCalls?: ToolCall[]; // AI tool calls made (e.g., search_documents, search_pdf_pages)
 }
 
 export interface ChatSession {
@@ -47,7 +49,8 @@ interface ChatStore {
   messages: Message[];
 
   // Actions
-  addMessage: (msg: Omit<Message, 'id' | 'timestamp'>) => void;
+  addMessage: (msg: Omit<Message, 'id' | 'timestamp'>) => Message;
+  updateMessage: (messageId: string, updates: Partial<Omit<Message, 'id' | 'timestamp'>>) => void;
   setLoading: (loading: boolean) => void;
   setWindmillSessionId: (id: string) => void;
   clearChat: () => void;
@@ -89,7 +92,14 @@ export const useChatStore = create<ChatStore>()(
         return session?.messages || [];
       },
 
-      addMessage: (msg) =>
+      addMessage: (msg) => {
+        const messageId = generateUUID();
+        const newMessage: Message = {
+          ...msg,
+          id: messageId,
+          timestamp: new Date(),
+        };
+
         set((state) => {
           let sessionId = state.currentSessionId;
           let sessions = [...state.sessions];
@@ -111,14 +121,7 @@ export const useChatStore = create<ChatStore>()(
           // Add message to current session
           sessions = sessions.map(session => {
             if (session.id === sessionId) {
-              const newMessages = [
-                ...session.messages,
-                {
-                  ...msg,
-                  id: generateUUID(),
-                  timestamp: new Date(),
-                },
-              ];
+              const newMessages = [...session.messages, newMessage];
               return {
                 ...session,
                 messages: newMessages,
@@ -132,6 +135,30 @@ export const useChatStore = create<ChatStore>()(
           return {
             sessions,
             currentSessionId: sessionId,
+          };
+        });
+
+        return newMessage;
+      },
+
+      updateMessage: (messageId, updates) =>
+        set((state) => {
+          if (!state.currentSessionId) return state;
+
+          return {
+            sessions: state.sessions.map(session => {
+              if (session.id !== state.currentSessionId) return session;
+
+              return {
+                ...session,
+                messages: session.messages.map(message =>
+                  message.id === messageId
+                    ? { ...message, ...updates }
+                    : message
+                ),
+                updatedAt: new Date(),
+              };
+            }),
           };
         }),
 

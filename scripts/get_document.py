@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 
 """
 Get a single document from the Family Second Brain knowledge base.
@@ -57,7 +58,8 @@ def main(document_id: int) -> dict:
         cursor.execute("""
             SELECT d.id, d.title, d.content, d.category, d.source_file, d.created_by,
                    d.created_at, d.updated_at, d.assigned_to, fm.name as assigned_to_name,
-                   d.visibility
+                   d.visibility, d.extracted_data,
+                   d.has_image_embedding, d.image_url, d.content_type
             FROM family_documents d
             LEFT JOIN family_members fm ON d.assigned_to = fm.id
             WHERE d.id = %s
@@ -82,6 +84,10 @@ def main(document_id: int) -> dict:
             "assigned_to": row[8],
             "assigned_to_name": row[9],
             "visibility": row[10] or "everyone",
+            "extracted_data": row[11] if row[11] else None,
+            "has_image_embedding": row[12] or False,
+            "image_url": row[13],
+            "content_type": row[14] or "text",
         }
 
         return {

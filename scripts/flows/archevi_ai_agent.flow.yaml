@@ -1,0 +1,125 @@
+# Archevi AI Agent Flow
+# Path: f/chatbot/archevi_ai_agent
+#
+# This flow uses Windmill AI Agents with tool calling for RAG.
+# Benefits over rag_query.py:
+# - Streaming responses (SSE)
+# - Built-in conversation memory
+# - Multi-provider support (Anthropic, OpenAI, etc.)
+# - Tool calling for document search
+#
+# Deploy via Windmill UI or CLI:
+#   wmill flow push archevi_ai_agent.flow.yaml
+
+summary: Archevi AI Agent - Family Document Assistant
+description: |
+  AI-powered assistant that can search and answer questions about family documents.
+  Uses Cohere for embeddings/reranking, Anthropic Claude for generation.
+  Supports streaming responses and conversation memory.
+
+# Flow inputs (exposed to API callers)
+schema:
+  $schema: https://json-schema.org/draft/2020-12/schema
+  type: object
+  required:
+    - user_message
+    - tenant_id
+  properties:
+    user_message:
+      type: string
+      description: The user's question or message
+    tenant_id:
+      type: string
+      format: uuid
+      description: Tenant UUID for data isolation
+    user_member_type:
+      type: string
+      enum: [admin, adult, teen, child]
+      description: User's member type for visibility filtering
+    user_member_id:
+      type: integer
+      description: User's family_members.id for private doc access
+    session_id:
+      type: string
+      format: uuid
+      description: Optional session ID for conversation continuity
+
+# Value settings for flow
+value:
+  modules:
+    - id: ai_agent
+      value:
+        type: ai
+        # AI Provider Configuration
+        # Options: openai, anthropic, azure_openai, mistral, deepseek, google, groq, openrouter, together, custom
+        ai_resource:
+          type: resource
+          path: f/chatbot/groq_ai
+        model: llama-3.1-70b-versatile  # Free tier, fast, good quality
+
+        # System prompt - defines the AI's role
+        system_prompt: |
+          You are Archevi, a helpful AI assistant for family document management.
+
+          Your role is to help family members find and understand information from their stored documents.
+
+          Guidelines:
+          - Always search documents before answering questions about family information
+          - Cite sources by mentioning document titles
+          - If you can't find relevant information, say so clearly
+          - Be helpful, friendly, and respect privacy
+          - For sensitive topics (medical, financial), remind users to verify with professionals
+
+          You have access to a search_documents tool that finds relevant family documents.
+          Use it whenever the user asks about their documents or stored information.
+
+        # User message (templated from input)
+        user_message: "${flow_input.user_message}"
+
+        # Streaming - enables real-time response
+        streaming: true
+
+        # Conversation memory - number of previous messages to include
+        messages_context_length: 10
+
+        # Temperature - lower for more factual responses
+        temperature: 0.3
+
+        # Max tokens for response
+        max_completion_tokens: 2048
+
+        # Tools available to the agent
+        tools:
+          - type: script
+            path: f/chatbot/search_documents_tool
+            name: search_documents
+            description: |
+              Search family documents using semantic search.
+              Use this when the user asks questions about their documents,
+              stored information, or anything related to their family knowledge base.
+              Returns relevant documents with content and relevance scores.
+            # Input mapping - pass tenant context to tool
+            input_transforms:
+              query:
+                type: javascript
+                expr: flow_input.user_message
+              tenant_id:
+                type: javascript
+                expr: flow_input.tenant_id
+              user_member_type:
+                type: javascript
+                expr: flow_input.user_member_type || null
+              user_member_id:
+                type: javascript
+                expr: flow_input.user_member_id || null
+              top_k:
+                type: static
+                value: 5
+
+# Enable chat mode for conversational UI
+chat_mode: true
+
+# Webhook settings
+webhook:
+  # Enable memory_id parameter for conversation continuity
+  async: true

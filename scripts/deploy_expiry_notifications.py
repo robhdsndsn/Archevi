@@ -11,10 +11,9 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
+from config import WINDMILL_URL, WINDMILL_WORKSPACE as WORKSPACE, get_windmill_token
 
-WINDMILL_URL = "http://localhost"
-TOKEN = "t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi"
-WORKSPACE = "family-brain"
+TOKEN = get_windmill_token()
 
 # Lock file content for Python dependencies
 LOCK_CONTENT = """# py: 3.11

@@ -2,10 +2,9 @@
 """Deploy updated rag_query.py to Windmill"""
 import requests
 import json
+from config import WINDMILL_URL, WINDMILL_WORKSPACE as WORKSPACE, get_windmill_token
 
-WINDMILL_URL = "http://localhost"
-TOKEN = "t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi"
-WORKSPACE = "family-brain"
+TOKEN = get_windmill_token()
 
 # Read the script content
 with open('rag_query.py', 'r', encoding='utf-8') as f:

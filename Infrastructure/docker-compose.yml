@@ -1,7 +1,6 @@
 # Archevi - Docker Compose Configuration
 # This file sets up the complete infrastructure for the project
 
-version: '3.8'
 
 services:
   # PostgreSQL with pgvector extension for vector embeddings

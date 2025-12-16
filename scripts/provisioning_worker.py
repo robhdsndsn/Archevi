@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Provisioning Worker
 Processes the provisioning queue to complete tenant setup tasks.
@@ -112,49 +118,33 @@ def configure_subdomain(tenant_id: str, metadata: dict, db_conn) -> dict:
 def send_welcome_email(tenant_id: str, metadata: dict, db_conn) -> dict:
     """
     Send welcome email to new tenant owner.
+    Uses centralized email service for consistent branding.
     """
-    import resend
-
-    resend.api_key = wmill.get_variable("u/admin/resend_api_key")
+    from email_service import EmailService
 
     email = metadata.get("email")
     family_name = metadata.get("family_name")
+    owner_name = metadata.get("owner_name")
 
     try:
-        response = resend.Emails.send({
-            "from": "Archevi <hello@archevi.ca>",
-            "to": email,
-            "subject": f"Welcome to Archevi - {family_name} is ready!",
-            "html": f"""
-            <h1>Welcome to Archevi!</h1>
+        service = EmailService()
+        result = service.send_welcome(
+            to=email,
+            family_name=family_name,
+            owner_name=owner_name
+        )
 
-            <p>Your family knowledge base <strong>{family_name}</strong> is now ready.</p>
-
-            <h2>Getting Started</h2>
-
-            <ol>
-                <li><strong>Add your first document</strong> - Upload a PDF, paste text, or type directly</li>
-                <li><strong>Ask a question</strong> - Try "What's in my documents?"</li>
-                <li><strong>Invite family members</strong> - Share access with your family</li>
-            </ol>
-
-            <p><a href="https://archevi.ca/guide/">Read our Getting Started guide</a></p>
-
-            <h2>Your Plan</h2>
-
-            <p>You're on a <strong>14-day free trial</strong> with full access to all features.</p>
-
-            <p>Questions? Just reply to this email.</p>
-
-            <p>Welcome to the family,<br>
-            The Archevi Team</p>
-            """
-        })
-
-        return {
-            "success": True,
-            "email_id": response.get("id")
-        }
+        if result["success"]:
+            return {
+                "success": True,
+                "email_id": result.get("email_id")
+            }
+        else:
+            # Don't fail provisioning if email fails
+            return {
+                "success": True,
+                "warning": f"Email failed but continuing: {result.get('error')}"
+            }
 
     except Exception as e:
         # Don't fail provisioning if email fails

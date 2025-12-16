@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "features",
+  "info": {
+    "singularName": "feature",
+    "pluralName": "features",
+    "displayName": "Feature"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true,
+      "maxLength": 500
+    },
+    "long_description": {
+      "type": "blocks"
+    },
+    "icon": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["Core", "AI", "Security", "Collaboration"],
+      "default": "Core"
+    },
+    "display_order": {
+      "type": "integer",
+      "default": 0
+    },
+    "is_highlighted": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

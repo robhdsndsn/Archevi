@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 #   - cohere
 
 """
@@ -68,8 +69,15 @@ def main(
     # Visibility filtering parameters
     user_member_type: str | None = None,  # 'admin', 'adult', 'teen', 'child'
     user_member_id: int | None = None,    # Current user's family_member.id for private doc access
+    # Image search parameter
+    include_images: bool = True,  # Include documents with image embeddings in search
+    # Alias for compatibility
+    query: str | None = None,  # Alternative name for search_term
 ) -> SearchResult:
     """Search documents with advanced filters."""
+    # Support both 'search_term' and 'query' parameter names
+    if not search_term and query:
+        search_term = query
 
     postgres_db = wmill.get_resource("f/chatbot/postgres_db")
 
@@ -82,6 +90,10 @@ def main(
         sslmode=postgres_db.get('sslmode', 'disable')
     )
     cursor = conn.cursor()
+
+    # Enable pgvector iterative scans for filtered queries (pgvector 0.8.0+)
+    # This prevents overfiltering when combining vector search with WHERE clauses
+    cursor.execute("SET hnsw.iterative_scan = strict_order;")
 
     # Build query with filters
     conditions = []
@@ -175,39 +187,75 @@ def main(
 
         # First get total count
         # Note: Uses family_documents table (legacy) which has tenant_id column added
+        # Include documents with either text embedding OR image embedding
+        if include_images:
+            embedding_condition = "(d.embedding IS NOT NULL OR d.image_embedding IS NOT NULL)"
+        else:
+            embedding_condition = "d.embedding IS NOT NULL"
+
         count_query = f"""
             SELECT COUNT(*)
             FROM family_documents d
             WHERE {where_clause}
-              AND d.embedding IS NOT NULL
+              AND {embedding_condition}
         """
         cursor.execute(count_query, params)
         total = cursor.fetchone()[0]
 
         # Then get paginated results with similarity
+        # Use GREATEST to get best score from text OR image embedding
+        if include_images:
+            similarity_expr = """
+                GREATEST(
+                    COALESCE(1 - (d.embedding <=> %s::vector), 0),
+                    COALESCE(1 - (d.image_embedding <=> %s::vector), 0)
+                )
+            """
+            order_expr = """
+                LEAST(
+                    COALESCE(d.embedding <=> %s::vector, 999),
+                    COALESCE(d.image_embedding <=> %s::vector, 999)
+                )
+            """
+        else:
+            similarity_expr = "1 - (d.embedding <=> %s::vector)"
+            order_expr = "d.embedding <=> %s::vector"
+
         search_query = f"""
             SELECT
                 d.id,
                 d.title,
                 LEFT(d.content, 200) as content_preview,
                 d.category,
-                1 - (d.embedding <=> %s::vector) as similarity,
+                {similarity_expr} as similarity,
                 d.created_at,
                 COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags,
                 d.assigned_to,
                 fm.name as assigned_to_name,
-                d.visibility
+                d.visibility,
+                d.has_image_embedding,
+                d.image_url,
+                d.content_type
             FROM family_documents d
             LEFT JOIN family_members fm ON d.assigned_to = fm.id
             WHERE {where_clause}
-              AND d.embedding IS NOT NULL
-            ORDER BY d.embedding <=> %s::vector
+              AND {embedding_condition}
+            ORDER BY {order_expr}
             LIMIT %s OFFSET %s
         """
-        cursor.execute(
-            search_query,
-            [query_embedding] + params + [query_embedding, limit, offset]
-        )
+
+        # Build params based on include_images
+        if include_images:
+            # similarity_expr needs 2 embeddings, order_expr needs 2 more
+            cursor.execute(
+                search_query,
+                [query_embedding, query_embedding] + params + [query_embedding, query_embedding, limit, offset]
+            )
+        else:
+            cursor.execute(
+                search_query,
+                [query_embedding] + params + [query_embedding, limit, offset]
+            )
 
     else:
         # No search term - just filter and order by date
@@ -230,7 +278,10 @@ def main(
                 COALESCE((SELECT array_agg(t) FROM jsonb_array_elements_text(d.metadata->'tags') t), ARRAY[]::text[]) as tags,
                 d.assigned_to,
                 fm.name as assigned_to_name,
-                d.visibility
+                d.visibility,
+                d.has_image_embedding,
+                d.image_url,
+                d.content_type
             FROM family_documents d
             LEFT JOIN family_members fm ON d.assigned_to = fm.id
             WHERE {where_clause}
@@ -255,10 +306,15 @@ def main(
             "tags": list(row[6]) if row[6] else [],
             "assigned_to": row[7],
             "assigned_to_name": row[8],
-            "visibility": row[9] or "everyone"
+            "visibility": row[9] or "everyone",
+            "has_image_embedding": row[10] or False,
+            "image_url": row[11],
+            "content_type": row[12] or "text"
         })
 
     return {
+        "success": True,
+        "results": documents,  # Alias for consistency with search_documents
         "documents": documents,
         "total": total,
         "has_more": offset + len(documents) < total

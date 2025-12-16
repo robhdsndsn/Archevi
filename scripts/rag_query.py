@@ -7,6 +7,7 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
+#   - httpx
 
 """
 RAG (Retrieval-Augmented Generation) query pipeline for Archevi.
@@ -77,20 +78,26 @@ def is_valid_uuid(value: Optional[str]) -> bool:
 
 
 def main(
-    query: str,
-    tenant_id: str,
+    query: str = None,
+    tenant_id: str = None,
     session_id: Optional[str] = None,
     user_id: Optional[str] = None,
     user_member_type: Optional[str] = None,  # 'admin', 'adult', 'teen', 'child' for visibility filtering
     user_member_id: Optional[int] = None,    # family_members.id for private doc access
+    # Alias for compatibility with rag_query_agent
+    user_message: Optional[str] = None,  # Alternative name for query
 ) -> dict:
     """
     Execute RAG pipeline: embed query -> search -> rerank -> generate -> store
     All operations are scoped to the specified tenant_id for data isolation.
     """
+    # Support both 'query' and 'user_message' parameter names
+    if not query and user_message:
+        query = user_message
+
     # Validate input
     if not query or not query.strip():
-        raise ValueError("Query cannot be empty")
+        raise ValueError("Query cannot be empty (use 'query' or 'user_message' parameter)")
 
     if not tenant_id or not tenant_id.strip():
         raise ValueError("tenant_id is required for data isolation")
@@ -143,6 +150,10 @@ def main(
         )
         register_vector(conn)
         cursor = conn.cursor()
+
+        # Enable pgvector iterative scans for filtered queries (pgvector 0.8.0+)
+        # This prevents overfiltering when combining vector search with WHERE clauses
+        cursor.execute("SET hnsw.iterative_scan = strict_order;")
 
         # Search for top 10 similar documents - TENANT ISOLATED + VISIBILITY FILTERED
         # Only searches documents belonging to this specific tenant

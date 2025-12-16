@@ -7,10 +7,9 @@ Tests all major functionality including the new visibility feature.
 import requests
 import json
 import time
+from config import WINDMILL_URL, WINDMILL_WORKSPACE as WORKSPACE, get_windmill_token
 
-WINDMILL_URL = 'http://localhost'
-WINDMILL_TOKEN = 'vBTbBdIfUmgWj4cCbl4EEXNB7O2xt50J'
-WORKSPACE = 'family-brain'
+WINDMILL_TOKEN = get_windmill_token()
 
 headers = {
     'Authorization': f'Bearer {WINDMILL_TOKEN}',

@@ -288,7 +288,7 @@ Step-by-step guide for transforming research into launch assets.
 - [ ] Download outputs:
   - [ ] Privacy explainers (3 versions) → Use on different pages
   - [ ] RAG explainer (visual + text) → Add to homepage
-  - [ ] Self-hosting decision matrix → Add to pricing page
+  - [ ] SaaS vs Enterprise decision matrix → Add to pricing page
   - [ ] FAQ (15 Q&A) → Add to docs
   - [ ] Developer pitch deck (6 slides) → Share on GitHub
   - [ ] Technical blog post outline → Assign to writer

@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "legal-pages",
+  "info": {
+    "singularName": "legal-page",
+    "pluralName": "legal-pages",
+    "displayName": "Legal Page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "content": {
+      "type": "blocks",
+      "required": true
+    },
+    "last_updated": {
+      "type": "date",
+      "required": true
+    },
+    "version": {
+      "type": "string",
+      "maxLength": 20
+    }
+  }
+}

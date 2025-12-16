@@ -6,6 +6,7 @@ This embeds each document using Cohere and stores in PostgreSQL with pgvector.
 import json
 import urllib.request
 import os
+from config import WINDMILL_BASE_URL, get_windmill_token
 
 # Test documents to upload
 documents = [
@@ -98,8 +99,8 @@ Email: john.smith@insurance.com""",
 ]
 
 # Windmill API config
-BASE_URL = "http://localhost/api/w/family-brain"
-TOKEN = "9goQa0kzfw15lT9okYDCG6HiwTmiEYfO"
+BASE_URL = WINDMILL_BASE_URL
+TOKEN = get_windmill_token()
 
 def run_script(path: str, args: dict):
     """Run a Windmill script and return the result."""

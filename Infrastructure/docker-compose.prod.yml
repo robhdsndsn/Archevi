@@ -1,0 +1,267 @@
+# Archevi Production Docker Compose
+# Production-ready configuration with proper security, networking, and resource limits
+#
+# Usage:
+#   1. Copy .env.production.example to .env.production
+#   2. Fill in all required values (especially secrets!)
+#   3. Run: docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+#
+# Requirements:
+#   - Docker 20.10+
+#   - Docker Compose v2
+#   - Domain with DNS pointing to server
+#   - Port 80 and 443 open
+
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "20m"
+    max-file: "10"
+    compress: "true"
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+services:
+  # =============================================================================
+  # DATABASE - PostgreSQL with pgvector
+  # =============================================================================
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: archevi-db
+    restart: always
+    shm_size: 1g
+    networks:
+      - archevi-internal
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-archevi}
+      POSTGRES_USER: ${POSTGRES_USER:-archevi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-archevi} -d ${POSTGRES_DB:-archevi}"]
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+    logging: *default-logging
+
+  # =============================================================================
+  # WINDMILL SERVER - API and Web UI
+  # =============================================================================
+  windmill_server:
+    image: ${WM_IMAGE:-ghcr.io/windmill-labs/windmill:main}
+    container_name: archevi-windmill-server
+    pull_policy: always
+    restart: always
+    networks:
+      - archevi-internal
+    expose:
+      - 8000
+      - 2525
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-archevi}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB:-archevi}?sslmode=disable
+      - MODE=server
+      - BASE_URL=${BASE_URL:-https://api.archevi.ca}
+      - RUST_LOG=${RUST_LOG:-info}
+      - DISABLE_NSJAIL=${DISABLE_NSJAIL:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/version"]
+    volumes:
+      - worker_logs:/tmp/windmill/logs
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "0.25"
+          memory: 512M
+    logging: *default-logging
+
+  # =============================================================================
+  # WINDMILL WORKERS - Job Execution
+  # =============================================================================
+  windmill_worker:
+    image: ${WM_IMAGE:-ghcr.io/windmill-labs/windmill:main}
+    pull_policy: always
+    restart: always
+    networks:
+      - archevi-internal
+    deploy:
+      replicas: ${WORKER_REPLICAS:-3}
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+        reservations:
+          cpus: "0.25"
+          memory: 512M
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-archevi}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB:-archevi}?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=default
+      - RUST_LOG=${RUST_LOG:-info}
+      - DISABLE_NSJAIL=${DISABLE_NSJAIL:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - worker_dependency_cache:/tmp/windmill/cache
+      - worker_logs:/tmp/windmill/logs
+    logging: *default-logging
+
+  # =============================================================================
+  # WINDMILL NATIVE WORKER - Lightweight Jobs
+  # =============================================================================
+  windmill_worker_native:
+    image: ${WM_IMAGE:-ghcr.io/windmill-labs/windmill:main}
+    container_name: archevi-windmill-native
+    pull_policy: always
+    restart: always
+    networks:
+      - archevi-internal
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-archevi}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB:-archevi}?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=native
+      - NUM_WORKERS=8
+      - SLEEP_QUEUE=200
+      - RUST_LOG=${RUST_LOG:-info}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - worker_logs:/tmp/windmill/logs
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    logging: *default-logging
+
+  # =============================================================================
+  # LSP SERVER - Code Intelligence
+  # =============================================================================
+  lsp:
+    image: ghcr.io/windmill-labs/windmill-lsp:latest
+    container_name: archevi-lsp
+    pull_policy: always
+    restart: always
+    networks:
+      - archevi-internal
+    expose:
+      - 3001
+    volumes:
+      - lsp_cache:/pyls/.cache
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    logging: *default-logging
+
+  # =============================================================================
+  # FRONTEND - React Application (Built)
+  # =============================================================================
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.prod
+    container_name: archevi-frontend
+    restart: always
+    networks:
+      - archevi-internal
+    expose:
+      - 80
+    environment:
+      - VITE_WINDMILL_URL=${BASE_URL:-https://api.archevi.ca}
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    logging: *default-logging
+
+  # =============================================================================
+  # CADDY - Reverse Proxy with Auto HTTPS
+  # =============================================================================
+  caddy:
+    image: ghcr.io/windmill-labs/caddy-l4:latest
+    container_name: archevi-caddy
+    restart: always
+    networks:
+      - archevi-internal
+      - archevi-external
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "25:25"
+    environment:
+      - DOMAIN=${DOMAIN:-archevi.ca}
+      - API_DOMAIN=${API_DOMAIN:-api.archevi.ca}
+      - ACME_EMAIL=${ACME_EMAIL:?ACME_EMAIL is required for Let's Encrypt}
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    logging: *default-logging
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  db_data:
+    driver: local
+  worker_dependency_cache:
+    driver: local
+  worker_logs:
+    driver: local
+  lsp_cache:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  # Internal network - services communicate here
+  archevi-internal:
+    driver: bridge
+    internal: true
+  # External network - only Caddy has access
+  archevi-external:
+    driver: bridge

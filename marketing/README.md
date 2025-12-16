@@ -9,7 +9,7 @@ This folder contains the complete marketing strategy for Archevi, broken down in
 | [00_executive_summary.md](00_executive_summary.md) | High-level strategy overview | Start here |
 | [01_competitive_analysis.md](01_competitive_analysis.md) | Market landscape & positioning | Reference |
 | [02_market_positioning.md](02_market_positioning.md) | Messaging by audience | High |
-| [03_pricing_strategy.md](03_pricing_strategy.md) | BYOK model & tiers | High |
+| [03_pricing_strategy.md](03_pricing_strategy.md) | All-inclusive pricing & tiers | High |
 | [04_target_segments.md](04_target_segments.md) | Customer personas & priorities | High |
 | [05_launch_timeline.md](05_launch_timeline.md) | Pre-launch to post-launch plan | High |
 | [06_marketing_channels.md](06_marketing_channels.md) | Channel-by-channel strategy | Medium |

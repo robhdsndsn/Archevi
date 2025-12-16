@@ -8,6 +8,7 @@
 #   - psycopg2-binary
 #   - pgvector
 #   - wmill
+#   - httpx
 
 """
 Transcribe a voice note using Groq Whisper and embed it for RAG queries.
@@ -60,60 +61,58 @@ def transcribe_with_groq(audio_bytes: bytes, groq_api_key: str, filename: str) -
     Transcribe audio using Groq's Whisper API.
     Groq uses whisper-large-v3-turbo for fast, accurate transcription.
     """
-    if HAS_GROQ:
-        client = Groq(api_key=groq_api_key)
+    import httpx
 
-        # Save to temp file (Groq SDK requires file path)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1]) as f:
-            f.write(audio_bytes)
-            temp_path = f.name
+    # Always use httpx directly for reliability (Groq SDK can hang)
+    url = "https://api.groq.com/openai/v1/audio/transcriptions"
 
-        try:
-            with open(temp_path, "rb") as audio_file:
-                transcription = client.audio.transcriptions.create(
-                    file=(filename, audio_file),
-                    model="whisper-large-v3-turbo",
-                    response_format="verbose_json",  # Get word timestamps and language
-                    language=None,  # Auto-detect
-                )
+    # Get file extension for proper MIME type
+    ext = os.path.splitext(filename)[1].lower()
+    mime_types = {
+        '.webm': 'audio/webm',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.m4a': 'audio/mp4',
+        '.ogg': 'audio/ogg',
+    }
+    mime_type = mime_types.get(ext, 'audio/webm')
 
-            return {
-                "success": True,
-                "text": transcription.text,
-                "language": getattr(transcription, 'language', 'en'),
-                "duration": getattr(transcription, 'duration', 0),
-            }
-        finally:
-            os.unlink(temp_path)
-    else:
-        # Fallback to requests
-        url = "https://api.groq.com/openai/v1/audio/transcriptions"
-        headers = {"Authorization": f"Bearer {groq_api_key}"}
-
-        # Save to temp file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1]) as f:
-            f.write(audio_bytes)
-            temp_path = f.name
-
-        try:
-            with open(temp_path, "rb") as audio_file:
-                files = {"file": (filename, audio_file)}
-                data = {
+    try:
+        # Use httpx with explicit timeout
+        with httpx.Client(timeout=60.0) as client:
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {groq_api_key}"},
+                files={"file": (filename, audio_bytes, mime_type)},
+                data={
                     "model": "whisper-large-v3-turbo",
                     "response_format": "verbose_json"
                 }
-                response = requests.post(url, headers=headers, files=files, data=data)
-                response.raise_for_status()
-                result = response.json()
+            )
+            response.raise_for_status()
+            result = response.json()
 
-            return {
-                "success": True,
-                "text": result.get("text", ""),
-                "language": result.get("language", "en"),
-                "duration": result.get("duration", 0),
-            }
-        finally:
-            os.unlink(temp_path)
+        return {
+            "success": True,
+            "text": result.get("text", ""),
+            "language": result.get("language", "en"),
+            "duration": result.get("duration", 0),
+        }
+    except httpx.TimeoutException:
+        return {
+            "success": False,
+            "error": "Groq API timed out after 60 seconds"
+        }
+    except httpx.HTTPStatusError as e:
+        return {
+            "success": False,
+            "error": f"Groq API error: {e.response.status_code} - {e.response.text[:200]}"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Transcription error: {str(e)}"
+        }
 
 
 def generate_title(transcript: str, co: cohere.ClientV2) -> str:
@@ -172,15 +171,21 @@ Return format: ["tag1", "tag2"]"""
 
 def main(
     audio_content: str,
+    tenant_id: str,
     filename: str = "voice_note.webm",
     title: Optional[str] = None,
     created_by: Optional[str] = None,
+    category: str = "personal",
 ) -> dict:
     """
     Transcribe and embed a voice note for the knowledge base.
+    Voice notes are stored BOTH in voice_notes table (for legacy) AND family_documents
+    (so they appear in All Documents and are searchable).
     """
     if not audio_content:
         raise ValueError("Audio content cannot be empty")
+    if not tenant_id:
+        raise ValueError("tenant_id is required")
 
     # Fetch resources from Windmill
     postgres_db = wmill.get_resource("f/chatbot/postgres_db")
@@ -280,6 +285,32 @@ def main(
 
         voice_note_id = cursor.fetchone()[0]
 
+        # ALSO insert into family_documents so voice notes appear in All Documents
+        # and are searchable via the main document search
+        doc_metadata = {
+            "tags": tags,
+            "source": "voice_note",
+            "voice_note_id": voice_note_id,
+            "original_filename": filename,
+            "duration_seconds": int(duration),
+            "language": language,
+            "transcription_model": "whisper-large-v3-turbo"
+        }
+
+        cursor.execute("""
+            INSERT INTO family_documents (
+                tenant_id, title, content, category, embedding,
+                created_by, metadata, visibility
+            )
+            VALUES (%s::uuid, %s, %s, %s, %s, %s, %s, 'everyone')
+            RETURNING id
+        """, (
+            tenant_id, final_title, transcript, category, embedding,
+            created_by, json.dumps(doc_metadata)
+        ))
+
+        document_id = cursor.fetchone()[0]
+
         # Log API usage
         cursor.execute("""
             INSERT INTO api_usage_log (operation, tokens_used, cost_usd)
@@ -300,11 +331,13 @@ def main(
 
     return {
         "voice_note_id": voice_note_id,
+        "document_id": document_id,  # ID in family_documents table
         "transcript": transcript,
         "duration_seconds": int(duration),
         "language": language,
         "title": final_title,
         "tags": tags,
+        "category": category,
         "tokens_used": tokens_used,
         "transcription_cost": round(transcription_cost, 6),
         "embedding_cost": round(embedding_cost, 6),

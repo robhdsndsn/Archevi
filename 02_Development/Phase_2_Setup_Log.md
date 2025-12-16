@@ -3,6 +3,8 @@
 **Date:** 2025-11-26
 **Status:** Phase 3 Complete - All backend scripts deployed, ready for Phase 4 (UI Construction)
 
+> **SECURITY NOTICE:** This is a historical development log. All tokens, API keys, and credentials shown in this document should be considered EXPIRED and have been rotated. Current credentials are stored in environment variables - see `Infrastructure/.env.example` for required variables.
+
 ---
 
 ## Completed Tasks 

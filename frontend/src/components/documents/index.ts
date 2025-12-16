@@ -5,3 +5,6 @@ export { DocumentsView } from './DocumentsView';
 export { AddDocumentView } from './AddDocumentView';
 export { TagSuggestions } from './TagSuggestions';
 export type { TagSuggestionsResult } from './TagSuggestions';
+export { RelatedDocuments } from './RelatedDocuments';
+export { VersionHistory } from './VersionHistory';
+export { SecureLinkDialog } from './SecureLinkDialog';

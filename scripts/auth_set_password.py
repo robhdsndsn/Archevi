@@ -6,6 +6,7 @@
 #   - psycopg2-binary
 #   - bcrypt
 #   - wmill
+#   - httpx
 
 """
 Set password for a user (via invite token or admin action).

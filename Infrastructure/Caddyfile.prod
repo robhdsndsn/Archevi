@@ -1,0 +1,95 @@
+# Archevi Production Caddyfile
+# Auto HTTPS with Let's Encrypt
+#
+# Environment variables required:
+#   DOMAIN - Main domain (e.g., archevi.ca)
+#   API_DOMAIN - API domain (e.g., api.archevi.ca)
+#   ACME_EMAIL - Email for Let's Encrypt notifications
+#
+# Usage: Docker Compose mounts this as /etc/caddy/Caddyfile
+
+# Global options
+{
+	# Let's Encrypt email for certificate notifications
+	email {$ACME_EMAIL}
+
+	# Layer 4 proxy for SMTP (port 25)
+	layer4 {
+		:25 {
+			proxy {
+				to windmill_server:2525
+			}
+		}
+	}
+}
+
+# =============================================================================
+# MAIN FRONTEND - archevi.ca
+# =============================================================================
+{$DOMAIN} {
+	# Serve the React frontend
+	reverse_proxy frontend:80
+
+	# Security headers
+	header {
+		# Prevent clickjacking
+		X-Frame-Options "SAMEORIGIN"
+		# Prevent MIME type sniffing
+		X-Content-Type-Options "nosniff"
+		# XSS protection
+		X-XSS-Protection "1; mode=block"
+		# Referrer policy
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Remove server identification
+		-Server
+	}
+
+	# Gzip compression
+	encode gzip
+
+	# Logging
+	log {
+		output file /var/log/caddy/frontend.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# =============================================================================
+# API - api.archevi.ca (Windmill)
+# =============================================================================
+{$API_DOMAIN} {
+	# WebSocket for LSP (code intelligence)
+	reverse_proxy /ws/* lsp:3001
+
+	# All other traffic to Windmill server
+	reverse_proxy /* windmill_server:8000
+
+	# Security headers (Windmill handles CORS itself)
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Gzip compression
+	encode gzip
+
+	# Logging
+	log {
+		output file /var/log/caddy/api.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# =============================================================================
+# WWW REDIRECT - www.archevi.ca -> archevi.ca
+# =============================================================================
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}

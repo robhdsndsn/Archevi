@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "changelogs",
+  "info": {
+    "singularName": "changelog",
+    "pluralName": "changelogs",
+    "displayName": "Changelog",
+    "description": "Version release notes and changelog entries"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "version": {
+      "type": "string",
+      "required": true,
+      "maxLength": 20
+    },
+    "release_date": {
+      "type": "date",
+      "required": true
+    },
+    "content": {
+      "type": "blocks",
+      "required": true
+    },
+    "is_major": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

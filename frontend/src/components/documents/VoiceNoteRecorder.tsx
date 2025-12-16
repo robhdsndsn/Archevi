@@ -12,15 +12,22 @@ import {
 } from '@/components/ui/card';
 import { Mic, Square, Upload, Loader2, CheckCircle2, Trash2, Play, Pause, FileAudio } from 'lucide-react';
 import { windmill } from '@/api/windmill';
+import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+
+// Default tenant for MVP - The Hudson Family
+// TODO: Remove this when auth properly returns tenant_id
+const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
 
 interface VoiceNoteRecorderProps {
   onSuccess?: () => void;
 }
 
 export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
+  const { user } = useAuthStore();
+  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -182,8 +189,10 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
 
       const result = await windmill.transcribeVoiceNote({
         audio_content: audioContent,
+        tenant_id: tenantId,
         filename,
         title: title.trim() || undefined,
+        category: 'personal',  // Default category for voice notes
       });
 
       setSuccess(`Transcribed: "${result.title}" (${result.duration_seconds}s)`);
@@ -246,8 +255,9 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
                   variant="destructive"
                   className="relative rounded-full h-24 w-24 sm:h-20 sm:w-20"
                   onClick={stopRecording}
+                  aria-label="Stop recording"
                 >
-                  <Square className="h-10 w-10 sm:h-8 sm:w-8" />
+                  <Square className="h-10 w-10 sm:h-8 sm:w-8" aria-hidden="true" />
                 </Button>
               </div>
               <div className="text-center">
@@ -266,8 +276,9 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
                   variant="outline"
                   className="rounded-full h-20 w-20 sm:h-16 sm:w-16 shrink-0"
                   onClick={togglePlayback}
+                  aria-label={isPlaying ? "Pause playback" : "Play recording"}
                 >
-                  {isPlaying ? <Pause className="h-8 w-8 sm:h-6 sm:w-6" /> : <Play className="h-8 w-8 sm:h-6 sm:w-6" />}
+                  {isPlaying ? <Pause className="h-8 w-8 sm:h-6 sm:w-6" aria-hidden="true" /> : <Play className="h-8 w-8 sm:h-6 sm:w-6" aria-hidden="true" />}
                 </Button>
                 <div className="text-center flex-1">
                   <div className="text-3xl sm:text-2xl font-mono">{formatDuration(duration)}</div>
@@ -281,8 +292,9 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
                   variant="ghost"
                   className="text-destructive h-12 w-12 sm:h-10 sm:w-10 rounded-full"
                   onClick={clearRecording}
+                  aria-label="Delete recording"
                 >
-                  <Trash2 className="h-6 w-6 sm:h-5 sm:w-5" />
+                  <Trash2 className="h-6 w-6 sm:h-5 sm:w-5" aria-hidden="true" />
                 </Button>
               </div>
               <audio
@@ -299,8 +311,9 @@ export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
                 size="lg"
                 className="rounded-full h-24 w-24 sm:h-20 sm:w-20"
                 onClick={startRecording}
+                aria-label="Start recording"
               >
-                <Mic className="h-10 w-10 sm:h-8 sm:w-8" />
+                <Mic className="h-10 w-10 sm:h-8 sm:w-8" aria-hidden="true" />
               </Button>
               <div className="text-base sm:text-sm text-muted-foreground font-medium">
                 Tap to start recording

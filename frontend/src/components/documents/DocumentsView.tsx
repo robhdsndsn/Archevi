@@ -10,6 +10,7 @@ import { ExpiryAlerts } from './ExpiryAlerts';
 import { TagCloud } from './TagCloud';
 import { windmill } from '@/api/windmill';
 import { useAuthStore } from '@/store/auth-store';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import type { DocumentsTab } from '@/App';
 
@@ -19,12 +20,15 @@ const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
 interface DocumentsViewProps {
   activeTab?: DocumentsTab;
   onTabChange?: (tab: DocumentsTab) => void;
+  openDocumentId?: number | null;
+  onDocumentOpened?: () => void;
 }
 
-export function DocumentsView({ activeTab = 'overview', onTabChange }: DocumentsViewProps) {
+export function DocumentsView({ activeTab = 'overview', onTabChange, openDocumentId, onDocumentOpened }: DocumentsViewProps) {
   const { user } = useAuthStore();
   const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
   const [documentCount, setDocumentCount] = useState<number | null>(null);
+  const isMobile = useIsMobile();
 
   // Check if user has any documents
   useEffect(() => {
@@ -44,6 +48,18 @@ export function DocumentsView({ activeTab = 'overview', onTabChange }: Documents
     checkDocuments();
   }, [tenantId]);
 
+  // Listen for keyboard shortcut navigation events
+  useEffect(() => {
+    const handleNavigateTab = (event: CustomEvent<{ tab: DocumentsTab }>) => {
+      onTabChange?.(event.detail.tab);
+    };
+
+    window.addEventListener('archevi:navigate-documents-tab', handleNavigateTab as EventListener);
+    return () => {
+      window.removeEventListener('archevi:navigate-documents-tab', handleNavigateTab as EventListener);
+    };
+  }, [onTabChange]);
+
   const isNewUser = documentCount === 0;
 
   const handleViewDocument = (documentId: number) => {
@@ -56,8 +72,8 @@ export function DocumentsView({ activeTab = 'overview', onTabChange }: Documents
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] max-w-5xl mx-auto p-4">
-      <div className="mb-4">
+    <div className={`flex flex-col max-w-5xl mx-auto p-4 ${isMobile ? 'h-[calc(100vh-3.5rem-4rem)]' : 'h-[calc(100vh-3.5rem)]'}`}>
+      <div className="mb-4 flex-shrink-0">
         <h1 className="text-2xl font-semibold flex items-center gap-2">
           <FolderOpen className="h-6 w-6" />
           Documents
@@ -67,8 +83,8 @@ export function DocumentsView({ activeTab = 'overview', onTabChange }: Documents
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => onTabChange?.(v as DocumentsTab)} className="flex-1">
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+      <Tabs value={activeTab} onValueChange={(v) => onTabChange?.(v as DocumentsTab)} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="grid w-full grid-cols-4 max-w-2xl flex-shrink-0">
           <TabsTrigger value="overview" className="gap-2">
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -87,7 +103,7 @@ export function DocumentsView({ activeTab = 'overview', onTabChange }: Documents
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 flex-1 overflow-y-auto">
           {isNewUser ? (
             /* Welcome card for new users */
             <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/5 to-background">
@@ -124,15 +140,18 @@ export function DocumentsView({ activeTab = 'overview', onTabChange }: Documents
           </div>
         </TabsContent>
 
-        <TabsContent value="browse" className="mt-4">
-          <FamilyDocumentsList />
+        <TabsContent value="browse" className="mt-4 flex-1 overflow-y-auto">
+          <FamilyDocumentsList
+            openDocumentId={openDocumentId}
+            onDocumentOpened={onDocumentOpened}
+          />
         </TabsContent>
 
-        <TabsContent value="search" className="mt-4">
+        <TabsContent value="search" className="mt-4 flex-1 overflow-y-auto">
           <DocumentBrowser />
         </TabsContent>
 
-        <TabsContent value="add" className="mt-4">
+        <TabsContent value="add" className="mt-4 flex-1 overflow-y-auto pb-4">
           <AddDocumentView onViewDocument={handleViewDocument} />
         </TabsContent>
       </Tabs>

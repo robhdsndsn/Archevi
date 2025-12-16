@@ -29,15 +29,25 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { Upload, FileText, Loader2, CheckCircle2, FileUp, X, Sparkles, ScanText, ChevronDown, Tag, Calendar, Brain, Camera, HelpCircle, User, Eye, Globe, Users, Shield, Lock, ExternalLink, Plus } from 'lucide-react';
+import { Upload, FileText, Loader2, CheckCircle2, FileUp, X, Sparkles, ScanText, ChevronDown, Tag, Calendar, Brain, Camera, HelpCircle, User, Eye, Globe, Users, Shield, Lock, ExternalLink, Plus, Languages, ImageIcon, Cloud } from 'lucide-react';
 import { windmill, DOCUMENT_CATEGORIES, DOCUMENT_VISIBILITY, type DocumentCategory, type DocumentVisibility, type FamilyMember } from '@/api/windmill';
-import type { EmbedDocumentEnhancedResult, ExpiryDate } from '@/api/windmill/types';
+import type { EmbedDocumentEnhancedResult, EmbedDocumentFromStorageResult, ExpiryDate } from '@/api/windmill/types';
+import { uploadFile } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { parsePDF } from '@/lib/pdf-parser';
-import { performOCR, extractPDFPagesAsImages, isPDFLikelyScanned, type OCRProgress } from '@/lib/ocr';
+import {
+  performOCR,
+  extractPDFPagesAsImages,
+  // isPDFLikelyScanned - available but not currently used
+  OCR_LANGUAGES,
+  getOCRLanguagePreference,
+  setOCRLanguagePreference,
+  type OCRProgress,
+  type OCRLanguageCode,
+} from '@/lib/ocr';
 import { CameraCapture, useHasCamera } from './CameraCapture';
 import { MemberAvatar } from '@/components/ui/member-avatar';
 
@@ -109,6 +119,25 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
   // Document visibility
   const [visibility, setVisibility] = useState<DocumentVisibility>('everyone');
 
+  // Visual search (image embedding) - opt-in feature
+  const [enableVisualSearch, setEnableVisualSearch] = useState(false);
+  const [imageForEmbedding, setImageForEmbedding] = useState<string | null>(null);
+  const [isEmbeddingImage, setIsEmbeddingImage] = useState(false);
+
+  // OCR language selection
+  const [ocrLanguage, setOcrLanguage] = useState<OCRLanguageCode>(getOCRLanguagePreference);
+
+  // Supabase Storage - for scalable uploads
+  const [storagePath, setStoragePath] = useState<string | null>(null);
+  const [isUploadingToStorage, setIsUploadingToStorage] = useState(false);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+
+  // Update preference when language changes
+  const handleOcrLanguageChange = (code: OCRLanguageCode) => {
+    setOcrLanguage(code);
+    setOCRLanguagePreference(code);
+  };
+
   // Fetch family members on mount
   useEffect(() => {
     const fetchFamilyMembers = async () => {
@@ -139,8 +168,12 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
       setError('Title is required');
       return;
     }
-    if (!content.trim()) {
-      setError('Content is required');
+
+    // If we have a file uploaded to storage, use storage-based embedding
+    // Otherwise require content for text-only uploads
+    const hasStorageFile = storagePath && originalFile;
+    if (!hasStorageFile && !content.trim()) {
+      setError('Content is required (or upload a file)');
       return;
     }
 
@@ -153,8 +186,84 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
     setIsUploading(true);
 
     try {
-      if (enhancedMode) {
-        // Use enhanced embedding with AI features
+      // STORAGE-BASED UPLOAD: File is already in Supabase, let Windmill process it
+      if (hasStorageFile && enhancedMode) {
+        const result: EmbedDocumentFromStorageResult = await windmill.embedDocumentFromStorage({
+          storage_path: storagePath,
+          title: title.trim(),
+          tenant_id: tenantId,
+          category: category as DocumentCategory || undefined,
+          assigned_to: assignedTo || undefined,
+          visibility: visibility,
+          ocr_language: ocrLanguage,
+          auto_categorize_enabled: autoCategorizaion,
+          extract_tags_enabled: extractTags,
+          extract_dates_enabled: extractDates,
+        });
+
+        // Check if this is a duplicate
+        if (result.is_duplicate && result.existing_document) {
+          setError(`Duplicate detected: This document already exists as "${result.existing_document.title}" (ID: ${result.existing_document.id})`);
+          toast.error('Duplicate document', {
+            description: `This content matches an existing document: "${result.existing_document.title}"`,
+          });
+          setIsUploading(false);
+          return;
+        }
+
+        setEnhancedResult({
+          suggestedCategory: result.suggested_category,
+          categoryConfidence: result.category_confidence,
+          tags: result.tags,
+          expiryDates: result.expiry_dates,
+          aiFeatures: result.ai_features_used,
+        });
+
+        const features = [];
+        if (result.tags?.length) features.push(`${result.tags.length} tags`);
+        if (result.expiry_dates?.length) features.push(`${result.expiry_dates.length} dates`);
+        if (result.suggested_category) features.push(`category: ${result.suggested_category}`);
+        features.push(`${result.file_type}`);
+        if (result.pages > 1) features.push(`${result.pages} pages`);
+
+        setUploadedDocId(result.document_id);
+
+        // If visual search is enabled and we have an image, embed it
+        if (enableVisualSearch && imageForEmbedding && result.document_id) {
+          setIsEmbeddingImage(true);
+          try {
+            const embedResult = await windmill.embedImage({
+              document_id: result.document_id,
+              tenant_id: tenantId,
+              image_content: imageForEmbedding,
+            });
+            if (embedResult.success) {
+              features.push('visual search enabled');
+              toast.success('Visual search enabled', {
+                description: `Image embedding created (~$${embedResult.cost_usd?.toFixed(4)} cost)`,
+              });
+            } else {
+              console.error('Image embedding failed:', embedResult.error);
+              toast.warning('Visual search unavailable', {
+                description: 'Document saved but visual search could not be enabled.',
+              });
+            }
+          } catch (err) {
+            console.error('Image embedding error:', err);
+            toast.warning('Visual search unavailable', {
+              description: 'Document saved but visual search could not be enabled.',
+            });
+          } finally {
+            setIsEmbeddingImage(false);
+          }
+        }
+
+        setSuccess(`Document saved from cloud storage: ${features.join(', ')}`);
+        toast.success('Document uploaded', {
+          description: `"${title}" processed from cloud storage with AI features.`,
+        });
+      } else if (enhancedMode) {
+        // TEXT-BASED UPLOAD: Use existing enhanced embedding with content
         const result: EmbedDocumentEnhancedResult = await windmill.embedDocumentEnhanced({
           title: title.trim(),
           content: content.trim(),
@@ -191,6 +300,37 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
         if (result.suggested_category) features.push(`category: ${result.suggested_category}`);
 
         setUploadedDocId(result.document_id);
+
+        // If visual search is enabled and we have an image, embed it
+        if (enableVisualSearch && imageForEmbedding && result.document_id) {
+          setIsEmbeddingImage(true);
+          try {
+            const embedResult = await windmill.embedImage({
+              document_id: result.document_id,
+              tenant_id: tenantId,
+              image_content: imageForEmbedding,
+            });
+            if (embedResult.success) {
+              features.push('visual search enabled');
+              toast.success('Visual search enabled', {
+                description: `Image embedding created (~$${embedResult.cost_usd?.toFixed(4)} cost)`,
+              });
+            } else {
+              console.error('Image embedding failed:', embedResult.error);
+              toast.warning('Visual search unavailable', {
+                description: 'Document saved but visual search could not be enabled.',
+              });
+            }
+          } catch (err) {
+            console.error('Image embedding error:', err);
+            toast.warning('Visual search unavailable', {
+              description: 'Document saved but visual search could not be enabled.',
+            });
+          } finally {
+            setIsEmbeddingImage(false);
+          }
+        }
+
         setSuccess(`Document saved with AI enhancements: ${features.join(', ')}`);
         toast.success('Document uploaded', {
           description: `"${title}" processed with AI features.`,
@@ -204,6 +344,36 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
         });
 
         setUploadedDocId(result.document_id);
+
+        // If visual search is enabled and we have an image, embed it
+        if (enableVisualSearch && imageForEmbedding && result.document_id) {
+          setIsEmbeddingImage(true);
+          try {
+            const embedResult = await windmill.embedImage({
+              document_id: result.document_id,
+              tenant_id: tenantId,
+              image_content: imageForEmbedding,
+            });
+            if (embedResult.success) {
+              toast.success('Visual search enabled', {
+                description: `Image embedding created (~$${embedResult.cost_usd?.toFixed(4)} cost)`,
+              });
+            } else {
+              console.error('Image embedding failed:', embedResult.error);
+              toast.warning('Visual search unavailable', {
+                description: 'Document saved but visual search could not be enabled.',
+              });
+            }
+          } catch (err) {
+            console.error('Image embedding error:', err);
+            toast.warning('Visual search unavailable', {
+              description: 'Document saved but visual search could not be enabled.',
+            });
+          } finally {
+            setIsEmbeddingImage(false);
+          }
+        }
+
         setSuccess(`Document "${result.message}" (ID: ${result.document_id})`);
         toast.success('Document uploaded', {
           description: `"${title}" has been added to the archive.`,
@@ -225,6 +395,8 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
       setAssignedTo(null);
       setVisibility('everyone');
       setSelectedFile(null);
+      setImageForEmbedding(null);
+      setEnableVisualSearch(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -242,7 +414,8 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
 
   const handleOCR = async (file: File) => {
     setIsOCRing(true);
-    setOCRProgress({ status: 'Starting OCR...', progress: 0 });
+    const langName = OCR_LANGUAGES.find(l => l.code === ocrLanguage)?.name || 'English';
+    setOCRProgress({ status: `Starting OCR (${langName})...`, progress: 0 });
 
     try {
       let ocrText = '';
@@ -256,11 +429,11 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
         const results: string[] = [];
         for (let i = 0; i < pageImages.length; i++) {
           setOCRProgress({
-            status: `Processing page ${i + 1} of ${pageImages.length}...`,
+            status: `Processing page ${i + 1} of ${pageImages.length} (${langName})...`,
             progress: 10 + (80 * (i + 1) / pageImages.length),
           });
 
-          const result = await performOCR(pageImages[i]);
+          const result = await performOCR(pageImages[i], undefined, ocrLanguage);
           if (result.success && result.text) {
             results.push(`--- Page ${i + 1} ---\n${result.text}`);
           }
@@ -268,7 +441,7 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
         ocrText = results.join('\n\n');
       } else {
         // Direct OCR on image
-        const result = await performOCR(file, setOCRProgress);
+        const result = await performOCR(file, setOCRProgress, ocrLanguage);
         if (result.success && result.text) {
           ocrText = result.text;
         } else {
@@ -308,77 +481,97 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
       return;
     }
 
-    // Handle images - direct OCR
-    if (isImage) {
-      setSelectedFile({ name: file.name, type: 'image' });
-      if (!title) {
-        setTitle(file.name.replace(/\.(png|jpg|jpeg|webp|gif|bmp)$/i, ''));
-      }
-      await handleOCR(file);
-      return;
+    // Set title from filename
+    if (!title) {
+      const cleanName = file.name.replace(/\.(pdf|txt|md|png|jpg|jpeg|webp|gif|bmp)$/i, '');
+      setTitle(cleanName);
     }
 
-    if (isPDF) {
-      // Handle PDF files using client-side parsing
-      setIsParsing(true);
-      setSelectedFile({ name: file.name, type: 'pdf' });
+    // Determine file type for display
+    let fileType = 'file';
+    if (isPDF) fileType = 'pdf';
+    else if (isImage) fileType = 'image';
+    else if (file.name.endsWith('.md')) fileType = 'md';
+    else fileType = 'txt';
 
-      try {
-        const result = await parsePDF(file);
+    setSelectedFile({ name: file.name, type: fileType });
+    setOriginalFile(file);
 
-        if (result.success && result.text) {
-          // Check if PDF is likely scanned (very little text)
-          if (isPDFLikelyScanned(result.text, result.pageCount || 1)) {
-            // Offer OCR option
-            setContent(result.text);
-            setSelectedFile({ name: file.name, type: 'pdf (scanned?)', pageCount: result.pageCount });
-            if (!title) {
-              setTitle(file.name.replace(/\.pdf$/i, ''));
+    // Upload to Supabase Storage first (scalable approach)
+    setIsUploadingToStorage(true);
+    try {
+      const uploadResult = await uploadFile(file, tenantId);
+
+      if ('error' in uploadResult) {
+        // Fall back to client-side processing if storage upload fails
+        console.warn('Storage upload failed, falling back to client-side:', uploadResult.error);
+        toast.warning('Cloud storage unavailable', {
+          description: 'Processing file locally instead.',
+        });
+        setStoragePath(null);
+
+        // Process locally as fallback
+        if (isImage) {
+          // Capture base64 for visual search
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            setImageForEmbedding(base64);
+          };
+          reader.readAsDataURL(file);
+          await handleOCR(file);
+        } else if (isPDF) {
+          setIsParsing(true);
+          try {
+            const result = await parsePDF(file);
+            if (result.success && result.text) {
+              setContent(result.text);
+              setSelectedFile({ name: file.name, type: 'pdf', pageCount: result.pageCount });
+            } else {
+              setError(result.error || 'Failed to parse PDF');
+              setSelectedFile(null);
             }
-            toast.info('Scanned PDF detected', {
-              description: 'Limited text found. Click "Run OCR" to extract text from images.',
-              action: {
-                label: 'Run OCR',
-                onClick: () => handleOCR(file),
-              },
-              duration: 10000,
-            });
-          } else {
-            setContent(result.text);
-            setSelectedFile({ name: file.name, type: 'pdf', pageCount: result.pageCount });
-            if (!title) {
-              setTitle(file.name.replace(/\.pdf$/i, ''));
-            }
-            toast.success('PDF parsed', {
-              description: `Extracted text from ${result.pageCount} page${result.pageCount === 1 ? '' : 's'}.`,
-            });
+          } finally {
+            setIsParsing(false);
           }
         } else {
-          setError(result.error || 'Failed to parse PDF');
-          setSelectedFile(null);
+          // Text file
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setContent(event.target?.result as string);
+          };
+          reader.onerror = () => {
+            setError('Failed to read file');
+            setSelectedFile(null);
+          };
+          reader.readAsText(file);
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to parse PDF');
-        setSelectedFile(null);
-      } finally {
-        setIsParsing(false);
+      } else {
+        // Storage upload successful!
+        setStoragePath(uploadResult.path);
+        setContent(''); // Clear content - server will extract from storage
+
+        // Capture image for potential visual search embedding
+        if (isImage) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            setImageForEmbedding(base64);
+          };
+          reader.readAsDataURL(file);
+        }
+
+        toast.success('File uploaded to cloud', {
+          description: `${file.name} ready for processing. Text will be extracted server-side.`,
+        });
       }
-    } else {
-      // Handle text files
-      setSelectedFile({ name: file.name, type: file.name.endsWith('.md') ? 'md' : 'txt' });
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        setContent(text);
-        if (!title) {
-          setTitle(file.name.replace(/\.(txt|md)$/i, ''));
-        }
-      };
-      reader.onerror = () => {
-        setError('Failed to read file');
-        setSelectedFile(null);
-      };
-      reader.readAsText(file);
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('Failed to upload file');
+      setSelectedFile(null);
+      setOriginalFile(null);
+    } finally {
+      setIsUploadingToStorage(false);
     }
   };
 
@@ -386,6 +579,10 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
     setSelectedFile(null);
     setContent('');
     setEnhancedResult(null);
+    setImageForEmbedding(null);
+    setEnableVisualSearch(false);
+    setStoragePath(null);
+    setOriginalFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -402,6 +599,10 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
     setUploadedDocId(null);
     setEnhancedResult(null);
     setError(null);
+    setImageForEmbedding(null);
+    setEnableVisualSearch(false);
+    setStoragePath(null);
+    setOriginalFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -419,6 +620,15 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
       });
       setTitle(`Document scan - ${timestamp}`);
     }
+
+    // Capture base64 for potential visual search embedding
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setImageForEmbedding(base64);
+    };
+    reader.readAsDataURL(file);
+
     // Run OCR on the captured image
     await handleOCR(file);
     toast.success('Photo captured', {
@@ -854,6 +1064,52 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
               )}
             </div>
 
+            {/* OCR Language Selector */}
+            <div className="flex items-center gap-2">
+              <Languages className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="ocr-language" className="text-sm text-muted-foreground whitespace-nowrap">
+                OCR Language:
+              </Label>
+              <Select
+                value={ocrLanguage}
+                onValueChange={(v) => handleOcrLanguageChange(v as OCRLanguageCode)}
+                disabled={isOCRing}
+              >
+                <SelectTrigger className="w-[180px] h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {OCR_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      <span>{lang.name}</span>
+                      {lang.nativeName !== lang.name && (
+                        <span className="ml-1 text-muted-foreground">({lang.nativeName})</span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                </HoverCardTrigger>
+                <HoverCardContent className="w-72">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      <Languages className="h-4 w-4" />
+                      OCR Language
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Select the language of the document you're scanning. This improves text recognition accuracy for non-English documents.
+                    </p>
+                    <p className="text-xs text-muted-foreground pt-1 border-t">
+                      Your preference is saved for future uploads.
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
+
             {/* OCR Progress */}
             {isOCRing && ocrProgress && (
               <div className="space-y-2">
@@ -865,13 +1121,58 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
               </div>
             )}
 
+            {/* Visual Search Toggle - only for images */}
+            {imageForEmbedding && selectedFile && (selectedFile.type === 'image' || selectedFile.type === 'camera scan') && (
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-dashed">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="visual-search" className="font-medium">Enable Visual Search</Label>
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4 text-primary" />
+                              Visual Search (Optional)
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              Enable this to search for this image by describing its visual content (e.g., "receipt with coffee shop logo" or "handwritten note on yellow paper").
+                            </p>
+                            <p className="text-xs text-muted-foreground pt-1 border-t">
+                              <strong>Cost:</strong> ~$0.001 per image. Best for images with important visual elements beyond text.
+                            </p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Search by visual content, not just text</p>
+                  </div>
+                </div>
+                <Switch
+                  id="visual-search"
+                  checked={enableVisualSearch}
+                  onCheckedChange={setEnableVisualSearch}
+                />
+              </div>
+            )}
+
             {isParsing && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Parsing PDF...
               </div>
             )}
-            {selectedFile && !isParsing && !isOCRing && (
+            {isUploadingToStorage && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Uploading to cloud storage...
+              </div>
+            )}
+            {selectedFile && !isParsing && !isOCRing && !isUploadingToStorage && (
               <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                 <FileText className="h-4 w-4" />
                 <span className="text-sm flex-1 truncate">{selectedFile.name}</span>
@@ -879,6 +1180,12 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
                   {selectedFile.type.toUpperCase()}
                   {selectedFile.pageCount && ` (${selectedFile.pageCount} pages)`}
                 </Badge>
+                {storagePath && (
+                  <Badge variant="outline" className="text-xs gap-1 text-green-600 border-green-300">
+                    <Cloud className="h-3 w-3" />
+                    Cloud
+                  </Badge>
+                )}
                 {selectedFile.type.includes('scanned') && (
                   <Button
                     type="button"
@@ -908,11 +1215,15 @@ export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProp
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" disabled={isUploading || isParsing || isOCRing} className="w-full">
-            {isUploading ? (
+          <Button type="submit" disabled={isUploading || isParsing || isOCRing || isEmbeddingImage} className="w-full">
+            {isUploading || isEmbeddingImage ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {enhancedMode ? 'Processing with AI...' : 'Uploading...'}
+                {isEmbeddingImage
+                  ? 'Creating visual search index...'
+                  : enhancedMode
+                    ? 'Processing with AI...'
+                    : 'Uploading...'}
               </>
             ) : (
               <>

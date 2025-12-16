@@ -6,6 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -72,10 +78,21 @@ import {
   Users,
   Shield,
   Lock,
+  SlidersHorizontal,
+  X,
+  ChevronDown,
+  Sparkles,
+  Link2,
+  History,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 import type { FullDocument } from '@/api/windmill';
+import { ExtractedDataDisplay } from './ExtractedDataDisplay';
+import { RelatedDocuments } from './RelatedDocuments';
+import { VersionHistory } from './VersionHistory';
+import { SecureLinkDialog } from './SecureLinkDialog';
+import { TextToSpeech } from '@/components/audio';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -100,6 +117,10 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
+import {
+  Collapsible,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 import { format } from 'date-fns';
 import { MemberAvatar } from '@/components/ui/member-avatar';
 
@@ -132,6 +153,10 @@ function DocumentPreview({ document, className }: { document: FullDocument; clas
   const config = CATEGORY_CONFIG[document.category] || CATEGORY_CONFIG.general;
   const CategoryIcon = config.icon;
 
+  // Check if this is an image document
+  const isImageDocument = document.content_type === 'image' || document.content_type === 'mixed';
+  const hasImage = isImageDocument && document.image_url;
+
   // Extract first few lines for the skeleton preview
   const lines = document.content.split('\n').filter(line => line.trim()).slice(0, 12);
 
@@ -144,30 +169,45 @@ function DocumentPreview({ document, className }: { document: FullDocument; clas
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold truncate">{document.title}</h4>
-          <p className="text-xs text-muted-foreground capitalize">{document.category.replace(/_/g, ' ')}</p>
+          <p className="text-xs text-muted-foreground capitalize">
+            {document.category.replace(/_/g, ' ')}
+            {isImageDocument && <span className="ml-2 text-blue-500">(Image)</span>}
+          </p>
         </div>
       </div>
 
-      {/* Document body - skeleton text preview */}
-      <div className="p-4 space-y-2 bg-white/80 dark:bg-zinc-900/80">
-        {lines.map((line, i) => {
-          // Vary the width to make it look like real document lines
-          const width = Math.min(100, 40 + (line.length % 60));
-          return (
-            <div
-              key={i}
-              className="h-3 rounded bg-zinc-200 dark:bg-zinc-700"
-              style={{ width: `${width}%`, opacity: 1 - (i * 0.05) }}
+      {/* Document body - show image or skeleton text preview */}
+      <div className="p-4 bg-white/80 dark:bg-zinc-900/80">
+        {hasImage ? (
+          <div className="flex justify-center">
+            <img
+              src={document.image_url!}
+              alt={document.title}
+              className="max-w-full max-h-[400px] object-contain rounded-lg shadow-sm"
             />
-          );
-        })}
-        {lines.length === 0 && (
-          <>
-            <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[90%]" />
-            <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[75%]" />
-            <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[85%]" />
-            <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[60%]" />
-          </>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {lines.map((line, i) => {
+              // Vary the width to make it look like real document lines
+              const width = Math.min(100, 40 + (line.length % 60));
+              return (
+                <div
+                  key={i}
+                  className="h-3 rounded bg-zinc-200 dark:bg-zinc-700"
+                  style={{ width: `${width}%`, opacity: 1 - (i * 0.05) }}
+                />
+              );
+            })}
+            {lines.length === 0 && (
+              <>
+                <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[90%]" />
+                <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[75%]" />
+                <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[85%]" />
+                <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-700 w-[60%]" />
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -180,6 +220,7 @@ function DocumentPreview({ document, className }: { document: FullDocument; clas
         <div className="flex items-center gap-1">
           <FileText className="h-3 w-3" />
           {document.content.length.toLocaleString()} chars
+          {document.has_image_embedding && <span className="ml-1 text-blue-500">(+image)</span>}
         </div>
       </div>
     </div>
@@ -242,7 +283,12 @@ function QuickPreview({ document }: { document: Document }) {
   );
 }
 
-export function FamilyDocumentsList() {
+interface FamilyDocumentsListProps {
+  openDocumentId?: number | null;
+  onDocumentOpened?: () => void;
+}
+
+export function FamilyDocumentsList({ openDocumentId, onDocumentOpened }: FamilyDocumentsListProps) {
   const { user } = useAuthStore();
   const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
 
@@ -283,11 +329,18 @@ export function FamilyDocumentsList() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
+  // Secure link dialog state
+  const [secureLinkDoc, setSecureLinkDoc] = useState<{ id: number; title: string } | null>(null);
+  const [secureLinkDialogOpen, setSecureLinkDialogOpen] = useState(false);
+
   // View mode state
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // Mobile detection for responsive drawer/dialog
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Filter panel collapsed state
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -302,6 +355,18 @@ export function FamilyDocumentsList() {
   const [editCategory, setEditCategory] = useState<DocumentCategory>('general');
   const [editAssignedTo, setEditAssignedTo] = useState<number | null>(null);
   const [editVisibility, setEditVisibility] = useState<DocumentVisibility>('everyone');
+
+  // Open document when openDocumentId prop changes
+  useEffect(() => {
+    if (openDocumentId && !loading) {
+      // Use setTimeout to ensure component is fully mounted
+      const timer = setTimeout(() => {
+        handleView(openDocumentId);
+        onDocumentOpened?.();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [openDocumentId, loading]);
 
   const loadDocuments = async () => {
     try {
@@ -604,113 +669,42 @@ export function FamilyDocumentsList() {
               Browse and manage all documents in your family vault ({total} total)
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={loadDocuments} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" size="sm" onClick={loadDocuments} disabled={loading} aria-label="Refresh document list">
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
             Refresh
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[200px]">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Filter documents..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="pl-9"
-              />
-            </div>
+        {/* Compact Filter Bar */}
+        <div className="flex items-center gap-2">
+          {/* Search Input */}
+          <div className="flex-1 max-w-sm relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search documents..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="pl-9 h-9"
+            />
           </div>
 
-          <Select value={selectedCategory || "all"} onValueChange={(v) => { setSelectedCategory(v === "all" ? "" : v); handleFilterChange(); }}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {DOCUMENT_CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Person Filter */}
-          {familyMembers.length > 0 && (
-            <Select
-              value={selectedPerson?.toString() || "all"}
-              onValueChange={(v) => { setSelectedPerson(v === "all" ? null : parseInt(v, 10)); handleFilterChange(); }}
-              disabled={loadingMembers}
-            >
-              <SelectTrigger className="w-[150px]">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <SelectValue placeholder={loadingMembers ? "Loading..." : "All People"} />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All People</SelectItem>
-                {familyMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.id.toString()}>
-                    <div className="flex items-center gap-2">
-                      <MemberAvatar name={member.name} size="xs" showTooltip={false} />
-                      {member.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-
-          {/* Date Range Filter - Using native inputs for stability */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <Input
-                type="date"
-                className="w-[130px] h-9"
-                value={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const date = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, from: date }));
-                }}
-                placeholder="From"
-              />
-              <span className="text-muted-foreground">-</span>
-              <Input
-                type="date"
-                className="w-[130px] h-9"
-                value={dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const date = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, to: date }));
-                }}
-                placeholder="To"
-              />
-            </div>
-            {(dateRange.from || dateRange.to) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 px-2"
-                onClick={() => {
-                  setDateRange({ from: undefined, to: undefined });
-                  handleFilterChange();
-                }}
-              >
-                Clear
-              </Button>
+          {/* Filters Toggle Button */}
+          <Button
+            variant={filtersOpen ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="gap-2"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+            {(selectedCategory || selectedPerson || dateRange.from || dateRange.to) && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                {[selectedCategory, selectedPerson, dateRange.from || dateRange.to].filter(Boolean).length}
+              </Badge>
             )}
-          </div>
-
-          <Button onClick={handleSearch} disabled={loading}>
-            <Search className="h-4 w-4 mr-2" />
-            Filter
+            <ChevronDown className={`h-3 w-3 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
           </Button>
 
           {/* View Mode Toggle */}
@@ -728,6 +722,143 @@ export function FamilyDocumentsList() {
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
+
+        {/* Collapsible Filter Panel */}
+        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <CollapsibleContent className="space-y-3">
+            <div className="flex flex-wrap gap-3 p-3 bg-muted/50 rounded-lg border">
+              {/* Category Filter */}
+              <Select value={selectedCategory || "all"} onValueChange={(v) => { setSelectedCategory(v === "all" ? "" : v); handleFilterChange(); }}>
+                <SelectTrigger className="w-[140px] h-8 text-sm">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {DOCUMENT_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Person Filter */}
+              {familyMembers.length > 0 && (
+                <Select
+                  value={selectedPerson?.toString() || "all"}
+                  onValueChange={(v) => { setSelectedPerson(v === "all" ? null : parseInt(v, 10)); handleFilterChange(); }}
+                  disabled={loadingMembers}
+                >
+                  <SelectTrigger className="w-[140px] h-8 text-sm">
+                    <SelectValue placeholder="Person" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All People</SelectItem>
+                    {familyMembers.map((member) => (
+                      <SelectItem key={member.id} value={member.id.toString()}>
+                        <div className="flex items-center gap-2">
+                          <MemberAvatar name={member.name} size="xs" showTooltip={false} />
+                          {member.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* Date Range */}
+              <div className="flex items-center gap-1">
+                <Input
+                  type="date"
+                  className="w-[120px] h-8 text-sm"
+                  value={dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, from: date }));
+                  }}
+                />
+                <span className="text-muted-foreground text-sm">to</span>
+                <Input
+                  type="date"
+                  className="w-[120px] h-8 text-sm"
+                  value={dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, to: date }));
+                  }}
+                />
+              </div>
+
+              {/* Apply & Clear */}
+              <div className="flex gap-2 ml-auto">
+                {(selectedCategory || selectedPerson || dateRange.from || dateRange.to) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => {
+                      setSelectedCategory('');
+                      setSelectedPerson(null);
+                      setDateRange({ from: undefined, to: undefined });
+                      handleFilterChange();
+                    }}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Clear
+                  </Button>
+                )}
+                <Button size="sm" className="h-8" onClick={handleSearch} disabled={loading}>
+                  Apply
+                </Button>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Active Filter Chips */}
+        {(selectedCategory || selectedPerson || dateRange.from || dateRange.to) && !filtersOpen && (
+          <div className="flex flex-wrap gap-2">
+            {selectedCategory && (
+              <Badge variant="secondary" className="gap-1 pr-1">
+                {DOCUMENT_CATEGORIES.find(c => c.value === selectedCategory)?.label || selectedCategory}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  onClick={() => { setSelectedCategory(''); handleFilterChange(); }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {selectedPerson && (
+              <Badge variant="secondary" className="gap-1 pr-1">
+                {familyMembers.find(m => m.id === selectedPerson)?.name || 'Person'}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  onClick={() => { setSelectedPerson(null); handleFilterChange(); }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+            {(dateRange.from || dateRange.to) && (
+              <Badge variant="secondary" className="gap-1 pr-1">
+                {dateRange.from ? format(dateRange.from, 'MMM d') : '...'} - {dateRange.to ? format(dateRange.to, 'MMM d') : '...'}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  onClick={() => { setDateRange({ from: undefined, to: undefined }); handleFilterChange(); }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            )}
+          </div>
+        )}
 
         {/* Bulk Actions Bar */}
         {selectedIds.size > 0 && (
@@ -757,8 +888,17 @@ export function FamilyDocumentsList() {
 
         {/* Error */}
         {error && (
-          <div className="p-4 border border-destructive rounded-lg text-destructive">
-            {error}
+          <div className="p-4 border border-destructive rounded-lg text-destructive flex items-center justify-between gap-2">
+            <span>{error}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadDocuments}
+              className="shrink-0"
+            >
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Retry
+            </Button>
           </div>
         )}
 
@@ -864,6 +1004,13 @@ export function FamilyDocumentsList() {
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit Document
                       </ContextMenuItem>
+                      <ContextMenuItem onClick={() => {
+                        setSecureLinkDoc({ id: doc.id, title: doc.title });
+                        setSecureLinkDialogOpen(true);
+                      }}>
+                        <Link2 className="h-4 w-4 mr-2" />
+                        Create Secure Link
+                      </ContextMenuItem>
                       <ContextMenuSeparator />
                       <ContextMenuItem
                         onClick={() => handleDeleteClick(doc.id, doc.title)}
@@ -879,12 +1026,12 @@ export function FamilyDocumentsList() {
             </div>
           </ScrollArea>
         ) : (
-          /* List View (Table) */
-          <ScrollArea className="h-[400px]">
+          /* List View (Table) - Compact Design */
+          <ScrollArea className="h-[450px]">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40px]">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[32px] px-2">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
@@ -892,153 +1039,142 @@ export function FamilyDocumentsList() {
                       className={isSomeSelected && !isAllSelected ? 'data-[state=checked]:bg-primary/50' : ''}
                     />
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="pl-0">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="-ml-3 h-8"
+                      className="-ml-3 h-7 text-xs"
                       onClick={() => toggleSort('title')}
                     >
-                      Title
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
+                      Document
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
                     </Button>
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="w-[100px] hidden sm:table-cell">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="-ml-3 h-8"
-                      onClick={() => toggleSort('category')}
-                    >
-                      Category
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Visibility</TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="-ml-3 h-8"
+                      className="-ml-3 h-7 text-xs"
                       onClick={() => toggleSort('created_at')}
                     >
-                      Created
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
+                      Date
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-[80px] text-right pr-2">
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {documents.map((doc) => (
-                  <ContextMenu key={doc.id}>
-                    <ContextMenuTrigger asChild>
-                      <TableRow className={selectedIds.has(doc.id) ? 'bg-muted/50' : ''}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedIds.has(doc.id)}
-                            onCheckedChange={(checked) => handleSelectOne(doc.id, checked as boolean)}
-                            aria-label={`Select ${doc.title}`}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <HoverCard openDelay={300} closeDelay={100}>
-                            <HoverCardTrigger asChild>
-                              <div className="max-w-[300px] cursor-pointer" onClick={() => handleView(doc.id)}>
-                                <p className="font-medium truncate hover:text-primary transition-colors">{doc.title}</p>
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {doc.content_preview}
-                                </p>
+                {documents.map((doc) => {
+                  const config = CATEGORY_CONFIG[doc.category] || CATEGORY_CONFIG.general;
+                  const CategoryIcon = config.icon;
+                  const visConfig = VISIBILITY_CONFIG[doc.visibility || 'everyone'];
+                  const VisIcon = visConfig.icon;
+
+                  return (
+                    <ContextMenu key={doc.id}>
+                      <ContextMenuTrigger asChild>
+                        <TableRow
+                          className={`group cursor-pointer ${selectedIds.has(doc.id) ? 'bg-muted/50' : ''}`}
+                          onClick={() => handleView(doc.id)}
+                        >
+                          <TableCell className="px-2" onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedIds.has(doc.id)}
+                              onCheckedChange={(checked) => handleSelectOne(doc.id, checked as boolean)}
+                              aria-label={`Select ${doc.title}`}
+                            />
+                          </TableCell>
+                          <TableCell className="pl-0 py-2">
+                            <div className="flex items-center gap-3">
+                              {/* Category Icon */}
+                              <div className={`p-1.5 rounded ${config.bgColor} shrink-0`}>
+                                <CategoryIcon className={`h-4 w-4 ${config.color}`} />
                               </div>
-                            </HoverCardTrigger>
-                            <HoverCardContent side="right" align="start" className="w-80 p-4">
-                              <QuickPreview document={doc} />
-                            </HoverCardContent>
-                          </HoverCard>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="capitalize">
-                            {doc.category.replace(/_/g, ' ')}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {doc.assigned_to_name ? (
-                            <MemberAvatar name={doc.assigned_to_name} size="sm" />
-                          ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {(() => {
-                            const visConfig = VISIBILITY_CONFIG[doc.visibility || 'everyone'];
-                            const VisIcon = visConfig.icon;
-                            return (
-                              <Badge variant="outline" className={`gap-1 ${visConfig.color}`}>
-                                <VisIcon className="h-3 w-3" />
-                                {visConfig.label}
-                              </Badge>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {doc.created_at
-                            ? new Date(doc.created_at).toLocaleDateString()
-                            : 'N/A'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleView(doc.id)}
-                              disabled={isActionLoading}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleEdit(doc.id)}
-                              disabled={isActionLoading}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => handleDeleteClick(doc.id, doc.title)}
-                              disabled={isActionLoading}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent>
-                      <ContextMenuItem onClick={() => handleView(doc.id)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Document
-                      </ContextMenuItem>
-                      <ContextMenuItem onClick={() => handleEdit(doc.id)}>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit Document
-                      </ContextMenuItem>
-                      <ContextMenuSeparator />
-                      <ContextMenuItem
-                        onClick={() => handleDeleteClick(doc.id, doc.title)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Document
-                      </ContextMenuItem>
-                    </ContextMenuContent>
-                  </ContextMenu>
-                ))}
+                              {/* Title & Metadata */}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                                    {doc.title}
+                                  </p>
+                                  {/* Visibility Icon - only show if not "everyone" */}
+                                  {doc.visibility && doc.visibility !== 'everyone' && (
+                                    <VisIcon className={`h-3 w-3 shrink-0 ${visConfig.color}`} aria-label={visConfig.label} />
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="capitalize">{doc.category.replace(/_/g, ' ')}</span>
+                                  {doc.assigned_to_name && (
+                                    <>
+                                      <span>·</span>
+                                      <span className="truncate">{doc.assigned_to_name}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
+                            {doc.created_at
+                              ? new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                              : '-'}
+                          </TableCell>
+                          <TableCell className="text-right pr-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => handleEdit(doc.id)}
+                                disabled={isActionLoading}
+                                aria-label={`Edit ${doc.title}`}
+                              >
+                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteClick(doc.id, doc.title)}
+                                disabled={isActionLoading}
+                                aria-label={`Delete ${doc.title}`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem onClick={() => handleView(doc.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Document
+                        </ContextMenuItem>
+                        <ContextMenuItem onClick={() => handleEdit(doc.id)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Edit Document
+                        </ContextMenuItem>
+                        <ContextMenuItem onClick={() => {
+                          setSecureLinkDoc({ id: doc.id, title: doc.title });
+                          setSecureLinkDialogOpen(true);
+                        }}>
+                          <Link2 className="h-4 w-4 mr-2" />
+                          Create Secure Link
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                          onClick={() => handleDeleteClick(doc.id, doc.title)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Document
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  );
+                })}
               </TableBody>
             </Table>
           </ScrollArea>
@@ -1164,14 +1300,26 @@ export function FamilyDocumentsList() {
             {viewDocument && (
               <div className="px-4 pb-4">
                 <Tabs defaultValue="preview">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="preview" className="gap-2">
-                      <Eye className="h-4 w-4" />
+                  <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="preview" className="gap-1 text-xs">
+                      <Eye className="h-3 w-3" />
                       Preview
                     </TabsTrigger>
-                    <TabsTrigger value="content" className="gap-2">
-                      <FileText className="h-4 w-4" />
-                      Full Text
+                    <TabsTrigger value="data" className="gap-1 text-xs">
+                      <Sparkles className="h-3 w-3" />
+                      Data
+                    </TabsTrigger>
+                    <TabsTrigger value="content" className="gap-1 text-xs">
+                      <FileText className="h-3 w-3" />
+                      Text
+                    </TabsTrigger>
+                    <TabsTrigger value="related" className="gap-1 text-xs">
+                      <Link2 className="h-3 w-3" />
+                      Related
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="gap-1 text-xs">
+                      <History className="h-3 w-3" />
+                      History
                     </TabsTrigger>
                   </TabsList>
 
@@ -1179,11 +1327,61 @@ export function FamilyDocumentsList() {
                     <DocumentPreview document={viewDocument} className="max-w-full" />
                   </TabsContent>
 
-                  <TabsContent value="content" className="mt-4">
+                  <TabsContent value="data" className="mt-4">
                     <ScrollArea className="h-[40vh] rounded-lg border p-4 bg-muted/30">
+                      <ExtractedDataDisplay
+                        data={viewDocument.extracted_data}
+                        category={viewDocument.category}
+                        documentId={viewDocument.id}
+                        tenantId={tenantId}
+                        onExtract={(extractedData) => {
+                          setViewDocument(prev => prev ? { ...prev, extracted_data: extractedData } : null);
+                        }}
+                      />
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="content" className="mt-4 space-y-3">
+                    {/* Text-to-Speech - Compact for mobile */}
+                    {viewDocument.content && (
+                      <TextToSpeech
+                        text={viewDocument.content}
+                        title={viewDocument.title}
+                        compact
+                        maxChars={5000}
+                      />
+                    )}
+
+                    <ScrollArea className="h-[35vh] rounded-lg border p-4 bg-muted/30">
                       <div className="whitespace-pre-wrap text-sm font-mono">
                         {viewDocument.content}
                       </div>
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="related" className="mt-4">
+                    <ScrollArea className="h-[40vh]">
+                      <RelatedDocuments
+                        documentId={viewDocument.id}
+                        onDocumentSelect={(docId) => {
+                          setViewDialogOpen(false);
+                          handleView(docId);
+                        }}
+                        compact
+                      />
+                    </ScrollArea>
+                  </TabsContent>
+
+                  <TabsContent value="history" className="mt-4">
+                    <ScrollArea className="h-[40vh]">
+                      <VersionHistory
+                        documentId={String(viewDocument.id)}
+                        onVersionRestored={() => {
+                          // Refresh document after rollback
+                          handleView(viewDocument.id);
+                        }}
+                        compact
+                      />
                     </ScrollArea>
                   </TabsContent>
                 </Tabs>
@@ -1251,14 +1449,26 @@ export function FamilyDocumentsList() {
 
             {viewDocument && (
               <Tabs defaultValue="preview" className="mt-2">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="preview" className="gap-2">
                     <Eye className="h-4 w-4" />
                     Preview
                   </TabsTrigger>
+                  <TabsTrigger value="data" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Data
+                  </TabsTrigger>
                   <TabsTrigger value="content" className="gap-2">
                     <FileText className="h-4 w-4" />
-                    Full Text
+                    Text
+                  </TabsTrigger>
+                  <TabsTrigger value="related" className="gap-2">
+                    <Link2 className="h-4 w-4" />
+                    Related
+                  </TabsTrigger>
+                  <TabsTrigger value="history" className="gap-2">
+                    <History className="h-4 w-4" />
+                    History
                   </TabsTrigger>
                 </TabsList>
 
@@ -1266,11 +1476,58 @@ export function FamilyDocumentsList() {
                   <DocumentPreview document={viewDocument} className="max-w-md mx-auto" />
                 </TabsContent>
 
-                <TabsContent value="content" className="mt-4">
+                <TabsContent value="data" className="mt-4">
                   <ScrollArea className="h-[50vh] rounded-lg border p-4 bg-muted/30">
+                    <ExtractedDataDisplay
+                      data={viewDocument.extracted_data}
+                      category={viewDocument.category}
+                      documentId={viewDocument.id}
+                      tenantId={tenantId}
+                      onExtract={(extractedData) => {
+                        setViewDocument(prev => prev ? { ...prev, extracted_data: extractedData } : null);
+                      }}
+                    />
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="content" className="mt-4 space-y-4">
+                  {/* Text-to-Speech Controls */}
+                  {viewDocument.content && (
+                    <TextToSpeech
+                      text={viewDocument.content}
+                      title={viewDocument.title}
+                      maxChars={5000}
+                    />
+                  )}
+
+                  <ScrollArea className="h-[40vh] rounded-lg border p-4 bg-muted/30">
                     <div className="whitespace-pre-wrap text-sm font-mono">
                       {viewDocument.content}
                     </div>
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="related" className="mt-4">
+                  <ScrollArea className="h-[50vh]">
+                    <RelatedDocuments
+                      documentId={viewDocument.id}
+                      onDocumentSelect={(docId) => {
+                        setViewDialogOpen(false);
+                        handleView(docId);
+                      }}
+                    />
+                  </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="history" className="mt-4">
+                  <ScrollArea className="h-[50vh]">
+                    <VersionHistory
+                      documentId={String(viewDocument.id)}
+                      onVersionRestored={() => {
+                        // Refresh document after rollback
+                        handleView(viewDocument.id);
+                      }}
+                    />
                   </ScrollArea>
                 </TabsContent>
               </Tabs>
@@ -1292,15 +1549,15 @@ export function FamilyDocumentsList() {
 
       {/* Edit Document Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+        <DialogContent className="max-w-2xl h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle>Edit Document</DialogTitle>
             <DialogDescription>
               Make changes to your document. Content changes will update the AI search index.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 min-h-0 -mx-6 px-6">
-            <div className="space-y-4 py-4 pr-4">
+          <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6 custom-scrollbar">
+            <div className="space-y-4 py-4 pr-2">
               <div className="space-y-2">
                 <Label htmlFor="edit-title">Title</Label>
                 <Input
@@ -1354,27 +1611,33 @@ export function FamilyDocumentsList() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-visibility">Visibility</Label>
-                <Select
-                  value={editVisibility}
-                  onValueChange={(v) => setEditVisibility(v as DocumentVisibility)}
-                >
-                  <SelectTrigger>
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                      <SelectValue placeholder="Who can see this?" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DOCUMENT_VISIBILITY.map((vis) => (
-                      <SelectItem key={vis.value} value={vis.value}>
-                        <div className="flex flex-col">
-                          <span>{vis.label}</span>
-                          <span className="text-xs text-muted-foreground">{vis.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <TooltipProvider>
+                  <Select
+                    value={editVisibility}
+                    onValueChange={(v) => setEditVisibility(v as DocumentVisibility)}
+                  >
+                    <SelectTrigger>
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <SelectValue placeholder="Who can see this?" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DOCUMENT_VISIBILITY.map((vis) => (
+                        <Tooltip key={vis.value}>
+                          <TooltipTrigger asChild>
+                            <SelectItem value={vis.value}>
+                              {vis.label}
+                            </SelectItem>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            <p>{vis.description}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TooltipProvider>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-content">Content</Label>
@@ -1383,11 +1646,11 @@ export function FamilyDocumentsList() {
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   placeholder="Document content"
-                  className="min-h-[250px] resize-none"
+                  className="min-h-[200px] max-h-[40vh] resize-y custom-scrollbar"
                 />
               </div>
             </div>
-          </ScrollArea>
+          </div>
           <DialogFooter className="flex-shrink-0">
             <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={isActionLoading}>
               Cancel
@@ -1463,6 +1726,21 @@ export function FamilyDocumentsList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Secure Link Dialog */}
+      {secureLinkDoc && (
+        <SecureLinkDialog
+          open={secureLinkDialogOpen}
+          onOpenChange={(open) => {
+            setSecureLinkDialogOpen(open);
+            if (!open) setSecureLinkDoc(null);
+          }}
+          documentId={secureLinkDoc.id}
+          documentTitle={secureLinkDoc.title}
+          tenantId={tenantId}
+        />
+      )}
+
     </Card>
   );
 }

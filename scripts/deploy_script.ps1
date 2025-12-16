@@ -6,6 +6,16 @@ param(
     [string]$WindmillPath
 )
 
+# Configuration from environment variables
+$WindmillUrl = if ($env:WINDMILL_URL) { $env:WINDMILL_URL } else { "http://localhost" }
+$WindmillWorkspace = if ($env:WINDMILL_WORKSPACE) { $env:WINDMILL_WORKSPACE } else { "family-brain" }
+$WindmillToken = $env:WINDMILL_TOKEN
+
+if (-not $WindmillToken) {
+    Write-Error "WINDMILL_TOKEN environment variable must be set"
+    exit 1
+}
+
 $content = Get-Content $ScriptPath -Raw
 
 $body = @{
@@ -19,10 +29,10 @@ $body = @{
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($body)
 
 try {
-    $response = Invoke-RestMethod -Uri "http://localhost/api/w/family-brain/scripts/create" `
+    $response = Invoke-RestMethod -Uri "$WindmillUrl/api/w/$WindmillWorkspace/scripts/create" `
         -Method Post `
         -Headers @{
-            Authorization = "Bearer t8u4sIJRGhaHPqLn0VuUPUPbWSa9uTyi"
+            Authorization = "Bearer $WindmillToken"
             "Content-Type" = "application/json"
         } `
         -Body $bytes

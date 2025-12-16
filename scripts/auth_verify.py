@@ -22,10 +22,11 @@ Returns:
 
 import jwt
 from datetime import datetime
+from config import get_jwt_secret
 
 
-# Must match auth_login.py
-JWT_SECRET = "archevi-jwt-secret-2026-change-in-production"
+# JWT Configuration
+JWT_SECRET = get_jwt_secret()
 JWT_ALGORITHM = "HS256"
 
 

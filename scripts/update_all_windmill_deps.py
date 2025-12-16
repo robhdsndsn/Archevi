@@ -8,10 +8,9 @@ including httpx, httpcore, etc. that wmill requires.
 import requests
 import json
 import os
+from config import WINDMILL_URL, WINDMILL_WORKSPACE as WORKSPACE, get_windmill_token
 
-WINDMILL_URL = 'http://localhost'
-WINDMILL_TOKEN = 'vBTbBdIfUmgWj4cCbl4EEXNB7O2xt50J'
-WORKSPACE = 'family-brain'
+WINDMILL_TOKEN = get_windmill_token()
 
 headers = {
     'Authorization': f'Bearer {WINDMILL_TOKEN}',

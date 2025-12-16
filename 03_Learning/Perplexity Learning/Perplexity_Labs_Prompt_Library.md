@@ -26,7 +26,7 @@ COMPONENT 1: Feature Comparison Matrix
 - Create a detailed comparison table with these columns: Feature Category | Archevi | Competitor A | Competitor B | Competitor C | Archevi Advantage
 - Feature categories to include:
   * Core functionality (document storage, search, RAG/AI features)
-  * Privacy & hosting (self-hosted option, data residency, encryption)
+  * Privacy & hosting (data isolation per family, data residency, encryption)
   * Pricing (monthly cost in CAD, free tier availability, enterprise options)
   * User experience (mobile app, collaboration features, family sharing)
   * Canadian market fit (Canadian servers, CAD pricing, Canadian support)
@@ -109,7 +109,7 @@ VERSION B: Proactive Planning (target: organized families planning ahead)
 - Example tone: "Your family's knowledge, organized for generations"
 
 VERSION C: Privacy-First (target: privacy-conscious Canadians)
-- Emphasize data sovereignty, self-hosting, Canadian privacy laws
+- Emphasize data sovereignty, data isolation, Canadian privacy laws
 - Use security-focused, trustworthy language
 - Example tone: "Keep your family's documents in Canada, under your control"
 
@@ -133,7 +133,7 @@ SEQUENCE A: Welcome Series (3 emails for new signups)
 For each email: Subject line, preview text, body copy (3-4 paragraphs), CTA
 
 SEQUENCE B: Nurture Series (3 emails for freemium users)
-- Email 1: Address common objection ("Is self-hosting hard?")
+- Email 1: Address common objection ("Is data isolation hard?")
 - Email 2: Share customer success story (family use case)
 - Email 3: Limited-time upgrade offer
 For each email: Subject line, preview text, body copy, CTA
@@ -162,7 +162,7 @@ For the top 5 objections from the uploaded documents, provide:
 
 Common objections to address:
 1. "I already use [Google Drive/Dropbox/iCloud]"
-2. "Self-hosting sounds complicated"
+2. "Data isolation sounds complicated"
 3. "AI tools are expensive and overhyped"
 4. "My family won't adopt new tools"
 5. "I don't have anything important to organize"
@@ -198,7 +198,7 @@ Create a comprehensive 8-week launch campaign dashboard for Archevi covering pre
 CAMPAIGN OVERVIEW:
 - Launch Date: [To be determined - Q1 2026]
 - Primary Platform: ProductHunt
-- Secondary Platforms: Reddit (r/selfhosted, r/DataHoarder, r/privacy), Hacker News
+- Secondary Platforms: Reddit (r/personalfinance, r/parenting, r/privacy), Hacker News
 - Tertiary: Canadian tech media, online communities
 - Budget: Bootstrapped (under $5,000 CAD total)
 
@@ -213,7 +213,7 @@ WEEK 1-4: PRE-LAUNCH (Build Assets & Audience)
   * Day 7: Set up analytics and tracking
 - Week 2: Community Seeding
   * Day 1-3: Engage in Reddit communities (provide value, no pitching)
-  * Day 4-5: Comment on Hacker News threads related to RAG, self-hosting
+  * Day 4-5: Comment on Hacker News threads related to RAG, data isolation
   * Day 6-7: Reach out to 10 beta testers from target communities
 - Week 3: Media Outreach Prep
   * Day 1-2: Finalize press kit (fact sheet, founder bio, high-res images)
@@ -229,7 +229,7 @@ WEEK 5: LAUNCH WEEK (ProductHunt + Multi-Channel Push)
 - Day 1 (Launch Day - Tuesday recommended):
   * 12:01 AM PST: Publish on ProductHunt
   * 6:00 AM: Send launch email to newsletter (if exists)
-  * 8:00 AM: Post on Reddit (r/selfhosted with "Show & Tell" flair)
+  * 8:00 AM: Post on Reddit (r/personalfinance with "Show & Tell" flair)
   * 10:00 AM: Post on Hacker News (Show HN format)
   * 12:00 PM: Engage with ProductHunt comments (respond within 30 min)
   * 2:00 PM: Share on LinkedIn, Twitter (tag relevant influencers)
@@ -273,10 +273,10 @@ For each platform, provide:
 
 Platforms:
 1. ProductHunt
-2. Reddit (r/selfhosted, r/DataHoarder, r/privacy)
+2. Reddit (r/personalfinance, r/parenting, r/privacy)
 3. Hacker News
 4. Canadian tech media (BetaKit, MobileSyrup, IT World Canada)
-5. Online communities (Indie Hackers, self-hosting forums)
+5. Online communities (Indie Hackers, family tech forums)
 
 COMPONENT 3: Task Checklists (Copy-Paste Ready)
 Create actionable checklists for:
@@ -515,7 +515,7 @@ CONTENT MIX (26 articles total):
 - 10 Comparison pages (e.g., "Archevi vs Notion for Families", "Best Document Management for Canadian Families")
 - 8 How-To guides (e.g., "How to Organize Estate Planning Documents", "How to Set Up a Family Knowledge Base")
 - 5 Listicles (e.g., "10 Documents Every Canadian Family Should Organize", "7 Signs You Need a Family Knowledge Base")
-- 3 Thought leadership / opinion pieces (e.g., "Why Self-Hosting Matters for Family Privacy", "The Future of Family Tech")
+- 3 Thought leadership / opinion pieces (e.g., "Why Data Privacy Matters for Families", "The Future of Family Tech")
 
 Prioritize by:
 1. Commercial intent (comparison pages first - they convert best)
@@ -622,7 +622,7 @@ DAY OF PUBLISH:
 - [ ] Share on LinkedIn (personal + company page, tag relevant people)
 - [ ] Share on Twitter (thread format, tag influencers if mentioned)
 - [ ] Post in relevant Reddit communities (provide value, not just link drop)
-  * r/selfhosted (if self-hosting angle)
+  * r/personalfinance (if data isolation angle)
   * r/privacy (if privacy angle)
   * r/personalfinance (if financial/estate planning angle)
 - [ ] Submit to Hacker News (if thought leadership or how-to)
@@ -630,7 +630,7 @@ DAY OF PUBLISH:
 - [ ] Add to Google Search Console (request indexing)
 
 WEEK 1 POST-PUBLISH:
-- [ ] Share in Slack/Discord communities (Indie Hackers, self-hosting groups)
+- [ ] Share in Slack/Discord communities (Indie Hackers, family tech groups)
 - [ ] Reach out to mentioned brands/people (let them know they were featured)
 - [ ] Monitor comments/shares, engage within 24 hours
 - [ ] Internal link from 2-3 older articles to this new article
@@ -698,12 +698,12 @@ Use the uploaded "Content Gap Analysis" and "Trending Questions for SEO" documen
 
 ### FULL PROMPT:
 ```
-Create a comprehensive pricing strategy toolkit for Archevi to validate and optimize our dual-model pricing (SaaS + open-source).
+Create a comprehensive pricing strategy toolkit for Archevi to validate and optimize our dual-model pricing (SaaS + SaaS).
 
 CURRENT PRICING:
 - Starter: $14.99 CAD/month (1-3 family members, 5GB storage, basic features)
 - Family: $24.99 CAD/month (unlimited members, 25GB storage, premium features)
-- Open-Source: Free (self-hosted, all features, DIY setup/support)
+- SaaS: Free (deploy on-premiseed, all features, enterprise deployment/support)
 
 COMPONENT 1: Competitive Pricing Comparison Chart
 Create a detailed comparison table:
@@ -730,14 +730,14 @@ USER INPUTS:
 - Number of family members (slider: 1-10)
 - Storage needed (slider: 1GB-100GB)
 - Features needed (checkboxes: OCR, Voice Notes, AI Categorization, Expiry Alerts, etc.)
-- Self-hosting preference (toggle: Yes/No)
+- Data isolation preference (toggle: Yes/No)
 
 OUTPUT:
-- Recommended plan (Starter / Family / Open-Source)
+- Recommended plan (Starter / Family / SaaS)
 - Monthly cost (if SaaS)
 - Annual savings (if they pay yearly - offer 20% discount)
 - Comparison to competitors ("Save $X/month vs [Competitor]")
-- CTA: "Start Free Trial" or "Download Open-Source"
+- CTA: "Start Free Trial" or "Download SaaS"
 
 Provide:
 - Wireframe description (layout, inputs, outputs)
@@ -846,7 +846,7 @@ BUSINESS MODEL VALIDATION:
 - [ ] Churn rate < 5% monthly (sticky product)
 
 OPEN-CORE BALANCE:
-- [ ] Free (open-source) has enough value to attract users (not crippled)
+- [ ] Free (SaaS) has enough value to attract users (not crippled)
 - [ ] Paid tiers have clear differentiation (convenience, support, managed hosting)
 - [ ] Free users can become advocates (recommend paid version to others)
 - [ ] Upgrade path is obvious (free users know how to upgrade when ready)
@@ -908,26 +908,26 @@ Use data from the uploaded "Competitor Pricing" and "Open-Core Pricing Models" d
 
 ### FULL PROMPT:
 ```
-Create a complete technical differentiation messaging kit for Archevi to communicate our self-hosting and RAG advantages to both technical and non-technical audiences.
+Create a complete technical differentiation messaging kit for Archevi to communicate our data isolation and RAG advantages to both technical and non-technical audiences.
 
 CHALLENGE:
-- Technical users (r/selfhosted, developers) want deep technical details
+- Technical users (r/personalfinance, developers) want deep technical details
 - Families (non-technical) need simple explanations without jargon
 - Compliance/privacy-conscious users want regulatory assurances
-- Must translate "RAG" and "self-hosting" into tangible benefits
+- Must translate "RAG" and "data isolation" into tangible benefits
 
 COMPONENT 1: Privacy Advantage Explainer (3 Versions)
 Create 3 versions of our privacy story tailored to different audiences:
 
-VERSION A: TECHNICAL (for r/selfhosted, Hacker News)
+VERSION A: TECHNICAL (for r/personalfinance, Hacker News)
 - Length: 150-200 words
 - Tone: Technical, detailed, uses specific terms (PIPEDA, encryption standards, self-custody)
 - Key points:
-  * Self-hosting architecture (Docker, PostgreSQL, pgvector)
+  * Data isolation architecture (Docker, PostgreSQL, pgvector)
   * Data sovereignty (Canadian data stays in Canada, PIPEDA compliance)
   * Encryption (at-rest, in-transit, key management)
   * No third-party AI vendors accessing raw data (Cohere only sees embeddings, not documents)
-  * Open-source transparency (code is auditable)
+  * SaaS transparency (code is auditable)
 - Format: Technical blog post intro or Hacker News comment
 
 VERSION B: SIMPLE (for family landing page)
@@ -972,60 +972,60 @@ Provide:
 - Text copy (ready for landing page or FAQ)
 - Analogy library (5 different analogies for RAG: librarian, filing cabinet, smart assistant, etc.)
 
-COMPONENT 3: Self-Hosting vs Cloud Decision Matrix
-Create a comparison matrix to help users choose between our SaaS and open-source options:
+COMPONENT 3: SaaS vs Enterprise License Decision Matrix
+Create a comparison matrix to help users choose between our SaaS and SaaS options:
 
 COLUMNS:
 - Feature/Consideration
 - Archevi Cloud (SaaS)
-- Archevi Self-Hosted (Open-Source)
+- Archevi Enterprise (On-Premise)
 - Who It's For
 
 ROWS (at least 10 considerations):
-- Setup Time (SaaS: 5 minutes, Self-hosted: 1-2 hours)
-- Technical Skill Required (SaaS: None, Self-hosted: Moderate)
-- Cost (SaaS: $14.99-$24.99/month, Self-hosted: Free software + hosting costs)
-- Data Location (SaaS: Canadian servers we manage, Self-hosted: YOUR server/computer)
-- Privacy (SaaS: We can't see your docs, Self-hosted: 100% under your control)
-- Updates (SaaS: Automatic, Self-hosted: Manual)
-- Support (SaaS: Included, Self-hosted: Community-driven)
-- Scalability (SaaS: We handle it, Self-hosted: You manage)
-- Customization (SaaS: Limited, Self-hosted: Full code access)
-- Reliability (SaaS: 99.9% uptime SLA, Self-hosted: Depends on your setup)
+- Setup Time (SaaS: 5 minutes, Enterprise deploymented: 1-2 hours)
+- Technical Skill Required (SaaS: None, Enterprise deploymented: Moderate)
+- Cost (SaaS: $14.99-$24.99/month, Enterprise deploymented: Free software + hosting costs)
+- Data Location (SaaS: Canadian servers we manage, Enterprise deploymented: YOUR server/computer)
+- Privacy (SaaS: We can't see your docs, Enterprise deploymented: 100% under your control)
+- Updates (SaaS: Automatic, Enterprise deploymented: Manual)
+- Support (SaaS: Included, Enterprise deploymented: Community-driven)
+- Scalability (SaaS: We handle it, Enterprise deploymented: You manage)
+- Customization (SaaS: Limited, Enterprise deploymented: Full code access)
+- Reliability (SaaS: 99.9% uptime SLA, Enterprise deploymented: Depends on your setup)
 
 Add a "Recommendation Engine":
 - If you value convenience → SaaS
-- If you value absolute control → Self-hosted
-- If you're privacy-paranoid → Self-hosted
+- If you value absolute control → Enterprise deploymented
+- If you're privacy-paranoid → Enterprise deploymented
 - If you're non-technical → SaaS
-- If you're a tinkerer/developer → Self-hosted
+- If you're a tinkerer/developer → Enterprise deploymented
 
 COMPONENT 4: FAQ Generator Template
 Create a FAQ section addressing technical objections:
 
-CATEGORY A: SELF-HOSTING CONCERNS (5 FAQs)
-1. "Isn't self-hosting complicated?"
+CATEGORY A: ENTERPRISE DEPLOYMENTING CONCERNS (5 FAQs)
+1. "Isn't data isolation complicated?"
    - Answer: We provide Docker Compose (one command setup), detailed docs, and community support. Most users are up and running in under an hour.
 2. "What if I don't have a server?"
-   - Answer: You can self-host on a home computer, NAS (Synology/QNAP), or cheap cloud VPS ($5-10/month). We provide guides for each.
+   - Answer: You can deploy on-premise on a home computer, NAS (Synology/QNAP), or cheap cloud VPS ($5-10/month). We provide guides for each.
 3. "How do I back up my data?"
    - Answer: Since you control the database, you can use standard PostgreSQL backup tools. We provide scripts and recommendations.
 4. "What if I need help?"
    - Answer: Join our community forum, Discord, or GitHub Discussions. For paid support, email us.
-5. "Can I migrate from self-hosted to SaaS later?"
+5. "Can I migrate from deploy on-premiseed to SaaS later?"
    - Answer: Yes, we provide migration tools. Your data exports easily.
 
 CATEGORY B: PRIVACY & SECURITY (5 FAQs)
 1. "How is Archevi different from Google Drive for privacy?"
-   - Answer: Google scans your files for ads and AI training. Archevi (especially self-hosted) never accesses your documents. Even our SaaS version encrypts everything and doesn't scan.
+   - Answer: Google scans your files for ads and AI training. Archevi (especially deploy on-premiseed) never accesses your documents. Even our SaaS version encrypts everything and doesn't scan.
 2. "Does Cohere AI see my documents?"
    - Answer: No. Cohere only sees mathematical embeddings (vectors), not the actual text. We process documents locally before sending embeddings.
 3. "What happens if Archevi shuts down?"
-   - Answer: Your data is in standard PostgreSQL format. Export anytime. Open-source users are unaffected (you own the code).
+   - Answer: Your data is in standard PostgreSQL format. Export anytime. SaaS users are unaffected (you own the code).
 4. "Are you PIPEDA compliant?"
    - Answer: Yes. We follow Canadian privacy laws (PIPEDA). Data stays in Canada, we don't sell/share data, and you can request deletion anytime.
 5. "Can the government access my data?"
-   - Answer: SaaS: We'd require a valid warrant (Canadian law). Self-hosted: No one can access without physical access to your server.
+   - Answer: SaaS: We'd require a valid warrant (Canadian law). Enterprise deploymented: No one can access without physical access to your server.
 
 CATEGORY C: RAG TECHNOLOGY (5 FAQs)
 1. "What is RAG and why should I care?"
@@ -1033,31 +1033,31 @@ CATEGORY C: RAG TECHNOLOGY (5 FAQs)
 2. "How accurate is the AI?"
    - Answer: Because RAG uses YOUR documents (not the internet), it's very accurate for your family's info. We cite sources so you can verify.
 3. "Does RAG work offline?"
-   - Answer: Self-hosted version can work offline for search. AI features (embeddings, chat) require internet for Cohere API. We're working on fully offline mode.
+   - Answer: Enterprise deploymented version can work offline for search. AI features (embeddings, chat) require internet for Cohere API. We're working on fully offline mode.
 4. "How much does AI cost?"
-   - Answer: SaaS: Included in your plan. Self-hosted: You pay Cohere directly (roughly $0.50/month per user for typical usage).
+   - Answer: SaaS: Included in your plan. Enterprise deploymented: You pay Cohere directly (roughly $0.50/month per user for typical usage).
 5. "Can I use a different AI model?"
-   - Answer: Not yet, but it's on our roadmap. Open-source users can fork and integrate other models.
+   - Answer: Not yet, but it's on our roadmap. SaaS users can fork and integrate other models.
 
 COMPONENT 5: Developer Pitch Deck (6 slides)
 Create a pitch deck targeting developers/technical decision-makers:
 
 Slide 1: COVER
-- Title: "Archevi: Open-Source Family Knowledge Base with RAG"
-- Subtitle: "Self-host your family's documents with AI-powered search"
+- Title: "Archevi: SaaS Family Knowledge Base with RAG"
+- Subtitle: "Enterprise deployment your family's documents with AI-powered search"
 - Visual: Archevi logo + screenshot
 
 Slide 2: THE TECHNICAL PROBLEM
 - Families have critical documents scattered (Google Drive, email, paper)
-- No good self-hosted solution (Nextcloud lacks AI, Notion isn't self-hostable, paperless-ngx is docs-only)
+- No good deploy on-premiseed solution (Nextcloud lacks AI, Notion isn't deploy on-premiseable, paperless-ngx is docs-only)
 - Privacy concerns with cloud providers (Google/Microsoft scan files, US jurisdiction)
 - Developers want to build tools for their families but don't want to start from scratch
 
 Slide 3: ARCHEVI'S TECHNICAL SOLUTION
 - Tech stack: React + Vite, Windmill (workflow engine), PostgreSQL + pgvector, Cohere AI
-- Architecture: Multi-tenant SaaS OR single-tenant self-hosted (Docker Compose)
+- Architecture: Multi-tenant SaaS OR single-tenant deploy on-premiseed (Docker Compose)
 - RAG pipeline: Upload → Extract → Embed (Cohere v4) → Store (pgvector) → Query (semantic search + rerank)
-- Open-source: MIT license, full code access, community-driven roadmap
+- SaaS: MIT license, full code access, community-driven roadmap
 
 Slide 4: WHY DEVELOPERS LOVE IT
 - One-command deploy: `docker compose up -d`
@@ -1076,7 +1076,7 @@ Slide 6: GET STARTED
 - GitHub: github.com/yourorg/archevi (star us!)
 - Docs: archevi.ca/docs
 - Discord: Join our community
-- Self-Host Guide: archevi.ca/docs/self-hosting
+- Enterprise: archevi.ca/enterprise
 - Contribute: archevi.ca/docs/contributing
 - CTA: "Deploy in 5 minutes →"
 
@@ -1089,7 +1089,7 @@ For each slide, provide:
 COMPONENT 6: Technical Blog Post Outline
 Create an outline for a technical blog post: "How We Built Archevi's RAG Pipeline"
 
-TARGET AUDIENCE: Developers interested in RAG, self-hosting, or building similar tools
+TARGET AUDIENCE: Developers interested in RAG, data isolation, or building similar tools
 
 OUTLINE:
 1. Introduction (200 words)
@@ -1100,7 +1100,7 @@ OUTLINE:
 2. Architecture Overview (300 words)
    - Tech stack decision (why Windmill, PostgreSQL, Cohere)
    - Multi-tenant vs single-tenant design
-   - Self-hosting considerations (Docker, resource limits)
+   - Data isolation considerations (Docker, resource limits)
 
 3. RAG Pipeline Deep Dive (600 words)
    - Step 1: Document ingestion (PDF extraction, OCR with Tesseract)
@@ -1112,7 +1112,7 @@ OUTLINE:
 4. Challenges & Solutions (400 words)
    - Challenge 1: Cohere dependency hell (how we solved it)
    - Challenge 2: Multi-tenant data isolation (tenant_id everywhere)
-   - Challenge 3: Self-hosting complexity (Docker Compose, documentation)
+   - Challenge 3: Data isolation complexity (Docker Compose, documentation)
 
 5. Performance & Cost (300 words)
    - Benchmarks (query latency, embedding generation time)
@@ -1137,7 +1137,7 @@ For each section, provide:
 FORMAT: Provide as:
 - Privacy explainers: 3 versions (Technical/Simple/Emotional) as copy-paste ready text
 - RAG explainer: Visual description + text copy + analogy library
-- Decision matrix: Table (Feature | SaaS | Self-Hosted | Who It's For)
+- Decision matrix: Table (Feature | SaaS | Enterprise | Who It's For)
 - FAQ: 15 Q&A pairs (copy-paste ready)
 - Developer pitch deck: 6 slides (outline format, ready for design)
 - Blog post outline: Detailed section-by-section breakdown
@@ -1168,7 +1168,7 @@ Create a comprehensive market timing toolkit for Archevi to articulate why Q1 20
 CONTEXT:
 - Launch: Q1 2026 (need compelling "Why Now?" narrative)
 - Macro trends: Aging population, elder care crisis, digital estate planning, privacy concerns, AI hype
-- Micro trends: Self-hosting renaissance, open-source SaaS models, RAG tooling maturity
+- Micro trends: Data isolation renaissance, SaaS models, RAG tooling maturity
 - Goal: Position Archevi as riding multiple tailwinds (not early/late, but perfectly timed)
 
 COMPONENT 1: "Why Now?" Pitch Deck (8 slides)
@@ -1194,13 +1194,13 @@ Slide 2: THE MACRO TRENDS (3 major forces)
   * Pain point: Need AI that works on private documents, not the internet
 
 Slide 3: THE MICRO TRENDS (3 technical enablers)
-- Trend 1: Self-Hosting Renaissance
-  * Reddit r/selfhosted growing 40% YoY (privacy + cost concerns)
-  * Tools maturing (Docker, Tailscale make self-hosting easier)
-  * Market ready: Non-technical users can self-host (with guides)
+- Trend 1: Privacy-First Renaissance
+  * Reddit r/personalfinance growing 40% YoY (privacy + cost concerns)
+  * Tools maturing (Docker, Tailscale make data isolation easier)
+  * Market ready: Non-technical users can deploy on-premise (with guides)
 - Trend 2: Open-Core SaaS Success
-  * Successful models: Supabase, Cal.com, Plausible (open-source + paid hosting)
-  * Proven: Developers love open-source, families pay for convenience
+  * Successful models: Supabase, Cal.com, Plausible (SaaS + paid hosting)
+  * Proven: Developers love SaaS, families pay for convenience
   * Market ready: Dual model is validated
 - Trend 3: RAG Tooling Maturity
   * 2023: RAG was experimental (LlamaIndex, LangChain early days)
@@ -1211,7 +1211,7 @@ Slide 4: THE CONVERGENCE (Why Now, Not Earlier/Later)
 - Too Early (2022-2023):
   * RAG tooling immature (hard to build)
   * AI hype not mainstream (hard to explain)
-  * Self-hosting niche (market too small)
+  * Data isolation niche (market too small)
 - Just Right (2026):
   * All trends converging (demographics + privacy + AI + tech maturity)
   * Market educated (people understand AI, want privacy)
@@ -1227,12 +1227,12 @@ Slide 5: MARKET SIGNALS (Proof the timing is right)
   * Investors betting on elder care, estate planning tools
 - Signal 2: Consumer Searches
   * "How to organize family documents" searches up X% (Google Trends)
-  * "Self-hosted alternatives to [Google/Dropbox]" trending
+  * "Enterprise deploymented alternatives to [Google/Dropbox]" trending
 - Signal 3: Competitor Moves
   * Notion, Evernote adding AI (validates market)
-  * But: None offer self-hosting (our differentiation)
+  * But: None offer data isolation (our differentiation)
 - Signal 4: Regulatory Tailwinds
-  * Canadian privacy laws favor domestic, self-hosted solutions
+  * Canadian privacy laws favor domestic, deploy on-premiseed solutions
   * PIPEDA compliance harder for US cloud providers
 
 Slide 6: THE URGENCY (Why families can't wait)
@@ -1248,7 +1248,7 @@ Slide 6: THE URGENCY (Why families can't wait)
 
 Slide 7: ARCHEVI'S TIMING ADVANTAGE (Why we're uniquely positioned)
 - First-Mover in Canadian Family Tech
-  * No direct competitor targeting Canadian families with self-hosted RAG
+  * No direct competitor targeting Canadian families with deploy on-premiseed RAG
   * We own the category definition
 - Riding Multiple Tailwinds
   * Not betting on one trend (aging OR privacy OR AI) - we benefit from ALL
@@ -1261,12 +1261,12 @@ Slide 8: FORWARD-LOOKING (What's next in 12-24 months)
 - 12-Month Forecast (by Q1 2027):
   * Prediction 1: 5+ competitors launch RAG family tools (validates market)
   * Prediction 2: Big Tech (Google/Microsoft) adds privacy features (raises awareness, but too slow)
-  * Prediction 3: Self-hosting goes mainstream (1M+ Canadians self-host something)
+  * Prediction 3: Data isolation goes mainstream (1M+ Canadians deploy on-premise something)
   * Archevi's Position: Early mover advantage, brand recognition, community built
 - 24-Month Forecast (by Q1 2028):
   * Prediction 1: RAG becomes table stakes (every doc tool has AI)
   * Prediction 2: Privacy regulation tightens (more PIPEDA-like laws globally)
-  * Prediction 3: Open-core model standard (SaaS + self-hosted is expected)
+  * Prediction 3: Open-core model standard (SaaS + deploy on-premiseed is expected)
   * Archevi's Position: Market leader in Canadian family knowledge management
 
 For each slide, provide:
@@ -1283,7 +1283,7 @@ MACRO TRENDS TAB:
 - Columns: Trend | Metric | Source | Q4 2025 | Q1 2026 | Q2 2026 | Q3 2026 | Direction | Notes
 - Rows:
   * Aging Population: % Canadians 65+ (Stats Canada)
-  * Privacy Searches: Google Trends for "self-hosted", "data privacy" (Google Trends)
+  * Privacy Searches: Google Trends for "deploy on-premiseed", "data privacy" (Google Trends)
   * AI Adoption: ChatGPT MAU, AI tool signups (public reports)
   * Cloud Breaches: # of major breaches reported (news tracking)
   * Estate Planning Searches: "digital estate planning" volume (Ahrefs)
@@ -1291,7 +1291,7 @@ MACRO TRENDS TAB:
 MICRO TRENDS TAB:
 - Columns: Trend | Metric | Source | Q4 2025 | Q1 2026 | Q2 2026 | Q3 2026 | Direction | Notes
 - Rows:
-  * r/selfhosted Growth: Subscriber count (Reddit)
+  * r/personalfinance Growth: Subscriber count (Reddit)
   * RAG Tool Launches: # of new RAG products (ProductHunt, YC)
   * Open-Core Funding: $ raised by open-core startups (Crunchbase)
   * pgvector Adoption: GitHub stars, Docker pulls (GitHub)
@@ -1300,7 +1300,7 @@ MICRO TRENDS TAB:
 COMPETITIVE SIGNALS TAB:
 - Columns: Competitor | Action | Date | Implication for Archevi | Our Response
 - Rows:
-  * Notion: Added AI features (Q3 2025) | Validates AI + docs market | Emphasize our self-hosting advantage
+  * Notion: Added AI features (Q3 2025) | Validates AI + docs market | Emphasize our data isolation advantage
   * Dropbox: Raised prices (Q4 2025) | Opportunity to position as value alternative | Launch pricing comparison content
   * [Competitor]: Shut down privacy tool | Market consolidation, users looking for alternatives | Outreach to displaced users
 
@@ -1321,7 +1321,7 @@ Create 10 different press angles for pitching Canadian tech media:
 
 2. PRIVACY ANGLE
    - Hook: "Canadian families flee US cloud providers over privacy concerns"
-   - Archevi tie-in: Self-hosted alternative keeps data in Canada under PIPEDA
+   - Archevi tie-in: Enterprise deploymented alternative keeps data in Canada under PIPEDA
    - Target outlet: IT World Canada, MobileSyrup (tech/privacy focus)
 
 3. AI ANGLE
@@ -1329,9 +1329,9 @@ Create 10 different press angles for pitching Canadian tech media:
    - Archevi tie-in: We're making AI personal (your docs, not the internet)
    - Target outlet: BetaKit, Tech Crunch (startup/AI focus)
 
-4. OPEN-SOURCE ANGLE
-   - Hook: "Canadian startup challenges Notion with open-source family knowledge base"
-   - Archevi tie-in: Developers can self-host, non-tech families can pay for convenience
+4. SAAS ANGLE
+   - Hook: "Canadian startup challenges Notion with SaaS family knowledge base"
+   - Archevi tie-in: Developers can deploy on-premise, non-tech families can pay for convenience
    - Target outlet: The Star, Financial Post (business focus)
 
 5. ELDER CARE ANGLE
@@ -1351,12 +1351,12 @@ Create 10 different press angles for pitching Canadian tech media:
 
 8. DEVELOPER ANGLE
    - Hook: "Developers build Archevi for their families, now sharing it with the world"
-   - Archevi tie-in: Personal need → open-source project → startup journey
+   - Archevi tie-in: Personal need → SaaS project → startup journey
    - Target outlet: Hacker News, dev-focused blogs
 
 9. COST ANGLE
    - Hook: "Why Canadian families are ditching $20/month cloud subscriptions"
-   - Archevi tie-in: Self-hosted option is free (vs Google/Dropbox/iCloud)
+   - Archevi tie-in: Enterprise deploymented option is free (vs Google/Dropbox/iCloud)
    - Target outlet: Personal finance blogs, consumer advocacy
 
 10. FUTURE TRENDS ANGLE
@@ -1390,8 +1390,8 @@ Slide B: WHY NOW? (Timing Validation)
 - 3 Market Tailwinds:
   1. Demographic (10K Canadians turn 65 daily)
   2. Regulatory (PIPEDA, Bill C-27 favor local solutions)
-  3. Technological (RAG mature, self-hosting accessible)
-- Competitor Lag: Incumbents (Notion, Evernote) slow to add self-hosting
+  3. Technological (RAG mature, data isolation accessible)
+- Competitor Lag: Incumbents (Notion, Evernote) slow to add data isolation
 - Market Education: AI mainstream (ChatGPT), consumers ready for "personal AI"
 - Our Timing Advantage: Launch Q1 2026 = ride all 3 tailwinds before market saturates
 
@@ -1439,7 +1439,7 @@ Use data from the uploaded "Canadian Societal Trends" and "Future Trends in Fami
 4. Mark deliverable as "Complete" in tracking spreadsheet
 
 **Common Labs Issues:**
-- **Output is too generic**: Add more specific context in the prompt (e.g., "For Canadian market" or "Targeting r/selfhosted users")
+- **Output is too generic**: Add more specific context in the prompt (e.g., "For Canadian market" or "Targeting r/personalfinance users")
 - **Missing data**: Labs sometimes ignores uploaded files - explicitly reference them ("Based on the ProductHunt case studies document...")
 - **Formatting issues**: Request specific formats ("Provide as a markdown table" or "Format as CSV")
 - **Too long/short**: Specify length expectations ("Create a 200-word explainer" or "Provide at least 10 examples")

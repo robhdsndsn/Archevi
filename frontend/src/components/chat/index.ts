@@ -4,3 +4,5 @@ export { ChatMessageSkeleton } from './ChatMessageSkeleton';
 export { ChatInput } from './ChatInput';
 export { ChatHeader } from './ChatHeader';
 export { SourcesList } from './SourcesList';
+export { ModelSelector, useModelPreference } from './ModelSelector';
+export { SearchSuggestions } from './SearchSuggestions';

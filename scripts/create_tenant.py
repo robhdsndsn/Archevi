@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 #   - bcrypt
 
 """
@@ -42,12 +43,63 @@ class CreateTenantResult(TypedDict):
     error: str | None
 
 
-# Plan defaults
+# Plan defaults - Updated December 2025
+# Pricing tiers based on actual cost analysis:
+# - Document upload: ~$0.02 (embed + categorize)
+# - AI question (RAG): ~$0.003
+# - Voice note (1 min): ~$0.0005
+# Target margins: 65-75%
 PLAN_DEFAULTS = {
-    'starter': {'ai_allowance_usd': 3.00, 'max_members': 5, 'max_storage_gb': 10},
-    'family': {'ai_allowance_usd': 8.00, 'max_members': 10, 'max_storage_gb': 50},
-    'family_office': {'ai_allowance_usd': 50.00, 'max_members': 100, 'max_storage_gb': 500},
-    'trial': {'ai_allowance_usd': 3.00, 'max_members': 5, 'max_storage_gb': 10},
+    'free': {
+        'ai_allowance_usd': 0.50,
+        'max_members': 2,
+        'max_storage_gb': 1,
+        'max_documents': 50,
+        'max_questions_per_month': 50,
+        'price_usd': 0.00,
+    },
+    'family': {
+        'ai_allowance_usd': 3.00,
+        'max_members': 6,
+        'max_storage_gb': 25,
+        'max_documents': 500,
+        'max_questions_per_month': -1,  # unlimited
+        'price_usd': 9.00,
+    },
+    'family_plus': {
+        'ai_allowance_usd': 7.00,
+        'max_members': 15,
+        'max_storage_gb': 100,
+        'max_documents': 2000,
+        'max_questions_per_month': -1,  # unlimited
+        'price_usd': 19.00,
+    },
+    'family_office': {
+        'ai_allowance_usd': 20.00,
+        'max_members': 50,
+        'max_storage_gb': 500,
+        'max_documents': -1,  # unlimited
+        'max_questions_per_month': -1,  # unlimited
+        'price_usd': 49.00,
+    },
+    'trial': {
+        'ai_allowance_usd': 1.00,
+        'max_members': 6,
+        'max_storage_gb': 5,
+        'max_documents': 100,
+        'max_questions_per_month': 100,
+        'price_usd': 0.00,
+        'trial_days': 14,
+    },
+    # Legacy tiers for backwards compatibility
+    'starter': {
+        'ai_allowance_usd': 3.00,
+        'max_members': 6,
+        'max_storage_gb': 25,
+        'max_documents': 500,
+        'max_questions_per_month': -1,
+        'price_usd': 9.00,
+    },
 }
 
 
@@ -80,7 +132,7 @@ def main(
             "tenant_id": None,
             "slug": None,
             "message": None,
-            "error": f"Invalid plan: {plan}. Must be one of: starter, family, family_office, trial"
+            "error": f"Invalid plan: {plan}. Must be one of: free, family, family_plus, family_office, trial, starter"
         }
 
     # Normalize slug

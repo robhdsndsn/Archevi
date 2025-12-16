@@ -122,4 +122,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost',
+        changeOrigin: true,
+      },
+    },
+  },
 })

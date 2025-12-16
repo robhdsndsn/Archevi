@@ -1,3 +1,9 @@
+#
+# requirements:
+#   - psycopg2-binary
+#   - wmill
+#   - httpx
+
 """
 Run Multi-Tenant Migration
 Applies the multi-tenant schema migration (003).

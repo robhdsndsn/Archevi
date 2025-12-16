@@ -61,6 +61,10 @@ import {
   X,
   ChevronDown,
   HelpCircle,
+  Scale,
+  GraduationCap,
+  User,
+  RefreshCw,
 } from 'lucide-react';
 import {
   HoverCard,
@@ -83,6 +87,9 @@ const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
   general: <File className="h-4 w-4" />,
   insurance: <Shield className="h-4 w-4" />,
   invoices: <Receipt className="h-4 w-4" />,
+  legal: <Scale className="h-4 w-4" />,
+  education: <GraduationCap className="h-4 w-4" />,
+  personal: <User className="h-4 w-4" />,
 };
 
 interface DocumentCardProps {
@@ -559,8 +566,17 @@ export function DocumentBrowser() {
       </Card>
 
       {error && (
-        <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-          {error}
+        <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md flex items-center justify-between gap-2">
+          <span>{error}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSearch}
+            className="shrink-0"
+          >
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Retry
+          </Button>
         </div>
       )}
 

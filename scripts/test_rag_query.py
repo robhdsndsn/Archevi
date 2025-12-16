@@ -4,9 +4,9 @@ Test the RAG query by calling the Windmill script directly.
 
 import json
 import urllib.request
+from config import WINDMILL_BASE_URL as BASE_URL, get_windmill_token
 
-BASE_URL = "http://localhost/api/w/family-brain"
-TOKEN = "9goQa0kzfw15lT9okYDCG6HiwTmiEYfO"
+TOKEN = get_windmill_token()
 
 def run_query(query: str):
     """Run a RAG query and return the result."""

@@ -5,6 +5,7 @@
 # requirements:
 #   - psycopg2-binary
 #   - wmill
+#   - httpx
 #   - resend
 
 """
@@ -166,22 +167,42 @@ def main(dry_run: bool = False, force_send: bool = False) -> dict:
 
         subject = build_subject(urgent_count, soon_count)
 
-        # Send emails via Resend
+        # Send emails via centralized email service
         if not dry_run:
             try:
-                import resend
-                resend_api_key = wmill.get_variable("u/admin/resend_api_key")
-                if resend_api_key:
-                    resend.api_key = resend_api_key
+                from email_service import EmailService
 
-                    for recipient_email, recipient_name in recipients:
-                        try:
-                            resend.Emails.send({
-                                "from": "Archevi <hello@archevi.com>",
-                                "to": recipient_email,
-                                "subject": subject,
-                                "html": email_html.replace("{{name}}", recipient_name or "there")
-                            })
+                service = EmailService()
+
+                # Convert document tuples to dicts for email service
+                urgent_doc_dicts = [
+                    {
+                        "title": d[1],
+                        "expiry_date": d[3],
+                        "expiry_type": d[4],
+                        "days_until": d[5]
+                    }
+                    for d in (urgent_docs if urgent_docs else [])
+                ]
+                soon_doc_dicts = [
+                    {
+                        "title": d[1],
+                        "expiry_date": d[3],
+                        "expiry_type": d[4],
+                        "days_until": d[5]
+                    }
+                    for d in (soon_docs if (is_monday or force_send) else [])
+                ]
+
+                for recipient_email, recipient_name in recipients:
+                    try:
+                        result = service.send_expiry_notification(
+                            to=recipient_email,
+                            recipient_name=recipient_name or "there",
+                            urgent_docs=urgent_doc_dicts,
+                            soon_docs=soon_doc_dicts
+                        )
+                        if result.get("success"):
                             emails_sent += 1
                             notifications.append({
                                 "recipient": recipient_email,
@@ -189,12 +210,12 @@ def main(dry_run: bool = False, force_send: bool = False) -> dict:
                                 "urgent_count": urgent_count,
                                 "soon_count": soon_count
                             })
-                        except Exception as e:
-                            errors.append(f"Failed to send to {recipient_email}: {str(e)}")
-                else:
-                    errors.append("Resend API key not configured (u/admin/resend_api_key)")
-            except ImportError:
-                errors.append("Resend package not installed")
+                        else:
+                            errors.append(f"Failed to send to {recipient_email}: {result.get('error')}")
+                    except Exception as e:
+                        errors.append(f"Failed to send to {recipient_email}: {str(e)}")
+            except ImportError as e:
+                errors.append(f"Email service import error: {str(e)}")
         else:
             # Dry run - just record what would be sent
             for recipient_email, recipient_name in recipients:
