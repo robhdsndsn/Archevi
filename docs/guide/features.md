@@ -46,14 +46,14 @@ Choose the AI model that best fits your needs:
 
 | Provider | Model | Best For |
 |----------|-------|----------|
-| Fast Model | General queries, quick answers |
-| Vision Model | Document understanding, charts, diagrams |
-| Reasoning Model | Complex analysis, multi-step thinking |
-| Structured Model | Data extraction, tool use |
-| Quality Model | High quality, detailed answers |
-| Speed Model | Fast responses for simple questions |
+| **Groq** | Llama 3.3 70B | General queries, balanced speed/quality |
+| **Groq** | Llama 4 Scout | Fast responses, simple questions |
+| **Groq** | Llama 4 Maverick | Vision tasks, charts, diagrams |
+| **Cohere** | Command A | Quality answers, detailed responses |
+| **Cohere** | Command R | Reasoning tasks, complex analysis |
+| **Cohere** | Command R+ | Highest quality, comprehensive answers |
 
-Your preference is saved and remembered across sessions.
+Your preference is saved and remembered across sessions. Llama 4 models support visual search for finding specific PDF pages by describing their visual content.
 
 ### Smart Document Processing
 
@@ -483,14 +483,14 @@ Available in the Text tab when viewing document details.
 
 ### Plan Tiers
 
-| Plan | Price | Storage | AI Budget | Members |
-|------|-------|---------|-----------|---------|
-| **Trial** | Free (14 days) | 1 GB | $5/mo | 2 |
-| **Starter** | $9/month | 5 GB | $15/mo | 5 |
-| **Family** | $19/month | 25 GB | $25/mo | 10 |
-| **Family Office** | $49/month | 100 GB | $75/mo | 50 |
+| Plan | Price | Documents | Members |
+|------|-------|-----------|---------|
+| **Free** | $0/month (14-day trial) | 50 | 2 |
+| **Family** | $9 CAD/month | 500 | 6 |
+| **Family Plus** | $19 CAD/month | 2,000 | 15 |
+| **Family Office** | $49 CAD/month | Unlimited | Unlimited |
 
-Annual billing saves up to 22%.
+All plans include AI-powered search (AI cost included), expiry tracking, and voice transcription.
 
 ### Usage Tracking
 
@@ -541,7 +541,7 @@ Export your documents anytime. You're not locked in.
 ## What's Coming
 
 ### Recently Added (v0.5.0)
-- **Marketing Website** - SEO-optimized Next.js site at archevi.ca
+- **Marketing Website** - SEO-optimized Next.js 16 site at archevi.ca
   - Landing page with hero, features, testimonials, CTAs
   - Pricing page with plan comparison and billing toggle
   - Blog with Strapi CMS integration
@@ -553,9 +553,9 @@ Export your documents anytime. You're not locked in.
   - ISR (Incremental Static Regeneration) for content updates
 - **Self-Service Signup** - Complete tenant provisioning flow
   - SignupForm with email, password strength indicator, family name
-  - Automatic tenant creation 
+  - Automatic tenant creation with isolated database
   - Cross-domain authentication using URL fragment tokens
-- **Cross-Domain Auth** - Seamless login flow between marketing site and dashboard
+- **Cross-Domain Auth** - Seamless login flow between marketing site (archevi.ca) and dashboard
 
 ### Previous Release (v0.4.9)
 - **Billing & Subscription UI** - Complete subscription management in Settings

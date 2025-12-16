@@ -15,62 +15,33 @@ The email forwarding feature works as follows:
    - Saves the document with AI features (auto-categorization, tags)
    - Sends confirmation email back to sender
 
-## Prerequisites
+## How It Works (Technical)
 
-- Windmill instance (cloud or self-hosted)
-- Domain with DNS access (for MX records)
-- Resend account for sending confirmation emails
+The email forwarding system is managed by Archevi's infrastructure:
 
-## Setup Steps
+- DNS MX records point `save@archevi.ca` to our email processing server
+- Windmill receives and processes incoming emails
+- Sender verification ensures only registered family members can save documents
+- Documents are automatically categorized and embedded for search
 
-### 1. Deploy the Script
+## Setup Steps (For Internal Operations)
 
-```bash
-# Set your Windmill token
-export WINDMILL_TOKEN=your_token_here
-
-# Deploy the script
-python scripts/deploy_email_forward.py
-```
-
-### 2. Configure DNS (Self-Hosted Only)
-
-For self-hosted Windmill, you need to configure DNS records:
-
-**Option A: Port 25 on same IP as Windmill**
-
-```
-# MX record
-mail.archevi.ca  MX  10  archevi.ca
-```
-
-**Option B: Port 25 on different IP**
-
-```
-# A record for mail server
-mail.archevi.ca  A  <mail-server-ip>
-
-# MX record
-archevi.ca  MX  10  mail.archevi.ca
-```
-
-### 3. Configure Windmill Email Domain
+### 1. Configure Windmill Email Domain
 
 1. Go to Windmill Admin Settings
 2. Navigate to "Core" tab
 3. Set "Email Domain" to `archevi.ca`
 4. Save settings
 
-### 4. Create Email Trigger
+### 2. Create Email Trigger
 
 1. Go to the script: `f/chatbot/process_email_forward`
 2. Click "Triggers" tab
 3. Click "Add Trigger" -> "Email"
 4. Configure:
    - **Local part**: `save` (creates `save@archevi.ca`)
-   - Or create a custom email trigger for more control
 
-### 5. Verify Resend Configuration
+### 3. Verify Resend Configuration
 
 Ensure the Resend API key is configured:
 

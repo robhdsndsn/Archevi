@@ -124,11 +124,11 @@ Chat naturally with your family's knowledge base. Watch the AI work in real-time
 | Plan | Price | Best For |
 |------|-------|----------|
 | **Free** | $0/mo | Try Archevi with 50 documents |
-| **Family** | $9/mo | Most families (500 docs, 6 members) |
-| **Family Plus** | $19/mo | Large families (2,000 docs, 15 members) |
-| **Family Office** | $49/mo | Complex estates (unlimited) |
+| **Family** | $9 CAD/mo | Most families (500 docs, 6 members) |
+| **Family Plus** | $19 CAD/mo | Large families (2,000 docs, 15 members) |
+| **Family Office** | $49 CAD/mo | Complex estates (unlimited) |
 
-Everything included: AI, storage, support. No surprise bills.
+All plans include AI-powered search (AI cost included), expiry tracking, voice transcription, and 14-day free trial. No surprise bills.
 
 [See Full Pricing](/pricing/) | [Start Free Trial](/guide/)
 
