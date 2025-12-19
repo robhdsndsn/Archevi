@@ -25,6 +25,7 @@ Windmill Script Configuration:
 """
 
 from typing import Optional, TypedDict
+import os
 import wmill
 
 
@@ -34,14 +35,14 @@ class EmailResult(TypedDict):
     error: Optional[str]
 
 
-# Brand configuration
+# Brand configuration - now uses environment variables with sensible defaults
 BRAND_CONFIG = {
-    "from_email": "Archevi <hello@archevi.ca>",
-    "reply_to": "support@archevi.ca",
-    "logo_url": "https://archevi.ca/logo.png",
-    "app_url": "https://app.archevi.ca",
-    "marketing_url": "https://archevi.ca",
-    "docs_url": "https://docs.archevi.ca",
+    "from_email": os.getenv("BRAND_FROM_EMAIL", "Archevi <hello@archevi.ca>"),
+    "reply_to": os.getenv("BRAND_REPLY_TO", "support@archevi.ca"),
+    "logo_url": os.getenv("BRAND_LOGO_URL", "https://archevi.ca/logo.png"),
+    "app_url": os.getenv("APP_URL", "https://app.archevi.ca"),
+    "marketing_url": os.getenv("MARKETING_URL", "https://archevi.ca"),
+    "docs_url": os.getenv("DOCS_URL", "https://docs.archevi.ca"),
     "primary_color": "#3b82f6",  # Blue-500
     "text_color": "#111827",     # Gray-900
     "muted_color": "#6b7280",    # Gray-500
