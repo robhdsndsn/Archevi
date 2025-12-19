@@ -465,7 +465,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: MemberRole;
-  tenant_id?: string;
+  tenant_id: string;  // Required - every user must belong to a tenant
   tenant_name?: string;
   member_type?: MemberType;   // For visibility filtering (admin, adult, teen, child)
   member_id?: number;         // family_members.id for private doc access

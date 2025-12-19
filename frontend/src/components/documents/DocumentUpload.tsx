@@ -56,14 +56,20 @@ interface DocumentUploadProps {
   onViewDocument?: (documentId: number) => void;
 }
 
-// Default tenant for MVP - The Hudson Family
-// TODO: Remove this when auth properly returns tenant_id
-const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
-
 export function DocumentUpload({ onSuccess, onViewDocument }: DocumentUploadProps) {
   const { user } = useAuthStore();
-  // Use tenant_id from auth context, fall back to default for MVP
-  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
+
+  if (!user?.tenant_id) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center h-48">
+          <p className="text-muted-foreground">Please log in to upload documents.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const tenantId = user.tenant_id;
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');

@@ -18,10 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Archive, Download, Loader2, Search, Brain, FileImage } from 'lucide-react';
 import { exportChatToPDF } from '@/lib/export-chat';
 
-// Default tenant for MVP - The Hudson Family
-// TODO: Remove this when auth properly returns tenant_id
-const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
-
 // Streaming status for real-time UI feedback
 type StreamStatus = 'idle' | 'thinking' | 'searching' | 'visual_searching' | 'answering';
 
@@ -36,8 +32,16 @@ export function ChatContainer() {
   } = useChatStore();
 
   const { user } = useAuthStore();
-  // Use tenant_id from auth context, fall back to default for MVP
-  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
+
+  if (!user?.tenant_id) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Please log in to access chat.</p>
+      </div>
+    );
+  }
+
+  const tenantId = user.tenant_id;
 
   // Research mode (Quick vs Deep) with persistence - maps to appropriate model
   const [researchMode, setResearchMode, selectedModel] = useResearchMode();

@@ -17,17 +17,24 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
-// Default tenant for MVP - The Hudson Family
-// TODO: Remove this when auth properly returns tenant_id
-const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
-
 interface VoiceNoteRecorderProps {
   onSuccess?: () => void;
 }
 
 export function VoiceNoteRecorder({ onSuccess }: VoiceNoteRecorderProps) {
   const { user } = useAuthStore();
-  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
+
+  if (!user?.tenant_id) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center h-48">
+          <p className="text-muted-foreground">Please log in to record voice notes.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const tenantId = user.tenant_id;
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);

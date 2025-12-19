@@ -75,10 +75,6 @@ import { windmill, DOCUMENT_CATEGORIES, type Document, type DocumentCategory, ty
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
-// Default tenant for MVP - The Hudson Family
-// TODO: Remove this when auth properly returns tenant_id
-const DEFAULT_TENANT_ID = '5302d94d-4c08-459d-b49f-d211abdb4047';
-
 const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
   recipes: <ChefHat className="h-4 w-4" />,
   medical: <Stethoscope className="h-4 w-4" />,
@@ -197,8 +193,16 @@ function DocumentCard({ document, onView, onEdit, onDelete }: DocumentCardProps)
 
 export function DocumentBrowser() {
   const { user } = useAuthStore();
-  // Use tenant_id from auth context, fall back to default for MVP
-  const tenantId = user?.tenant_id || DEFAULT_TENANT_ID;
+
+  if (!user?.tenant_id) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Please log in to view documents.</p>
+      </div>
+    );
+  }
+
+  const tenantId = user.tenant_id;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState<DocumentCategory | 'all'>('all');
